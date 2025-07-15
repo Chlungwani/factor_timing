@@ -14,8 +14,10 @@ def load_factor_returns(file_path):
     df = df.sort_values('Date').reset_index(drop=True)
     return df
 
+
+
 # --- Trend Scanning Labeling Function ---
-def trend_scanning_labels(df, window_range=(3,6), threshold=1.5):
+def trend_scanning_labels(df, window_range=(1,12), threshold=0):
     labels = []
     t_stats = []
     best_windows = []
@@ -63,10 +65,12 @@ def trend_scanning_labels(df, window_range=(3,6), threshold=1.5):
 momentum = load_factor_returns('factor_returns_momentum.xlsx')
 value = load_factor_returns('factor_returns_value.xlsx')
 quality = load_factor_returns('factor_returns_quality.xlsx')
+benchmark = load_factor_returns('benchmark_returns.xlsx')
 
 momentum_labeled = trend_scanning_labels(momentum)
 value_labeled = trend_scanning_labels(value)
 quality_labeled = trend_scanning_labels(quality)
+
 
 # --- save label, t-stats and best window to new worksheets ---
 momentum_labeled.to_csv('factor_returns_momentum_labeled.csv', index=False)
@@ -99,7 +103,7 @@ def plot_trend_labels(df, title='Trend Labels on Cumulative Return'):
     plt.tight_layout()
     plt.show()
 
-mom_plot=plot_trend_labels(momentum_labeled,title='Momentum:Trend Labels on Cumulative Return')
-val_plot=plot_trend_labels(value_labeled,title='Value:Trend Labels on Cumulative Return')
-qul_plot=plot_trend_labels(quality_labeled,title='Quality:Trend Labels on Cumulative Return')
+mom_plot=plot_trend_labels(momentum_labeled,title='Momentum (1-12m) - Trend Labels on Cumulative Return')
+val_plot=plot_trend_labels(value_labeled,title='Value (1-12m) - Trend Labels on Cumulative Return')
+qul_plot=plot_trend_labels(quality_labeled,title='Quality (1-12m) - Trend Labels on Cumulative Return')
 
