@@ -2,5 +2,5 @@
   "fit_intercept": true,
   "lam": 1,
   "max_iter": 200,
-  "n_splines": 5
+  "n_splines": 7
 }
