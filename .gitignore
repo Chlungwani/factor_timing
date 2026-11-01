@@ -1,0 +1,10 @@
+# Scratch folders from editing sessions
+.tmp_*/
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Word/Excel lock files
+~$*
