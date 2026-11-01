@@ -1,12 +1,16 @@
 """Build reproducible Chapter 4 figures from the final CPCV model outputs.
 
-The script reads only files under ``results/model_outputs`` and writes figures
-to ``results/chapter4_final_figures``.  It does not read from or modify the
-thesis Word document.
+Usage: python build_chapter4_corrected_figures.py [outputs_dir] [figures_dir]
+
+The script reads only files under ``results/model_outputs`` (or outputs_dir)
+and writes figures to ``results/chapter4_final_figures`` (or figures_dir).  It
+does not read from or modify the thesis Word document. Colours and fonts come
+from thesis_style.py; figures carry no titles (the Word captions name them).
 """
 
-from pathlib import Path
+import sys
 import textwrap
+from pathlib import Path
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
@@ -14,20 +18,18 @@ from matplotlib.patches import Patch
 import pandas as pd
 from sklearn.metrics import roc_auc_score, roc_curve
 
+import thesis_style as style
+from thesis_style import FEATURE_GROUP_COLOURS, GRID, INK_2, LINE, LINE_THIN, MODEL_COLOURS
+
 
 RESULTS_DIR = Path(__file__).resolve().parent
-OUTPUTS_DIR = RESULTS_DIR / "model_outputs"
-FIGURES_DIR = RESULTS_DIR / "chapter4_final_figures"
+OUTPUTS_DIR = Path(sys.argv[1]) if len(sys.argv) > 1 else RESULTS_DIR / "model_outputs"
+FIGURES_DIR = Path(sys.argv[2]) if len(sys.argv) > 2 else RESULTS_DIR / "chapter4_final_figures"
 
 MODELS = ["Logistic", "GAM", "XGBoost"]
 PAIRS = ["Momentum_vs_Value", "Momentum_vs_Quality", "Value_vs_Quality"]
-PAIR_TITLES = {
-    "Momentum_vs_Value": "Momentum vs Value",
-    "Momentum_vs_Quality": "Momentum vs Quality",
-    "Value_vs_Quality": "Value vs Quality",
-}
+PAIR_TITLES = {pair: f"{a} vs {b.lower()}" for pair in PAIRS for a, b in [pair.split("_vs_")]}
 TAGS = {"Logistic": "logistic", "GAM": "gam", "XGBoost": "xgboost"}
-COLORS = {"Logistic": "#0072B2", "GAM": "#E69F00", "XGBoost": "#009E73"}
 
 FEATURE_GROUPS = {
     "Price-based features": {
@@ -59,7 +61,7 @@ FEATURE_GROUPS = {
         "GlobalEquityTS",
         "GlobalEquity_EntDyn",
     },
-    "Macro-economic": {
+    "Macroeconomic": {
         "SA_RB_Curvature",
         "US_RB_Curvature",
         "SA_NB_Slope",
@@ -93,14 +95,6 @@ FEATURE_GROUPS = {
         "volratio_value_quality_12",
     },
 }
-FEATURE_GROUP_COLORS = {
-    "Price-based features": "#4E79A7",
-    "Fundamental": "#E15759",
-    "Sentiment indicators": "#F28E2B",
-    "Macro-economic": "#B07AA1",
-    "Factor-specific performance": "#76B7B2",
-    "Factor-specific volatility": "#59A14F",
-}
 FEATURE_TO_GROUP = {
     feature: group for group, features in FEATURE_GROUPS.items() for feature in features
 }
@@ -117,157 +111,87 @@ def load_shap(model, pair):
     return frame.iloc[:, 0].sort_values(ascending=False)
 
 
-def style_axes(ax):
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-    ax.grid(alpha=0.18, linewidth=0.7)
+def style_axes(ax, axis="both"):
+    ax.grid(axis=axis, color=GRID, linewidth=0.6)
+    ax.set_axisbelow(True)
+
+
+def draw_roc(ax, pair):
+    for model in MODELS:
+        data = load_probabilities(model, pair)
+        false_positive_rate, true_positive_rate, _ = roc_curve(data["actual"], data["probability"])
+        auc = roc_auc_score(data["actual"], data["probability"])
+        ax.plot(false_positive_rate, true_positive_rate, label=f"{model} (AUC = {auc:.3f})",
+                color=MODEL_COLOURS[model], linewidth=LINE)
+    ax.plot([0, 1], [0, 1], "--", color=INK_2, linewidth=LINE_THIN)
+    ax.set_title(PAIR_TITLES[pair])
+    ax.set_xlabel("False-positive rate")
+    ax.set_aspect("equal", adjustable="box")
+    ax.legend(loc="lower right", fontsize=6.5, handlelength=1.4)
+    style_axes(ax)
 
 
 def build_roc_figure():
-    fig, axes = plt.subplots(1, 3, figsize=(10.8, 4.4), sharex=True, sharey=True)
+    fig, axes = plt.subplots(1, 3, figsize=(style.TEXT_WIDTH, 2.6), sharex=True, sharey=True)
     for ax, pair in zip(axes, PAIRS):
-        for model in MODELS:
-            data = load_probabilities(model, pair)
-            false_positive_rate, true_positive_rate, _ = roc_curve(
-                data["actual"], data["probability"]
-            )
-            auc = roc_auc_score(data["actual"], data["probability"])
-            ax.plot(
-                false_positive_rate,
-                true_positive_rate,
-                label=f"{model} (AUC = {auc:.2f})",
-                color=COLORS[model],
-                linewidth=2.5,
-            )
-        ax.plot([0, 1], [0, 1], "--", color="#555555", linewidth=1.3)
-        ax.set_title(PAIR_TITLES[pair], fontsize=13.5, fontweight="bold")
-        ax.set_xlabel("False-positive rate", fontsize=11.5, fontweight="bold")
-        ax.set_ylabel(
-            "True-positive rate" if pair == PAIRS[0] else "",
-            fontsize=11.5,
-            fontweight="bold",
-        )
-        ax.tick_params(axis="both", labelsize=10.5)
-        for label in ax.get_xticklabels() + ax.get_yticklabels():
-            label.set_fontweight("bold")
-        legend = ax.legend(
-            loc="lower right",
-            frameon=True,
-            framealpha=0.92,
-            facecolor="white",
-            edgecolor="#CCCCCC",
-            fontsize=9.5,
-            handlelength=1.5,
-        )
-        for label in legend.get_texts():
-            label.set_fontweight("bold")
-        ax.set_aspect("equal", adjustable="box")
-        style_axes(ax)
-    fig.suptitle(
-        "Final out-of-sample ROC curves", fontsize=17, fontweight="bold", y=0.995
-    )
-    fig.tight_layout(rect=(0, 0, 1, 0.91), w_pad=1.1)
-    path = FIGURES_DIR / "figure_final_roc_curves.png"
-    fig.savefig(path, dpi=300, bbox_inches="tight", facecolor="white")
+        draw_roc(ax, pair)
+    axes[0].set_ylabel("True-positive rate")
+    fig.tight_layout(w_pad=1.0)
+    fig.savefig(FIGURES_DIR / "figure_final_roc_curves.png", dpi=300, facecolor="white")
     plt.close(fig)
 
     for pair in PAIRS:
-        fig, ax = plt.subplots(figsize=(7.2, 5.7))
-        for model in MODELS:
-            data = load_probabilities(model, pair)
-            false_positive_rate, true_positive_rate, _ = roc_curve(
-                data["actual"], data["probability"]
-            )
-            auc = roc_auc_score(data["actual"], data["probability"])
-            ax.plot(
-                false_positive_rate,
-                true_positive_rate,
-                label=f"{model} (AUC = {auc:.3f})",
-                color=COLORS[model],
-                linewidth=2.2,
-            )
-        ax.plot([0, 1], [0, 1], "--", color="#666666", linewidth=1)
-        ax.set_title(
-            f"Final out-of-sample ROC curves: {PAIR_TITLES[pair]}",
-            fontsize=14,
-            fontweight="bold",
-        )
-        ax.set_xlabel("False-positive rate")
+        fig, ax = plt.subplots(figsize=(3.6, 3.4))
+        draw_roc(ax, pair)
+        ax.set_title("")
         ax.set_ylabel("True-positive rate")
-        ax.legend(loc="lower right", frameon=False)
-        ax.set_aspect("equal", adjustable="box")
-        style_axes(ax)
         fig.tight_layout()
-        path = FIGURES_DIR / f"figure_final_roc_{pair.lower()}.png"
-        fig.savefig(path, dpi=300, bbox_inches="tight", facecolor="white")
+        fig.savefig(FIGURES_DIR / f"figure_final_roc_{pair.lower()}.png", dpi=300, facecolor="white")
         plt.close(fig)
 
 
+def draw_probabilities(ax, pair):
+    realised = None
+    for model in MODELS:
+        data = load_probabilities(model, pair)
+        ax.plot(data["Date"], data["probability"], color=MODEL_COLOURS[model], linewidth=LINE,
+                label=model)
+        if realised is None:
+            realised = data[["Date", "actual"]]
+    ax.scatter(realised["Date"], realised["actual"], s=3, color=INK_2,
+               label="Realised class", zorder=3, linewidths=0)
+    ax.axhline(0.5, color=INK_2, linestyle="--", linewidth=LINE_THIN)
+    ax.set_ylim(-0.06, 1.06)
+    ax.set_ylabel("Probability / class")
+    ax.xaxis.set_major_locator(mdates.YearLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
+    style_axes(ax, axis="y")
+
+
 def build_probability_figures():
-    fig, axes = plt.subplots(3, 1, figsize=(10.5, 10.2), sharex=True, sharey=True)
-    for panel_index, (ax, pair) in enumerate(zip(axes, PAIRS)):
-        realised = None
-        for model in MODELS:
-            data = load_probabilities(model, pair)
-            ax.plot(
-                data["Date"],
-                data["probability"],
-                color=COLORS[model],
-                linewidth=1.9,
-                label=model,
-            )
-            if realised is None:
-                realised = data[["Date", "actual"]]
-
-        ax.scatter(
-            realised["Date"],
-            realised["actual"],
-            s=13,
-            color="#4D4D4D",
-            alpha=0.5,
-            label="Realised class",
-            zorder=3,
-        )
-        ax.axhline(0.5, color="#666666", linestyle="--", linewidth=1.2)
-        ax.set_ylim(-0.06, 1.06)
-        ax.set_title(
-            f"{chr(65 + panel_index)}. {PAIR_TITLES[pair]}",
-            loc="left",
-            fontsize=13.5,
-            fontweight="bold",
-            pad=10,
-        )
-        ax.set_ylabel("Probability / class", fontsize=11.5, fontweight="bold")
-        ax.tick_params(axis="both", labelsize=10.5)
-        for label in ax.get_xticklabels() + ax.get_yticklabels():
-            label.set_fontweight("bold")
-        style_axes(ax)
-
-    axes[-1].xaxis.set_major_locator(mdates.YearLocator())
-    axes[-1].xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
-    axes[-1].set_xlabel("Prediction date", fontsize=12.5, fontweight="bold")
+    fig, axes = plt.subplots(3, 1, figsize=(style.TEXT_WIDTH, 6.2), sharex=True, sharey=True)
+    for ax, pair in zip(axes, PAIRS):
+        draw_probabilities(ax, pair)
+        ax.set_title(PAIR_TITLES[pair])
+    axes[-1].set_xlabel("Prediction date")
     handles, labels = axes[0].get_legend_handles_labels()
-    legend = fig.legend(
-        handles,
-        labels,
-        loc="lower center",
-        bbox_to_anchor=(0.5, 0.015),
-        ncol=4,
-        frameon=False,
-        fontsize=11.5,
-    )
-    for label in legend.get_texts():
-        label.set_fontweight("bold")
-    fig.suptitle(
-        "Final walk-forward predicted probabilities",
-        fontsize=17.5,
-        fontweight="bold",
-        y=0.995,
-    )
-    fig.tight_layout(rect=(0, 0.12, 1, 0.93), h_pad=1.9)
-    path = FIGURES_DIR / "figure_final_probabilities_consolidated.png"
-    fig.savefig(path, dpi=300, bbox_inches="tight", facecolor="white")
+    fig.legend(handles, labels, loc="lower center", bbox_to_anchor=(0.5, 0.0), ncol=4,
+               markerscale=2.5)
+    fig.tight_layout(rect=(0, 0.04, 1, 1), h_pad=1.2)
+    fig.savefig(FIGURES_DIR / "figure_final_probabilities_consolidated.png", dpi=300, facecolor="white")
     plt.close(fig)
+
+    # One figure per pair (Chapter 4 places each under its pair's discussion; the caption names the pair).
+    for pair in PAIRS:
+        fig, ax = plt.subplots(figsize=(style.TEXT_WIDTH, 2.7))
+        draw_probabilities(ax, pair)
+        ax.set_xlabel("Prediction date")
+        handles, labels = ax.get_legend_handles_labels()
+        fig.legend(handles, labels, loc="lower center", bbox_to_anchor=(0.5, 0.0), ncol=4,
+                   markerscale=2.5)
+        fig.tight_layout(rect=(0, 0.09, 1, 1))
+        fig.savefig(FIGURES_DIR / f"figure_final_probabilities_{pair.lower()}.png", dpi=300, facecolor="white")
+        plt.close(fig)
 
 
 def wrap_feature(name, width=22):
@@ -283,7 +207,7 @@ def wrap_feature(name, width=22):
 
 def build_shap_figures(top_n=10):
     for pair in PAIRS:
-        fig, axes = plt.subplots(1, 3, figsize=(13, 8.6))
+        fig, axes = plt.subplots(1, 3, figsize=(style.TEXT_WIDTH, 4.4))
         for ax, model in zip(axes, MODELS):
             importance = load_shap(model, pair).head(top_n).sort_values()
             missing = [name for name in importance.index if name not in FEATURE_TO_GROUP]
@@ -292,57 +216,30 @@ def build_shap_figures(top_n=10):
             ax.barh(
                 [wrap_feature(name) for name in importance.index],
                 importance.values,
-                color=[
-                    FEATURE_GROUP_COLORS[FEATURE_TO_GROUP[name]]
-                    for name in importance.index
-                ],
-                alpha=0.95,
+                color=[FEATURE_GROUP_COLOURS[FEATURE_TO_GROUP[name]] for name in importance.index],
+                height=0.7,
             )
-            ax.set_title(model, fontsize=15, fontweight="bold")
-            ax.set_xlabel("Mean |SHAP value|", fontsize=12.5, fontweight="bold")
-            ax.tick_params(axis="x", labelsize=11)
-            ax.tick_params(axis="y", labelsize=11)
-            for label in ax.get_xticklabels() + ax.get_yticklabels():
-                label.set_fontweight("bold")
-            style_axes(ax)
-        fig.suptitle(
-            f"Final global feature importance: {PAIR_TITLES[pair]}",
-            fontsize=18,
-            fontweight="bold",
-            y=0.995,
-        )
-        legend = fig.legend(
-            handles=[
-                Patch(facecolor=color, label=group)
-                for group, color in FEATURE_GROUP_COLORS.items()
-            ],
+            ax.set_title(model)
+            ax.set_xlabel("Mean |SHAP value|")
+            ax.tick_params(axis="y", labelsize=6.5, length=0)
+            ax.tick_params(axis="x", labelsize=7)
+            style_axes(ax, axis="x")
+        fig.legend(
+            handles=[Patch(facecolor=colour, label=group) for group, colour in FEATURE_GROUP_COLOURS.items()],
             loc="lower center",
-            bbox_to_anchor=(0.5, 0.01),
+            bbox_to_anchor=(0.5, 0.0),
             ncol=3,
-            frameon=False,
-            title="Feature classification group",
-            fontsize=12,
-            title_fontsize=12.5,
+            title="Feature category",
+            title_fontsize=7.5,
         )
-        legend.get_title().set_fontweight("bold")
-        for label in legend.get_texts():
-            label.set_fontweight("bold")
-        fig.tight_layout(rect=(0, 0.17, 1, 0.93), w_pad=1.6)
-        path = FIGURES_DIR / f"figure_final_shap_{pair.lower()}.png"
-        fig.savefig(path, dpi=300, bbox_inches="tight", facecolor="white")
+        fig.tight_layout(rect=(0, 0.12, 1, 1), w_pad=0.8)
+        fig.savefig(FIGURES_DIR / f"figure_final_shap_{pair.lower()}.png", dpi=300, facecolor="white")
         plt.close(fig)
 
 
 def main():
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
-    plt.rcParams.update(
-        {
-            "font.family": "DejaVu Sans",
-            "font.size": 10,
-            "axes.titlepad": 10,
-            "figure.dpi": 120,
-        }
-    )
+    style.use()
     build_roc_figure()
     build_probability_figures()
     build_shap_figures()

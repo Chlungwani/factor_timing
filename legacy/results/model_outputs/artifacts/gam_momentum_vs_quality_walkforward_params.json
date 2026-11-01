@@ -1,0 +1,26 @@
+[
+  {
+    "from_step": 0,
+    "n_train": 763,
+    "fit_intercept": true,
+    "lam": 10000,
+    "max_iter": 1000,
+    "n_splines": 10
+  },
+  {
+    "from_step": 52,
+    "n_train": 803,
+    "fit_intercept": true,
+    "lam": 10000,
+    "max_iter": 1000,
+    "n_splines": 10
+  },
+  {
+    "from_step": 104,
+    "n_train": 855,
+    "fit_intercept": true,
+    "lam": 10000,
+    "max_iter": 1000,
+    "n_splines": 5
+  }
+]

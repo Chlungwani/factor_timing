@@ -1,0 +1,20 @@
+[
+  {
+    "from_step": 0,
+    "n_train": 763,
+    "alpha": 0.0,
+    "lambda_reg": 1000.0
+  },
+  {
+    "from_step": 52,
+    "n_train": 803,
+    "alpha": 0.0,
+    "lambda_reg": 1000.0
+  },
+  {
+    "from_step": 104,
+    "n_train": 855,
+    "alpha": 0.0,
+    "lambda_reg": 1000.0
+  }
+]

@@ -1,0 +1,4 @@
+pair,raw_returns,active_returns,active_benchmark_down,active_benchmark_up,rolling_36m_min,rolling_36m_max,rolling_36m_sign_changes
+Momentum–value,0.794,-0.366,-0.388,-0.346,-0.694,0.419,5
+Momentum–quality,0.838,0.02,-0.004,0.017,-0.405,0.657,9
+Value–quality,0.87,-0.044,-0.055,-0.018,-0.594,0.54,4
