@@ -1,6 +1,6 @@
 {
   "fit_intercept": true,
-  "lam": 10000,
+  "lam": 1,
   "max_iter": 1000,
-  "n_splines": 4
+  "n_splines": 10
 }

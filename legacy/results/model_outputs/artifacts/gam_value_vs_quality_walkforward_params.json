@@ -1,26 +1,26 @@
 [
   {
     "from_step": 0,
-    "n_train": 763,
-    "fit_intercept": true,
-    "lam": 100,
-    "max_iter": 1000,
-    "n_splines": 5
-  },
-  {
-    "from_step": 52,
-    "n_train": 803,
-    "fit_intercept": true,
-    "lam": 1,
-    "max_iter": 1000,
-    "n_splines": 5
-  },
-  {
-    "from_step": 104,
-    "n_train": 855,
+    "n_train": 758,
     "fit_intercept": true,
     "lam": 1,
     "max_iter": 1000,
     "n_splines": 10
+  },
+  {
+    "from_step": 52,
+    "n_train": 798,
+    "fit_intercept": true,
+    "lam": 1000,
+    "max_iter": 1000,
+    "n_splines": 4
+  },
+  {
+    "from_step": 104,
+    "n_train": 850,
+    "fit_intercept": true,
+    "lam": 10000,
+    "max_iter": 1000,
+    "n_splines": 7
   }
 ]

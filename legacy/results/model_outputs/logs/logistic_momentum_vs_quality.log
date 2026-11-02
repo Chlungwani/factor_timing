@@ -1,0 +1,77 @@
+
+============================================================
+FACTOR PAIR: Momentum_vs_Quality
+============================================================
+=== PHASE 1: HYPERPARAMETER TUNING ===
+Testing 18 parameter combinations...
+New best params: {'alpha': 0.0, 'lambda_reg': 0.01} (AUC: 0.527)
+New best params: {'alpha': 0.0, 'lambda_reg': 0.1} (AUC: 0.527)
+New best params: {'alpha': 0.0, 'lambda_reg': 1.0} (AUC: 0.528)
+New best params: {'alpha': 0.5, 'lambda_reg': 10.0} (AUC: 0.541)
+New best params: {'alpha': 1.0, 'lambda_reg': 10.0} (AUC: 0.546)
+
+=== Top 5 Parameter Combinations ===
+Score: 0.546 | Params: {'alpha': 1.0, 'lambda_reg': 10.0}
+Score: 0.541 | Params: {'alpha': 1.0, 'lambda_reg': 10.0}
+Score: 0.528 | Params: {'alpha': 1.0, 'lambda_reg': 10.0}
+Score: 0.527 | Params: {'alpha': 1.0, 'lambda_reg': 10.0}
+Score: 0.527 | Params: {'alpha': 1.0, 'lambda_reg': 10.0}
+
+=== PHASE 2: ADAPTIVE WALK-FORWARD ===
+
+Running Rolling-Window WFV with Hyperparameter Caching...
+Training window = expanding (all history)
+  0%|          | 0/156 [00:00<?, ?it/s]  1%|▏         | 2/156 [00:00<00:08, 17.81it/s]  3%|▎         | 5/156 [00:00<00:07, 21.54it/s]  5%|▌         | 8/156 [00:00<00:06, 23.61it/s]  7%|▋         | 11/156 [00:00<00:06, 24.14it/s]  9%|▉         | 14/156 [00:00<00:06, 22.80it/s] 11%|█         | 17/156 [00:00<00:06, 21.96it/s] 13%|█▎        | 20/156 [00:00<00:06, 21.22it/s] 15%|█▍        | 23/156 [00:01<00:05, 22.39it/s] 17%|█▋        | 27/156 [00:01<00:05, 25.43it/s] 19%|█▉        | 30/156 [00:01<00:04, 25.21it/s] 21%|██        | 33/156 [00:01<00:04, 26.40it/s] 23%|██▎       | 36/156 [00:01<00:04, 25.83it/s] 25%|██▌       | 39/156 [00:01<00:04, 25.48it/s] 27%|██▋       | 42/156 [00:01<00:04, 24.91it/s] 29%|██▉       | 45/156 [00:01<00:04, 24.36it/s] 31%|███       | 48/156 [00:02<00:04, 23.69it/s] 33%|███▎      | 51/156 [00:02<00:04, 25.00it/s]
+--- Retuning at step 52 ---
+Testing 18 parameter combinations...
+New best params: {'alpha': 0.0, 'lambda_reg': 0.01} (AUC: 0.523)
+New best params: {'alpha': 0.0, 'lambda_reg': 0.1} (AUC: 0.523)
+New best params: {'alpha': 0.0, 'lambda_reg': 1.0} (AUC: 0.524)
+New best params: {'alpha': 0.0, 'lambda_reg': 10.0} (AUC: 0.535)
+ 33%|███▎      | 51/156 [00:20<00:04, 25.00it/s]New best params: {'alpha': 0.5, 'lambda_reg': 10.0} (AUC: 0.544)
+
+=== Top 5 Parameter Combinations ===
+Score: 0.544 | Params: {'alpha': 0.5, 'lambda_reg': 10.0}
+Score: 0.543 | Params: {'alpha': 0.5, 'lambda_reg': 10.0}
+Score: 0.535 | Params: {'alpha': 0.5, 'lambda_reg': 10.0}
+Score: 0.530 | Params: {'alpha': 0.5, 'lambda_reg': 10.0}
+Score: 0.524 | Params: {'alpha': 0.5, 'lambda_reg': 10.0}
+ 34%|███▍      | 53/156 [01:32<17:19, 10.09s/it] 35%|███▌      | 55/156 [01:33<12:56,  7.69s/it] 37%|███▋      | 58/156 [01:33<08:19,  5.10s/it] 38%|███▊      | 60/156 [01:33<06:11,  3.87s/it] 40%|███▉      | 62/156 [01:33<04:32,  2.90s/it] 41%|████      | 64/156 [01:33<03:17,  2.15s/it] 42%|████▏     | 66/156 [01:34<02:24,  1.61s/it] 44%|████▎     | 68/156 [01:34<01:45,  1.20s/it] 45%|████▍     | 70/156 [01:34<01:15,  1.14it/s] 46%|████▌     | 72/156 [01:35<00:54,  1.55it/s] 47%|████▋     | 74/156 [01:35<00:40,  2.04it/s] 49%|████▊     | 76/156 [01:35<00:29,  2.74it/s] 50%|█████     | 78/156 [01:35<00:22,  3.53it/s] 51%|█████▏    | 80/156 [01:35<00:17,  4.45it/s] 53%|█████▎    | 82/156 [01:35<00:14,  5.24it/s] 54%|█████▍    | 84/156 [01:36<00:11,  6.40it/s] 55%|█████▌    | 86/156 [01:36<00:09,  7.14it/s] 56%|█████▋    | 88/156 [01:36<00:08,  7.73it/s] 58%|█████▊    | 90/156 [01:36<00:07,  8.37it/s] 59%|█████▉    | 92/156 [01:36<00:07,  8.42it/s] 60%|█████▉    | 93/156 [01:37<00:07,  8.57it/s] 61%|██████    | 95/156 [01:37<00:06,  9.25it/s] 62%|██████▏   | 97/156 [01:37<00:06,  9.55it/s] 63%|██████▎   | 99/156 [01:37<00:05, 10.53it/s] 65%|██████▍   | 101/156 [01:37<00:05, 10.73it/s] 66%|██████▌   | 103/156 [01:38<00:05,  9.50it/s]
+--- Retuning at step 104 ---
+Testing 18 parameter combinations...
+ 66%|██████▌   | 103/156 [01:50<00:05,  9.50it/s]New best params: {'alpha': 0.0, 'lambda_reg': 0.01} (AUC: 0.521)
+New best params: {'alpha': 0.0, 'lambda_reg': 0.1} (AUC: 0.521)
+New best params: {'alpha': 0.0, 'lambda_reg': 1.0} (AUC: 0.524)
+New best params: {'alpha': 0.0, 'lambda_reg': 10.0} (AUC: 0.527)
+
+=== Top 5 Parameter Combinations ===
+Score: 0.527 | Params: {'alpha': 0.0, 'lambda_reg': 10.0}
+Score: 0.524 | Params: {'alpha': 0.0, 'lambda_reg': 10.0}
+Score: 0.524 | Params: {'alpha': 0.0, 'lambda_reg': 10.0}
+Score: 0.523 | Params: {'alpha': 0.0, 'lambda_reg': 10.0}
+Score: 0.522 | Params: {'alpha': 0.0, 'lambda_reg': 10.0}
+ 67%|██████▋   | 105/156 [03:44<16:28, 19.39s/it] 69%|██████▊   | 107/156 [03:44<11:02, 13.52s/it] 70%|██████▉   | 109/156 [03:44<07:23,  9.45s/it] 71%|███████   | 111/156 [03:44<04:57,  6.62s/it] 72%|███████▏  | 113/156 [03:45<03:20,  4.65s/it] 74%|███████▎  | 115/156 [03:45<02:14,  3.27s/it] 76%|███████▌  | 118/156 [03:45<01:16,  2.01s/it] 77%|███████▋  | 120/156 [03:45<00:53,  1.48s/it] 78%|███████▊  | 122/156 [03:45<00:36,  1.09s/it] 79%|███████▉  | 124/156 [03:45<00:25,  1.26it/s] 81%|████████  | 126/156 [03:45<00:17,  1.72it/s] 82%|████████▏ | 128/156 [03:46<00:12,  2.32it/s] 83%|████████▎ | 130/156 [03:46<00:08,  3.13it/s] 85%|████████▍ | 132/156 [03:46<00:05,  4.05it/s] 86%|████████▌ | 134/156 [03:46<00:04,  5.27it/s] 87%|████████▋ | 136/156 [03:46<00:03,  6.55it/s] 88%|████████▊ | 138/156 [03:46<00:02,  7.66it/s] 90%|████████▉ | 140/156 [03:46<00:01,  8.59it/s] 91%|█████████ | 142/156 [03:47<00:01,  9.66it/s] 92%|█████████▏| 144/156 [03:47<00:01, 10.75it/s] 94%|█████████▎| 146/156 [03:47<00:00, 10.08it/s] 95%|█████████▍| 148/156 [03:47<00:00, 10.58it/s] 96%|█████████▌| 150/156 [03:47<00:00, 11.11it/s] 97%|█████████▋| 152/156 [03:47<00:00, 11.60it/s] 99%|█████████▊| 154/156 [03:48<00:00, 11.41it/s]100%|██████████| 156/156 [03:48<00:00,  9.95it/s]100%|██████████| 156/156 [03:48<00:00,  1.46s/it]
+
+=== Final Evaluation Results ===
+              precision    recall  f1-score   support
+
+         0.0       0.54      0.49      0.51        71
+         1.0       0.60      0.65      0.62        85
+
+    accuracy                           0.58       156
+   macro avg       0.57      0.57      0.57       156
+weighted avg       0.57      0.58      0.57       156
+
+Walk-forward Performance [Momentum_vs_Quality]:
+Accuracy : 0.577
+F1 Score : 0.625
+Recall   : 0.647
+Precision: 0.604
+ROC AUC  : 0.570
+PR  AUC  : 0.632
+Log Loss : 0.738
+logistic_classifier_roc.ipynb:32: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+logistic_classifier_roc.ipynb:42: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+logistic_classifier_roc.ipynb:49: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+logistic_classifier_roc.ipynb:54: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+Max |reconstruction error|: 4.44e-16

@@ -1,0 +1,81 @@
+
+============================================================
+FACTOR PAIR: Value_vs_Quality
+============================================================
+=== PHASE 1: HYPERPARAMETER TUNING ===
+Testing 18 parameter combinations...
+New best params: {'alpha': 0.0, 'lambda_reg': 0.01} (AUC: 0.510)
+New best params: {'alpha': 0.0, 'lambda_reg': 0.1} (AUC: 0.512)
+New best params: {'alpha': 0.0, 'lambda_reg': 1.0} (AUC: 0.518)
+New best params: {'alpha': 0.0, 'lambda_reg': 10.0} (AUC: 0.522)
+New best params: {'alpha': 0.0, 'lambda_reg': 100.0} (AUC: 0.527)
+New best params: {'alpha': 0.5, 'lambda_reg': 10.0} (AUC: 0.534)
+New best params: {'alpha': 1.0, 'lambda_reg': 10.0} (AUC: 0.545)
+
+=== Top 5 Parameter Combinations ===
+Score: 0.545 | Params: {'alpha': 1.0, 'lambda_reg': 10.0}
+Score: 0.534 | Params: {'alpha': 1.0, 'lambda_reg': 10.0}
+Score: 0.527 | Params: {'alpha': 1.0, 'lambda_reg': 10.0}
+Score: 0.524 | Params: {'alpha': 1.0, 'lambda_reg': 10.0}
+Score: 0.522 | Params: {'alpha': 1.0, 'lambda_reg': 10.0}
+
+=== PHASE 2: ADAPTIVE WALK-FORWARD ===
+
+Running Rolling-Window WFV with Hyperparameter Caching...
+Training window = expanding (all history)
+  0%|          | 0/156 [00:00<?, ?it/s]  2%|▏         | 3/156 [00:00<00:05, 25.67it/s]  4%|▍         | 6/156 [00:00<00:05, 27.07it/s]  6%|▌         | 9/156 [00:00<00:05, 26.07it/s]  8%|▊         | 12/156 [00:00<00:05, 26.44it/s] 10%|▉         | 15/156 [00:00<00:05, 25.34it/s] 12%|█▏        | 18/156 [00:00<00:05, 24.95it/s] 13%|█▎        | 21/156 [00:00<00:05, 25.53it/s] 15%|█▌        | 24/156 [00:00<00:05, 25.45it/s] 17%|█▋        | 27/156 [00:01<00:05, 24.70it/s] 19%|█▉        | 30/156 [00:01<00:05, 23.82it/s] 21%|██        | 33/156 [00:01<00:04, 25.02it/s] 23%|██▎       | 36/156 [00:01<00:04, 25.60it/s] 25%|██▌       | 39/156 [00:01<00:04, 24.70it/s] 28%|██▊       | 43/156 [00:01<00:04, 27.60it/s] 29%|██▉       | 46/156 [00:01<00:03, 27.59it/s] 32%|███▏      | 50/156 [00:01<00:03, 29.08it/s]
+--- Retuning at step 52 ---
+Testing 18 parameter combinations...
+New best params: {'alpha': 0.0, 'lambda_reg': 0.01} (AUC: 0.527)
+New best params: {'alpha': 0.0, 'lambda_reg': 0.1} (AUC: 0.529)
+New best params: {'alpha': 0.0, 'lambda_reg': 1.0} (AUC: 0.533)
+New best params: {'alpha': 0.0, 'lambda_reg': 10.0} (AUC: 0.538)
+New best params: {'alpha': 0.0, 'lambda_reg': 100.0} (AUC: 0.540)
+ 32%|███▏      | 50/156 [00:20<00:03, 29.08it/s]New best params: {'alpha': 0.5, 'lambda_reg': 10.0} (AUC: 0.552)
+New best params: {'alpha': 1.0, 'lambda_reg': 10.0} (AUC: 0.562)
+
+=== Top 5 Parameter Combinations ===
+Score: 0.562 | Params: {'alpha': 1.0, 'lambda_reg': 10.0}
+Score: 0.552 | Params: {'alpha': 1.0, 'lambda_reg': 10.0}
+Score: 0.549 | Params: {'alpha': 1.0, 'lambda_reg': 10.0}
+Score: 0.541 | Params: {'alpha': 1.0, 'lambda_reg': 10.0}
+Score: 0.540 | Params: {'alpha': 1.0, 'lambda_reg': 10.0}
+ 34%|███▍      | 53/156 [02:42<25:06, 14.63s/it] 36%|███▌      | 56/156 [02:42<17:34, 10.54s/it] 38%|███▊      | 59/156 [02:43<12:11,  7.54s/it] 40%|████      | 63/156 [02:43<07:34,  4.89s/it] 43%|████▎     | 67/156 [02:43<04:51,  3.27s/it] 45%|████▍     | 70/156 [02:43<03:27,  2.42s/it] 47%|████▋     | 74/156 [02:43<02:12,  1.62s/it] 49%|████▉     | 77/156 [02:43<01:34,  1.20s/it] 51%|█████▏    | 80/156 [02:43<01:07,  1.13it/s] 54%|█████▍    | 84/156 [02:43<00:42,  1.69it/s] 56%|█████▋    | 88/156 [02:44<00:27,  2.46it/s] 59%|█████▉    | 92/156 [02:44<00:18,  3.45it/s] 61%|██████    | 95/156 [02:44<00:13,  4.41it/s] 63%|██████▎   | 99/156 [02:44<00:09,  6.16it/s] 65%|██████▌   | 102/156 [02:44<00:07,  7.70it/s]
+--- Retuning at step 104 ---
+Testing 18 parameter combinations...
+ 65%|██████▌   | 102/156 [03:00<00:07,  7.70it/s]New best params: {'alpha': 0.0, 'lambda_reg': 0.01} (AUC: 0.548)
+New best params: {'alpha': 0.5, 'lambda_reg': 0.01} (AUC: 0.548)
+New best params: {'alpha': 0.5, 'lambda_reg': 10.0} (AUC: 0.566)
+New best params: {'alpha': 1.0, 'lambda_reg': 10.0} (AUC: 0.572)
+
+=== Top 5 Parameter Combinations ===
+Score: 0.572 | Params: {'alpha': 1.0, 'lambda_reg': 10.0}
+Score: 0.566 | Params: {'alpha': 1.0, 'lambda_reg': 10.0}
+Score: 0.548 | Params: {'alpha': 1.0, 'lambda_reg': 10.0}
+Score: 0.548 | Params: {'alpha': 1.0, 'lambda_reg': 10.0}
+Score: 0.548 | Params: {'alpha': 1.0, 'lambda_reg': 10.0}
+ 67%|██████▋   | 105/156 [05:18<11:54, 14.00s/it] 69%|██████▉   | 108/156 [05:18<08:05, 10.11s/it] 71%|███████   | 111/156 [05:19<05:25,  7.24s/it] 73%|███████▎  | 114/156 [05:19<03:36,  5.16s/it] 76%|███████▌  | 118/156 [05:19<02:06,  3.34s/it] 79%|███████▉  | 123/156 [05:19<01:07,  2.05s/it] 81%|████████▏ | 127/156 [05:19<00:41,  1.43s/it] 84%|████████▍ | 131/156 [05:19<00:25,  1.00s/it] 87%|████████▋ | 135/156 [05:19<00:14,  1.41it/s] 90%|████████▉ | 140/156 [05:19<00:07,  2.14it/s] 92%|█████████▏| 144/156 [05:20<00:04,  2.91it/s] 95%|█████████▍| 148/156 [05:20<00:02,  3.95it/s] 97%|█████████▋| 152/156 [05:20<00:00,  5.32it/s]100%|██████████| 156/156 [05:20<00:00,  7.13it/s]100%|██████████| 156/156 [05:20<00:00,  2.05s/it]
+
+=== Final Evaluation Results ===
+              precision    recall  f1-score   support
+
+         0.0       0.53      0.70      0.60        79
+         1.0       0.55      0.38      0.45        77
+
+    accuracy                           0.54       156
+   macro avg       0.54      0.54      0.53       156
+weighted avg       0.54      0.54      0.53       156
+
+Walk-forward Performance [Value_vs_Quality]:
+Accuracy : 0.538
+F1 Score : 0.446
+Recall   : 0.377
+Precision: 0.547
+ROC AUC  : 0.598
+PR  AUC  : 0.609
+Log Loss : 0.686
+logistic_classifier_roc.ipynb:32: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+logistic_classifier_roc.ipynb:42: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+logistic_classifier_roc.ipynb:49: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+logistic_classifier_roc.ipynb:54: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+Max |reconstruction error|: 6.66e-16

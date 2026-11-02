@@ -13,15 +13,16 @@ Colours are always drawn at full strength (no transparency), so blue and
 orange have one shade everywhere. Data series use LINE; reference lines, box
 edges and arrows use LINE_THIN.
 
-Figures are drawn at the 6.5-inch text width and carry no titles; the Word
-caption names them.
+Figures are drawn at the 6.5-inch text width (or at the width they are
+inserted) and carry no titles; the Word caption names them. All text is black,
+at 9-10 pt as printed (the body text is 11 pt).
 """
 
 import matplotlib.pyplot as plt
 
 BLUE, ORANGE, GREEN = "#2a78d6", "#eb6834", "#1baf7a"
 PURPLE, PINK, GOLD = "#6250d6", "#d55181", "#c98500"
-INK, INK_2, GRID, SHADE, PURGE = "#0b0b0b", "#52514e", "#e4e3df", "#f0efec", "#c3c2b7"
+INK, INK_2, GRID, SHADE, PURGE = "#000000", "#52514e", "#e4e3df", "#f0efec", "#c3c2b7"
 
 TEXT_WIDTH = 6.5   # inches
 PURGE_HATCH = "////"
@@ -41,21 +42,29 @@ FEATURE_GROUP_COLOURS = {
 
 RC = {
     "font.family": "Calibri",
-    "font.size": 8,
+    "font.size": 10,
+    "text.color": INK,
     "lines.linewidth": LINE,
     "hatch.linewidth": 0.5,
     "axes.linewidth": LINE_THIN,
     "axes.edgecolor": INK_2,
     "axes.labelcolor": INK,
-    "axes.titlesize": 9,
+    "axes.labelsize": 10,
+    "axes.titlesize": 10,
     "axes.titlelocation": "left",
     "axes.titlecolor": INK,
-    "xtick.color": INK_2,
+    "xtick.color": INK_2,          # tick marks grey, tick labels black
     "ytick.color": INK_2,
+    "xtick.labelcolor": INK,
+    "ytick.labelcolor": INK,
+    "xtick.labelsize": 9,
+    "ytick.labelsize": 9,
     "axes.spines.top": False,
     "axes.spines.right": False,
     "legend.frameon": False,
-    "legend.fontsize": 7.5,
+    "legend.fontsize": 9,
+    "legend.labelcolor": INK,
+    "legend.title_fontsize": 9,
 }
 
 

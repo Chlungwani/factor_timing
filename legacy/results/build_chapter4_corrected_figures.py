@@ -15,6 +15,7 @@ from pathlib import Path
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
+from matplotlib.ticker import MaxNLocator
 import pandas as pd
 from sklearn.metrics import roc_auc_score, roc_curve
 
@@ -28,7 +29,6 @@ FIGURES_DIR = Path(sys.argv[2]) if len(sys.argv) > 2 else RESULTS_DIR / "chapter
 
 MODELS = ["Logistic", "GAM", "XGBoost"]
 PAIRS = ["Momentum_vs_Value", "Momentum_vs_Quality", "Value_vs_Quality"]
-PAIR_TITLES = {pair: f"{a} vs {b.lower()}" for pair in PAIRS for a, b in [pair.split("_vs_")]}
 TAGS = {"Logistic": "logistic", "GAM": "gam", "XGBoost": "xgboost"}
 
 FEATURE_GROUPS = {
@@ -124,27 +124,19 @@ def draw_roc(ax, pair):
         ax.plot(false_positive_rate, true_positive_rate, label=f"{model} (AUC = {auc:.3f})",
                 color=MODEL_COLOURS[model], linewidth=LINE)
     ax.plot([0, 1], [0, 1], "--", color=INK_2, linewidth=LINE_THIN)
-    ax.set_title(PAIR_TITLES[pair])
     ax.set_xlabel("False-positive rate")
+    ax.set_ylabel("True-positive rate")
     ax.set_aspect("equal", adjustable="box")
-    ax.legend(loc="lower right", fontsize=6.5, handlelength=1.4)
+    ax.legend(loc="lower right", handlelength=1.4)
     style_axes(ax)
 
 
 def build_roc_figure():
-    fig, axes = plt.subplots(1, 3, figsize=(style.TEXT_WIDTH, 2.6), sharex=True, sharey=True)
-    for ax, pair in zip(axes, PAIRS):
-        draw_roc(ax, pair)
-    axes[0].set_ylabel("True-positive rate")
-    fig.tight_layout(w_pad=1.0)
-    fig.savefig(FIGURES_DIR / "figure_final_roc_curves.png", dpi=300, facecolor="white")
-    plt.close(fig)
-
+    # One figure per pair (Chapter 4 places each under its pair's discussion; the caption names the pair),
+    # drawn at the 4-inch width at which it is inserted, so that its text prints at full size.
     for pair in PAIRS:
-        fig, ax = plt.subplots(figsize=(3.6, 3.4))
+        fig, ax = plt.subplots(figsize=(4.0, 3.8))
         draw_roc(ax, pair)
-        ax.set_title("")
-        ax.set_ylabel("True-positive rate")
         fig.tight_layout()
         fig.savefig(FIGURES_DIR / f"figure_final_roc_{pair.lower()}.png", dpi=300, facecolor="white")
         plt.close(fig)
@@ -169,21 +161,9 @@ def draw_probabilities(ax, pair):
 
 
 def build_probability_figures():
-    fig, axes = plt.subplots(3, 1, figsize=(style.TEXT_WIDTH, 6.2), sharex=True, sharey=True)
-    for ax, pair in zip(axes, PAIRS):
-        draw_probabilities(ax, pair)
-        ax.set_title(PAIR_TITLES[pair])
-    axes[-1].set_xlabel("Prediction date")
-    handles, labels = axes[0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="lower center", bbox_to_anchor=(0.5, 0.0), ncol=4,
-               markerscale=2.5)
-    fig.tight_layout(rect=(0, 0.04, 1, 1), h_pad=1.2)
-    fig.savefig(FIGURES_DIR / "figure_final_probabilities_consolidated.png", dpi=300, facecolor="white")
-    plt.close(fig)
-
     # One figure per pair (Chapter 4 places each under its pair's discussion; the caption names the pair).
     for pair in PAIRS:
-        fig, ax = plt.subplots(figsize=(style.TEXT_WIDTH, 2.7))
+        fig, ax = plt.subplots(figsize=(style.TEXT_WIDTH, 3.2))
         draw_probabilities(ax, pair)
         ax.set_xlabel("Prediction date")
         handles, labels = ax.get_legend_handles_labels()
@@ -194,7 +174,7 @@ def build_probability_figures():
         plt.close(fig)
 
 
-def wrap_feature(name, width=22):
+def wrap_feature(name, width=17):
     breakable = name.replace("_", "_ ").replace(".", ". ")
     lines = textwrap.wrap(
         breakable,
@@ -207,7 +187,7 @@ def wrap_feature(name, width=22):
 
 def build_shap_figures(top_n=10):
     for pair in PAIRS:
-        fig, axes = plt.subplots(1, 3, figsize=(style.TEXT_WIDTH, 4.4))
+        fig, axes = plt.subplots(1, 3, figsize=(style.TEXT_WIDTH, 5.8))
         for ax, model in zip(axes, MODELS):
             importance = load_shap(model, pair).head(top_n).sort_values()
             missing = [name for name in importance.index if name not in FEATURE_TO_GROUP]
@@ -221,8 +201,8 @@ def build_shap_figures(top_n=10):
             )
             ax.set_title(model)
             ax.set_xlabel("Mean |SHAP value|")
-            ax.tick_params(axis="y", labelsize=6.5, length=0)
-            ax.tick_params(axis="x", labelsize=7)
+            ax.tick_params(axis="y", labelsize=8, length=0)   # long feature names: one point below the rest
+            ax.xaxis.set_major_locator(MaxNLocator(nbins=3))
             style_axes(ax, axis="x")
         fig.legend(
             handles=[Patch(facecolor=colour, label=group) for group, colour in FEATURE_GROUP_COLOURS.items()],
@@ -230,9 +210,8 @@ def build_shap_figures(top_n=10):
             bbox_to_anchor=(0.5, 0.0),
             ncol=3,
             title="Feature category",
-            title_fontsize=7.5,
         )
-        fig.tight_layout(rect=(0, 0.12, 1, 1), w_pad=0.8)
+        fig.tight_layout(rect=(0, 0.11, 1, 1), w_pad=0.8)
         fig.savefig(FIGURES_DIR / f"figure_final_shap_{pair.lower()}.png", dpi=300, facecolor="white")
         plt.close(fig)
 
