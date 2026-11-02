@@ -3,7 +3,8 @@
 Usage: python build_appendix_c.py [out_dir] [thesis_snapshot.docx]
 
 Takes the CPCV splitter from logistic_classifier_roc.ipynb, the tuning grids, walk-forward selections and
-metrics from results/model_outputs, and the GAM exclusions from gam_executed.ipynb, and writes
+metrics from results/model_outputs, and the GAM exclusions from the GAM run logs in results/model_outputs/logs
+(the rerun on the corrected data, rerun_pipeline.py), and writes
 Appendix_C_CPCV_Walk_Forward.docx. Nothing is refitted: the only computed predictions are the no-feature
 baselines (the training sample's positive share). Formatting follows Appendix B (build_appendix_b.py).
 """
@@ -92,28 +93,17 @@ def selected_paths(tag, pair):
 
 
 def gam_exclusions():
-    """(pair, tuning step, setting, first failed combination) from the executed GAM notebook's log."""
-    cells = json.load(open(MODEL_TRAINING / "gam_executed.ipynb", encoding="utf-8"))["cells"]
-    log = "".join("".join(o.get("text", "")) for c in cells for o in c.get("outputs", []))
-    found, pair, phase = [], None, None
-    for line in log.splitlines():
-        if line.startswith("FACTOR PAIR:"):
-            pair = line.split(":", 1)[1].strip()
-        elif "PHASE 1" in line:
-            phase = 1
-        elif "PHASE 2" in line:
-            phase = 2
-        elif line.startswith("Disqualified"):
-            setting = ast.literal_eval(line[len("Disqualified "):line.index("}") + 1])
-            split_no = int(re.search(r"split (\d+)", line).group(1))
-            found.append((pair, phase, setting, split_no))
+    """(pair, tuning step, setting, first failed combination) from the GAM run logs. Each search prints
+    'Testing N parameter combinations' once, so the k-th such line opens tuning point k (0, then RETUNES)."""
     rows = []
+    points = (0, *RETUNES)
     for pair in PAIRS:
-        initial = [f for f in found if f[0] == pair and f[1] == 1]
-        retunes = [f for f in found if f[0] == pair and f[1] == 2]
-        assert len(initial) <= 1 and len(retunes) in (0, len(RETUNES)), (pair, initial, retunes)
-        rows += [(pair, 0, s, n) for _, _, s, n in initial]
-        rows += [(pair, step, s, n) for step, (_, _, s, n) in zip(RETUNES, retunes)]
+        log = (OUTPUTS / "logs" / f"gam_{pair.lower()}.log").read_text(encoding="utf-8")
+        starts = [m.start() for m in re.finditer(r"Testing \d+ parameter combinations", log)]
+        assert len(starts) == len(points), (pair, len(starts))
+        for m in re.finditer(r"Disqualified (\{.*?\}): split (\d+)", log):
+            k = sum(st < m.start() for st in starts) - 1
+            rows.append((pair, points[k], ast.literal_eval(m.group(1)), int(m.group(2))))
     return rows
 
 
@@ -249,14 +239,15 @@ def build():
                    "Because the baseline lies below 0.5, the path ROC-AUCs are reported as a check rather than used "
                    "for selection; the mean ROC-AUC of the ten combinations, each computed from a single fitted "
                    "model, is not affected by these level differences (Section 3.8.1).")
+    assert all(v < 0.45 for v in walk_forward.values()), walk_forward
     paragraph(doc, "In the walk-forward evaluation the training window grows by one week at a time, so the positive "
                    "share of successive training samples changes slowly, but the effect does not vanish. A no-feature "
                    "forecast, the positive share of the expanding training window, has a walk-forward ROC-AUC of "
-                   f"{f3(walk_forward[pair_list[1]])} for momentum versus quality and {f3(walk_forward[pair_list[2]])} "
-                   f"for value versus quality, but {f3(walk_forward[pair_list[0]])} for momentum versus value, where "
-                   "the positive share of the training window moved against the labels of the evaluation block. The "
-                   "walk-forward ROC-AUCs for momentum versus value in Chapter 4 can therefore be compared with this "
-                   "value as well as with 0.5.")
+                   f"{f3(walk_forward[pair_list[0]])} for momentum versus value, {f3(walk_forward[pair_list[1]])} for "
+                   f"momentum versus quality and {f3(walk_forward[pair_list[2]])} for value versus quality: in every "
+                   "pair the positive share of the training window moved against the labels of the evaluation block. "
+                   "The walk-forward ROC-AUCs in Chapter 4 can therefore be compared with these values as well as "
+                   "with 0.5.")
     rows = []
     for pair, name in PAIRS.items():
         rows.append([name, "No-feature baseline", "0.500", *map(f3, baseline[pair]), f3(np.mean(baseline[pair]))])
@@ -271,13 +262,13 @@ def build():
 
     # C.3 -----------------------------------------------------------------------------------------
     subheading(doc, "C.3: GAM settings excluded from the search")
-    settings = {describe("GAM", s) for _, _, s, _ in excluded}
-    assert len(settings) == 1
+    runs = {(p, step) for p, step, _, _ in excluded}
+    assert excluded and all(s["n_splines"] == 10 for _, _, s, _ in excluded)
     paragraph(doc, "A candidate setting is excluded if it cannot be fitted on all ten combinations (Section 3.8.1). "
-                   "This affected only the GAM, and only its weakest-penalty, most flexible setting "
-                   f"({settings.pop()}), whose penalised iteratively reweighted least-squares fit diverged in "
-                   f"{words(len(excluded))} of the nine tuning runs (Table C.4). The search stops at a setting's first "
-                   "failed combination, so the table gives the first failure only.")
+                   f"This affected only the GAM, in {words(len(runs))} of its nine tuning runs, and only settings with "
+                   "the largest basis in its grid (10 splines), whose penalised iteratively reweighted least-squares "
+                   "fit diverged (Table C.4). The search stops at a setting's first failed combination, so the table "
+                   "gives the first failure only.")
     point = {0: "Initial (before prediction 1)", 52: "After prediction 52", 104: "After prediction 104"}
     caption(doc, "Table C.4: GAM settings excluded from the search")
     table(doc, ["Factor pair", "Tuning point", "Training observations", "Excluded setting",
