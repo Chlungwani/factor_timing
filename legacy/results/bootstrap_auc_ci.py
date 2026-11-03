@@ -93,15 +93,19 @@ def main():
 
     aucs = bootstrap_aucs(actuals, probs, n, BLOCK_LENGTH, N_BOOT, SEED)
 
-    # 1. Individual AUCs
+    # 1. Individual AUCs, with intervals widened for the nine model-pair results
+    #    (Bonferroni: level 1 - 0.05/9, percentiles 0.28 and 99.72)
+    tail = 100 * 0.05 / (len(MODELS) * len(PAIRS)) / 2
     rows = []
     for pair in PAIRS:
         for model in MODELS:
             draws = aucs[(model, pair)]
             est, lo, hi, valid = summarise(point[(model, pair)], draws)
+            lo_b, hi_b = np.percentile(draws[~np.isnan(draws)], [tail, 100 - tail])
             rows.append({
                 "factor_pair": pair, "model": model, "roc_auc": est,
                 "ci_low": lo, "ci_high": hi,
+                "ci_low_bonferroni": lo_b, "ci_high_bonferroni": hi_b,
                 "p_auc_gt_0.5": np.nanmean(draws > 0.5),
                 "valid_resamples": valid,
             })

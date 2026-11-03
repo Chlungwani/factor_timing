@@ -26,6 +26,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+from lxml import etree
 import pandas as pd
 from docx import Document
 from docx.oxml import OxmlElement
@@ -40,6 +41,7 @@ from build_minimal_chapter3 import Editor, accept_revisions, add_log, set_headin
 ROOT = Path(__file__).resolve().parents[2]
 RESULTS = ROOT / "legacy" / "results"
 OUTPUTS = RESULTS / "model_outputs"
+LABELS = ROOT / "legacy" / "data_input" / "labeled_relative_factor_returns.csv"
 FIGURES = RESULTS / "chapter4_final_figures"
 OUT_DIR = Path(sys.argv[1]) if len(sys.argv) > 1 else RESULTS
 # A copy of the thesis: Word keeps the original open and Python is refused read access to it,
@@ -103,6 +105,14 @@ def find_para(body, startswith=None, contains=None):
             if (startswith is None or text(p).startswith(startswith)) and (contains is None or contains in text(p))]
     if len(hits) != 1:
         raise ValueError(f"expected one paragraph for {startswith or contains!r}, found {len(hits)}")
+    return hits[0]
+
+
+def find_para_any(body, *starts):
+    """The one paragraph that starts with any of `starts` (the original text or the author's transplant of it)."""
+    hits = [p for p in body.iter(qn("w:p")) if text(p).startswith(starts)]
+    if len(hits) != 1:
+        raise ValueError(f"expected one paragraph starting with one of {starts!r}, found {len(hits)}")
     return hits[0]
 
 
@@ -242,15 +252,17 @@ def citation(editor, template, tags, shown):
 
 
 def compose(editor, p, parts):
-    """Replace a paragraph's whole content by highlighted text. `parts` holds strings and, for citations,
-    (tags, shown) pairs, which become Word citation fields."""
+    """Replace a paragraph's whole content by highlighted text. `parts` holds strings, runs (e.g. from footnote())
+    and, for citations, (tags, shown) pairs, which become Word citation fields."""
     template = next(r for r in p.iter(qn("w:r")) if r.find(qn("w:t")) is not None)
     template = plain_run(template)
     for child in list(p):
         if child.tag != qn("w:pPr"):
             p.remove(child)
     for part in parts:
-        if isinstance(part, str):
+        if hasattr(part, "tag"):                     # a ready-made run, e.g. a footnote reference
+            p.append(part)
+        elif isinstance(part, str):
             run = editor.new_run(template, part)
             rpr = run.find(qn("w:rPr"))
             for colour in ([] if rpr is None else rpr.findall(qn("w:color"))):
@@ -258,6 +270,40 @@ def compose(editor, p, parts):
             p.append(run)
         else:
             p.append(citation(editor, template, *part))
+
+
+def footnote(editor, document, text):
+    """A highlighted footnote: adds the note to the document's footnotes part, in the thesis's footnote styles,
+    and returns the reference run for the body text. Word numbers footnotes by position, so the note takes its
+    place among the thesis's existing footnotes when the paragraph is copied in."""
+    part = next(pt for pt in document.part.package.iter_parts() if str(pt.partname) == "/word/footnotes.xml")
+    root = part.element if hasattr(part, "element") else etree.fromstring(part.blob)
+    fid = str(max(int(n.get(qn("w:id"))) for n in root.findall(qn("w:footnote"))) + 1)
+
+    def styled_run(style):
+        run = etree.SubElement(etree.Element("tmp"), qn("w:r"))
+        rpr = etree.SubElement(run, qn("w:rPr"))
+        etree.SubElement(rpr, qn("w:rStyle")).set(qn("w:val"), style)
+        return run
+
+    note_el = etree.SubElement(root, qn("w:footnote"))
+    note_el.set(qn("w:id"), fid)
+    p = etree.SubElement(note_el, qn("w:p"))
+    etree.SubElement(etree.SubElement(p, qn("w:pPr")), qn("w:pStyle")).set(qn("w:val"), "FootnoteText")
+    mark = styled_run("FootnoteReference")
+    etree.SubElement(mark, qn("w:footnoteRef"))
+    p.append(mark)
+    body_run = etree.SubElement(p, qn("w:r"))
+    t = etree.SubElement(body_run, qn("w:t"))
+    t.set("{http://www.w3.org/XML/1998/namespace}space", "preserve")
+    t.text = " " + text
+    editor.mark(body_run)
+    if not hasattr(part, "element"):
+        part._blob = etree.tostring(root, xml_declaration=True, encoding="UTF-8", standalone=True)
+    ref = styled_run("FootnoteReference")
+    etree.SubElement(ref, qn("w:footnoteReference")).set(qn("w:id"), fid)
+    editor.mark(ref)
+    return ref
 
 
 def set_ppr(p, ppr):
@@ -402,7 +448,19 @@ def build():
         assert m.loc[(pair, "XGBoost"), "acc"] > max(m.loc[(pair, k), "acc"] for k in ("Logistic", "GAM"))
         assert best(pair, "ll", max) == "GAM", pair
     assert sum(m.loc[(p, "GAM"), "auc"] < m.loc[(p, "Logistic"), "auc"] for p in PAIRS) == 2
-    assert m["auc"].idxmax() == (vq, "XGBoost")
+    assert m["auc"].idxmax() == (vq, "XGBoost") and m["auc"].max() < 0.7
+    # The accuracies are not a carry-over of persistent labels: leadership runs are short, and the most recent label
+    # in the training data, 12 weeks before each forecast (the walk-forward purge), rarely matches the outcome
+    labels = pd.read_csv(LABELS, parse_dates=["Date"]).set_index("Date")
+    carry, run_length = {}, {}
+    for pair in PAIRS:
+        y, d = labels[f"{pair}_trend"], pm[(pair, "Logistic")]
+        assert (y.loc[d.Date].to_numpy() == d.actual.to_numpy()).all()
+        carry[pair] = (y.iloc[y.index.get_indexer(d.Date) - 12].to_numpy() == d.actual.to_numpy()).mean()
+        changes = np.flatnonzero(np.diff(np.r_[-1, d.actual.to_numpy(), -1]) != 0)
+        run_length[pair] = np.diff(changes).mean()
+    assert 0.4 < min(carry.values()) and max(carry.values()) <= 0.5
+    assert 4 <= min(run_length.values()) and max(run_length.values()) < 6.5
     grid_max = {"lr": 0.1, "lr_min": 0.01, "reg_max": 1000, "reg_min": 1, "depth_min": 2,
                 "logit_min": 0.01, "gam_lam_min": 1, "gam_splines_max": 10}
 
@@ -482,6 +540,9 @@ def build():
     assert highest(vq, 8, 78).get("XGBoost", 0) == 1 and below(vq, "XGBoost") == 0
     w_xvq, w_lvq = within(vq, "XGBoost"), within(vq, "Logistic")
     assert min(w_xvq) > 0.6 and w_lvq[0] > 0.75 and max(w_lvq[1:]) < 0.5
+    # XGBoost is the only model whose ranking holds in every period (logistic regression ranks the first period
+    # as well as it does, so "better within every period" would not hold)
+    assert min(within(vq, "GAM")) < 0.5 and abs(w_lvq[0] - w_xvq[0]) < 0.02
     assert 0.4 < below(vq, "GAM") < 0.6
     assert all(s["max_depth"] == grid_max["depth_min"] for s in sel[(vq, "XGBoost")])
     v = [period(vq, "XGBoost", j) for j in range(3)]
@@ -538,10 +599,45 @@ def build():
     xl, xg = boot.loc["XGBoost - Logistic mean AUC"], boot.loc["XGBoost - GAM mean AUC"]
     ci = pd.read_csv(OUTPUTS / "bootstrap" / "auc_ci.csv").set_index(["factor_pair", "model"])
     assert [key for key in ci.index if ci.loc[key, "ci_low"] > 0.5] == [(vq, "XGBoost")]
+    # and it is still the only one when the intervals are widened for the nine model-pair results (Bonferroni)
+    assert [key for key in ci.index if ci.loc[key, "ci_low_bonferroni"] > 0.5] == [(vq, "XGBoost")]
     cvq = ci.loc[(vq, "XGBoost")]
     assert xg.ci_low > 0 > xl.ci_low
     assert all(boot.loc[f"{k} mean AUC", "ci_low"] < 0.5 for k in ("Logistic", "GAM")) \
         and boot.loc["XGBoost mean AUC", "ci_low"] > 0.5
+
+    # ---- premises: the analytical framing (results/Chapter4_Analytical_Review.md): for each pair, whether XGBoost's
+    # lead lies in ranking, in detecting both classes or in its probabilities, and whether it holds in every period
+    found = lambda pair, k: (m.loc[(pair, k), "TP"], m.loc[(pair, k), "TP"] + m.loc[(pair, k), "FN"])   # first factor
+    found0 = lambda pair, k: (m.loc[(pair, k), "TN"], m.loc[(pair, k), "TN"] + m.loc[(pair, k), "FP"])  # second factor
+    share = lambda hit_total: hit_total[0] / hit_total[1]
+    both_halves = [(p, k) for p in PAIRS for k in MODELS if min(share(found(p, k)), share(found0(p, k))) > 0.5]
+    assert both_halves == [(mv, "XGBoost"), (vq, "XGBoost")], both_halves
+    period_ll = lambda pair, k: [log_loss(s.actual, s.probability.clip(1e-12, 1 - 1e-12), labels=[0, 1])
+                                 for s in (period(pair, k, j) for j in range(3))]
+    period_acc = lambda pair, k: [acc_of(period(pair, k, j)) for j in range(3)]
+    paired = pd.read_csv(OUTPUTS / "bootstrap" / "auc_paired_differences.csv").set_index(["factor_pair", "comparison"])
+    # momentum vs value: ranking and classification without better probabilities than the uninformative forecast
+    ll_xmv = period_ll(mv, "XGBoost")
+    assert xmv.ll > np.log(2) > max(ll_xmv[:2]) and ll_xmv[2] > 0.8 and ci.loc[(mv, "XGBoost"), "ci_low"] < 0.5
+    assert w_xmv[0] > w_xmv[1] > w_xmv[2] and xmv.auc > max(w_xmv)       # pooled above every within-period value
+    assert x2.probability.min() < 0.15 and x2.probability.max() > 0.95
+    # momentum vs quality: one class detected; the ranking reverses between periods
+    assert share(found(mq, "XGBoost")) > 0.95 and share(found0(mq, "XGBoost")) < 0.2
+    assert ci.loc[(mq, "XGBoost"), "ci_low"] < 0.5
+    assert w_mq["XGBoost"][0] > 0.7 and max(w_mq["Logistic"][0], w_mq["GAM"][0]) < 0.45
+    assert all(w_mq[k][1] < 0.4 for k in MODELS) and all(w_mq[k][2] > 0.69 for k in MODELS)
+    # value vs quality: above chance even after adjustment, but not distinguishable from logistic regression, and
+    # weakening over time
+    dvq = paired.loc[(vq, "XGBoost - Logistic")]
+    assert dvq.ci_low < 0 < dvq.ci_high
+    acc_xvq, ll_xvq = period_acc(vq, "XGBoost"), period_ll(vq, "XGBoost")
+    assert acc_xvq[0] > acc_xvq[1] > acc_xvq[2] and ll_xvq[0] < ll_xvq[1] < ll_xvq[2]
+    # 4.3: the results below the uninformative log-loss
+    below_ln2 = [(p, k) for p in PAIRS for k in MODELS if m.loc[(p, k), "ll"] < np.log(2)]
+    assert below_ln2 == [(mq, "XGBoost"), (vq, "Logistic"), (vq, "XGBoost")], below_ln2
+    closest_share = min(MODELS, key=lambda k: abs(m.loc[(mq, k), "pred_pos"] - m.loc[(mq, k), "act_pos"]))
+    assert closest_share == "Logistic" and share(found0(mq, "Logistic")) < 0.5
 
     document = Document(SOURCE)
     body = document.element.body
@@ -591,8 +687,13 @@ def build():
         if el.tag != qn("w:sectPr") and not start <= i <= last:
             body.remove(el)
     set_heading_start(document, 4)
-    unlinked = sum(unlink_seq(p) for p in list(body.iter(qn("w:p"))) if style(p) == "Caption")
-    assert unlinked >= 6, unlinked                     # at least the six figure captions of Section 4.2
+    captions = [p for p in body.iter(qn("w:p")) if style(p) == "Caption"]
+    # the 4.2 figure captions the author has typed in as text (pasted from this extract) are no longer fields
+    typed = [text(p)[:10] for p in captions if re.match(r"Figure (9|1[0-4]):", text(p))
+             and "SEQ" not in "".join(t.text or "" for t in p.iter(qn("w:instrText")))
+             and not any("SEQ" in (s.get(qn("w:instr")) or "") for s in p.iter(qn("w:fldSimple")))]
+    unlinked = sum(unlink_seq(p) for p in captions)
+    assert unlinked + len(typed) >= 6, (unlinked, typed)      # the six figure captions of Section 4.2
 
     e = Editor(True)
     log = []
@@ -612,23 +713,46 @@ def build():
          "weeks and the offset was five, the old Quality-based features contained one week of future Quality "
          "returns. Every number is read from results/model_outputs.")
 
-    # 4.1 is in the thesis as the author transplanted it (an outline of Sections 4.2-4.5); it still holds
-    find_para(body, startswith="This chapter presents the out-of-sample results of the three models of Section 3.7")
+    # 4.1 is in the thesis as the author transplanted it (an outline of Sections 4.2-4.5); one clause added for the
+    # analysis of Section 4.2 by period
+    e.replace(find_para(body, startswith="This chapter presents the out-of-sample results of the three models"),
+              "for each factor pair and shows their ROC curves",
+              "for each factor pair, examines whether each result holds across the three periods between tuning "
+              "points and shows their ROC curves")
+    note("4.1", "Outline of Section 4.2: 'examines whether each result holds across the three periods between tuning "
+         "points' added, because Section 4.2 now analyses the results by period.", "Analytical review.")
 
     heads = {"Overview of the Evaluation Framework": "Overview of the evaluation framework",
              "Out-of-Sample predictive performance": "Out-of-sample predictive performance",
              "Momentum versus Value": "Momentum versus value",
              "Feature Importance": "Feature importance"}
+    # the author has already put some headings in sentence case in the thesis
+    heads = {old: new for old, new in heads.items() if any(text(p).strip() == old for p in body.iter(qn("w:p")))}
     head_els = {old: heading(body, old) for old in heads}
+    h421 = head_els.get("Momentum versus Value") or heading(body, "Momentum versus value", 0)
     t42 = next(t for t in document.tables if text(t._tbl).startswith("Factor pairModelAccuracyROC-AUCLog-loss"))
-    figs = {}
+    # The captions are numbered by their position: in the thesis they are fields, some of whose stored results are
+    # stale (12-15 after Figure 10), which Word corrects when the fields are updated
+    figs, stale = {}, []
     for el in body.iter(qn("w:p")):
         hit = re.match(r"Figure (\d+): (Out-of-sample ROC curves for|Walk-forward predicted probability that) "
                        r"(\w+) (?:versus|leads) (\w+)", text(el))
         if hit:
             pair = f"{hit.group(3).capitalize()}_vs_{hit.group(4).capitalize()}"
-            figs[("roc" if hit.group(2).startswith("Out") else "prob", pair)] = (int(hit.group(1)), el)
-    assert sorted(n for n, _ in figs.values()) == list(range(numbered["Figure"] + 1, numbered["Figure"] + 7)), figs
+            n = numbered["Figure"] + 1 + len(figs)
+            if int(hit.group(1)) != n:
+                e.replace(el, f"Figure {hit.group(1)}:", f"Figure {n}:")
+                stale.append((int(hit.group(1)), n))
+            figs[("roc" if hit.group(2).startswith("Out") else "prob", pair)] = (n, el)
+    assert len(figs) == 6 and [k for k, _ in sorted(figs, key=lambda key: figs[key][0])] == ["roc", "prob"] * 3, figs
+    if typed:
+        note("4.2 / figure captions", f"In the thesis, the captions of Figures {typed[0][7:-1]}–{typed[-1][7:-1]} are now "
+             "typed text rather than caption fields, so they will not appear in the List of Figures and will not "
+             "renumber. Re-insert them with References > Insert Caption (label Figure).", "Numbering.")
+    if stale:
+        note("4.2 / figure captions", f"Captions numbered {stale[0][0]}–{stale[-1][0]} in the thesis are shown as "
+             f"{stale[0][1]}–{stale[-1][1]}. In the thesis they are caption fields whose stored numbers are out of date "
+             f"(no Figure 11); select all and press F9 to update them.", "Numbering.")
     fig = lambda kind, pair: figs[(kind, pair)][0]
     shap_first = numbered["Figure"] + 7
 
@@ -652,208 +776,266 @@ def build():
     faw, woo, hoe = (["Faw06"], "(Fawcett, 2006)"), (["Woo17"], "(Wood, 2017)"), (["Hoe70"], "(Hoerl & Kennard, 1970)")
 
     # ---------------------------------------------------------------- 4.2 opening and Table 4
+    # Author, 2 November 2026: "shorten the analysis a bit. make it concise and direct", then "update the language
+    # and frame of reference from that of descriptive to more analytical" (results/Chapter4_Analytical_Review.md):
+    # each paragraph states a finding, the evidence for it and its qualification
     compose(e, find_para(body, startswith="Table 4 reports the accuracy"), [
         f"Table {t_perf} reports the accuracy, ROC-AUC and log-loss of each model for the three factor pairs. "
-        f"XGBoost is the strongest model throughout: for every pair it has the highest accuracy and ROC-AUC and "
-        f"the lowest log-loss. The GAM, which adds smooth nonlinear effects to the linear specification, does not "
-        f"improve on logistic regression: its ROC-AUC is lower for two of the three pairs and its log-loss is the "
-        f"highest for all three. The predictive relationships remain modest: the highest ROC-AUC in the study is "
-        f"{f3(m['auc'].max())}, for value versus quality ",
-        (["Hos13", "Isr20"], "(Hosmer, Lemeshow, & Sturdivant, 2013; Israel, Kelly, & Moskowitz, 2020)"), "."])
-    note("4.2", "Opening rewritten for the new results: XGBoost leads every pair on every measure; the GAM does not "
-         "improve on logistic regression (lower ROC-AUC for two pairs, highest log-loss for all three); the highest "
-         f"ROC-AUC is now {f3(m['auc'].max())}.", rerun)
+        f"XGBoost has the highest accuracy and ROC-AUC and the lowest log-loss for every pair, but the ordering does "
+        f"not follow model flexibility: the GAM, which adds smooth nonlinear effects to the linear specification, has "
+        f"a lower ROC-AUC than logistic regression for two pairs and the highest log-loss for all three. Even the "
+        f"strongest result, a ROC-AUC of {f3(m['auc'].max())} for value versus quality, indicates modest "
+        f"discrimination ", (["Hos13"], "(Hosmer, Lemeshow, & Sturdivant, 2013)"),
+        ", as expected when the predictable part of factor returns is small relative to noise ",
+        (["Isr20"], "(Israel, Kelly, & Moskowitz, 2020)"),
+        f". The accuracies are not a carry-over of persistent labels: the leading factor changed every "
+        f"{num(round(min(run_length.values())))} to {num(round(max(run_length.values())))} weeks on average, so the "
+        f"most recent label in the training data, 12 weeks before each forecast (Section 3.8.2), matches the outcome "
+        f"in only {pct_r(min(carry.values()))} to {pct_r(max(carry.values()))} of weeks."])
+    note("4.2", "Opening rewritten for the new results and in analytical form: XGBoost leads every pair on every "
+         "measure, but the ordering does not follow flexibility (the GAM is below logistic regression on ROC-AUC for "
+         "two pairs and has the highest log-loss for all three). Evidence added: the accuracies are not a carry-over "
+         "of persistent labels: leadership spells last " + ", ".join(f"{run_length[p]:.1f}" for p in PAIRS) + " weeks "
+         "on average, and the label 12 weeks before each forecast, the most recent one the models see after the "
+         "purge, matches the outcome in only " + ", ".join(pct_r(carry[p]) for p in PAIRS) + " of weeks (momentum vs "
+         "value, momentum vs quality, value vs quality; data_input/labeled_relative_factor_returns.csv). The 0.7 "
+         "threshold of 'acceptable discrimination' is not used: it is a rule of thumb from applied logistic "
+         "regression, not a standard for factor timing (analytical review); Hosmer et al. (2013) is cited for "
+         "'modest' only.",
+         rerun + " Author: analytical rather than descriptive; analysis and references.")
 
     conf_caption = find_para(body, startswith="Table 4.4. Confusion-matrix diagnostics")
-    table_caption(e, conf_caption, t42._tbl,
-                  f"Table {t_perf}: Out-of-sample accuracy, ROC-AUC and log-loss by factor pair and model")
+    perf_title = f"Table {t_perf}: Out-of-sample accuracy, ROC-AUC and log-loss by factor pair and model"
+    prev = t42._tbl.getprevious()
+    if prev is not None and text(prev).strip() == perf_title:          # the author has added it
+        ppr = prev.find(qn("w:pPr"))
+        if ppr.find(qn("w:keepNext")) is None:
+            ppr.insert(1 if ppr.find(qn("w:pStyle")) is not None else 0, OxmlElement("w:keepNext"))
+    else:
+        table_caption(e, conf_caption, t42._tbl, perf_title)
+        note(f"4.2 / Table {t_perf}", f"Caption added (the table had none): '{perf_title}'.", "Consistency with "
+             "Chapter 3.")
     pair_of_row, current = {}, None
     for row in t42.rows[1:]:
         label = row.cells[0].text.strip()
         current = next((k for k, v in PAIRS.items() if v == label), current)
         pair_of_row[row] = (current, row.cells[1].text.strip())
     assert sorted(pair_of_row.values()) == sorted(m.index), pair_of_row.values()
+    changed = 0
     for row, (pair, model) in pair_of_row.items():
         r = m.loc[(pair, model)]
         for col, key, fmt, f in ((2, "acc", pct, max), (3, "auc", f3, max), (4, "ll", f3, min)):
-            set_cell(e, row.cells[col], fmt(r[key]), bold=best(pair, key, f) == model)
-    note(f"4.2 / Table {t_perf}", "Every value replaced; the best value per pair and measure in bold (XGBoost "
-         "throughout). ROC-AUC shown on the zero-to-one scale (0.625) instead of as a percentage, as in the text "
-         "and Section 3.9.", rerun)
-    note(f"4.2 / Table {t_perf}", f"Caption added (the table had none): 'Table {t_perf}: Out-of-sample accuracy, "
-         f"ROC-AUC and log-loss by factor pair and model'. Tables are numbered consecutively after Chapter 3 "
-         f"(Tables 1–3), as the figures already are, so the class distribution becomes Table {t_class} (was 4.1) and "
-         f"the confusion matrices Table {t_conf} (was 4.4). In the thesis, insert the captions with References > "
-         f"Insert Caption so that they are numbered fields and appear in the List of Tables (in this extract all "
-         f"caption numbers are typed text, because the fields would restart from 1 in a single chapter).",
-         "Consistency with Chapter 3.")
+            cell, value, bold = row.cells[col], fmt(r[key]), best(pair, key, f) == model
+            if cell.text.strip() != value or cell_is_bold(cell) != bold:
+                set_cell(e, cell, value, bold=bold)
+                changed += 1
+    if changed:
+        note(f"4.2 / Table {t_perf}", f"{changed} of 27 cells changed: the values of the rerun, with the best value "
+             "per pair and measure in bold (XGBoost throughout).", rerun)
+    note(f"4.3 / Tables {t_class}–{t_conf}", f"Tables are numbered consecutively after Chapter 3 (Tables 1–3), as the "
+         f"figures are, so the class distribution becomes Table {t_class} (was 4.1) and the confusion matrices Table "
+         f"{t_conf} (was 4.4). In the thesis, insert the captions with References > Insert Caption so that they are "
+         f"numbered fields and appear in the List of Tables (in this extract all caption numbers are typed text, "
+         f"because the fields would restart from 1 in a single chapter).", "Consistency with Chapter 3.")
 
-    guide = find_para(body, startswith="The subsections that follow examine")
-    e.replace(guide, "The first shows the ROC curves, the vertical axis", "The first shows the ROC curves: the vertical axis")
-    note("4.2", "Reading guide after Table 4 kept as the author wrote it; one comma replaced by a colon ('The first "
-         "shows the ROC curves: the vertical axis …').", "Punctuation.")
-    section_ends = [el for el in between(body, t42._tbl, head_els["Momentum versus Value"])
+    compose(e, find_para(body, startswith="The subsections that follow examine"), [
+        # Author, 2 November 2026: "shorten explanation and polish the language to formal academic writing on the
+        # graph descriptions in section 4.2"
+        "For each pair, the analysis considers whether the advantage of XGBoost lies in ranking, in the recognition "
+        "of both leadership states or in probability quality, and whether it persists across the three 52-week "
+        "periods between tuning points (Section 3.8.2). The first figure for each pair plots the ROC curves: the "
+        "proportion of weeks led by the first factor that are correctly classified (true-positive rate) against the "
+        "proportion led by the second factor that are misclassified (false-positive rate), with the diagonal "
+        "representing random classification. The second plots the weekly predicted probability that the first "
+        "factor leads, with the realised class and the 0.5 threshold. A forecast is confidently wrong when it "
+        "assigns a probability above 0.9 to the outcome that did not occur."])
+    note("4.2", "Reading guide after Table 4: it now opens with the questions asked of each pair (does XGBoost's lead "
+         "lie in ranking, in recognising both leadership states or in its probabilities, and does it hold in each "
+         "period between tuning points?), replacing 'The subsections that follow examine, for each pair, where the "
+         "more flexible models gain or lose against the linear benchmark'. The figure guide is shortened: the axes of "
+         "the ROC curve in one sentence (Section 3.9 does not define them), the probability figures and 'confidently "
+         "wrong'; 'The left of each curve therefore reflects …' deleted. Shortened and written in a formal register.",
+         "Author: analytical rather than descriptive; shorten and polish the graph descriptions.")
+    section_ends = [el for el in between(body, t42._tbl, h421)
                     if el.tag == qn("w:p") and el.find(qn("w:pPr") + "/" + qn("w:sectPr")) is not None]
     assert len(section_ends) <= 1 and all(not text(s).strip() for s in section_ends)
 
     # ---------------------------------------------------------------- 4.2.1 momentum versus value
-    compose(e, find_para(body, startswith="Momentum versus value provides the strongest"), [
-        f"For momentum versus value, XGBoost is the only model with a ROC-AUC well above 0.5 ({f3(xmv.auc)}), and "
-        f"it has the highest accuracy ({pct(xmv.acc)}), consistent with evidence that tree-based models improve "
-        f"style rotation on the JSE ", (["Pag241"], "(Page, McClelland, & Auret, 2024)"),
-        f". Logistic regression and the GAM are close to random on ROC-AUC ({f3(lmv.auc)} and {f3(gmv.auc)}), and "
-        f"their log-losses ({f3(lmv.ll)} and {f3(gmv.ll)}) are far above the uninformative 0.693 (Section 3.9). "
-        f"Leadership shifted sharply during the evaluation period: value led in {pct_r(1 - share_y(mv, 2022))} of "
-        f"the weeks of 2022, momentum in {pct_r(share_y(mv, 2023))} of those of 2023, and the two factors about "
-        f"equally often in 2024."])
+    x01 = pd.concat([x0, x1])
+    assert x0.actual.mean() < 0.5 < x1.actual.mean()            # value dominated the first period, momentum the second
+    assert (x0.prediction == 1).sum() + (x1.prediction == 0).sum() == 2
+    # the first paragraph of Section 4.2.1, which the author has partly reworded in the thesis
+    first_para = h421.getnext()
+    while not text(first_para).strip():
+        first_para = first_para.getnext()
+    assert text(first_para).startswith(("Momentum versus value provides the strongest",
+                                        "For momentum versus value, XGBoost is the only model",
+                                        "For momentum versus value, XGBoost's advantage lies")), text(first_para)[:80]
+    cmv = ci.loc[(mv, "XGBoost")]
+    compose(e, first_para, [
+        f"For momentum versus value, XGBoost's advantage lies in ranking and classification rather than in its "
+        f"probabilities. It is the only model with a ROC-AUC well above 0.5 ({f3(xmv.auc)}), and it has the highest "
+        f"accuracy ({pct(xmv.acc)}), consistent with evidence that tree-based models improve style rotation on the "
+        f"JSE ", (["Pag241"], "(Page, McClelland, & Auret, 2024)"),
+        f". Its log-loss ({f3(xmv.ll)}), however, is above 0.693, the value for a forecast that gives each factor a "
+        f"50% chance every week.",
+        footnote(e, document,
+                 "Log-loss averages (−ln p) over the 156 weeks, where p is the probability the model gave to the "
+                 "outcome that occurred. A forecast of 0.5 in every week, which shows a neutral choice, therefore "
+                 "scores −ln 0.5 = ln 2 ≈ 0.693 whatever happens. A model with a higher log-loss has assigned its "
+                 "probabilities worse than this uninformative forecast, typically because it was confident about "
+                 "outcomes that did not occur."),
+        f" Logistic regression and the GAM are close to random (ROC-AUC {f3(lmv.auc)} and {f3(gmv.auc)}), with "
+        f"log-losses far higher still ({f3(lmv.ll)} and {f3(gmv.ll)})."])
+    # the graph descriptions: shortened and in a formal register (author, 2 November 2026)
     figure_text("roc", mv, [
-        f"Figure {fig('roc', mv)} shows that XGBoost's curve is the highest over most of the range, from a "
-        f"false-positive rate of about 0.25 to 0.95, whereas logistic regression's lies below the diagonal over "
-        f"about half of it. XGBoost's advantage lies in the weeks it ranks lowest: of its 30 lowest-probability "
-        f"weeks, {x_bot_2022} fall in 2022 and {xmv.bottom30_neg} were led by value. Its ranking does not rest only "
-        f"on telling the years apart, however. Computed separately within each of the three 52-week periods between "
-        f"tuning points, its ROC-AUC is {f2(w_xmv[0])}, {f2(w_xmv[1])} and {f2(w_xmv[2])}, whereas logistic "
-        f"regression's is below 0.5 in all three ", faw, "."])
-    p = discussed("prob", mv)
-    second = fresh_copy(p)
+        f"In Figure {fig('roc', mv)}, the XGBoost curve is the highest at most false-positive rates above "
+        f"approximately 0.25. Its within-period ROC-AUCs ({f2(w_xmv[0])}, {f2(w_xmv[1])} and {f2(w_xmv[2])}), however, "
+        f"are all below the pooled {f3(xmv.auc)}, indicating that part of its discrimination reflects differences "
+        f"between periods ", faw,
+        f". XGBoost therefore provides modest timing within periods, whereas logistic regression remains below 0.5 "
+        f"in every period."])
     figure_text("prob", mv, [
-        f"Figure {fig('prob', mv)} shows how XGBoost's forecasts changed with its tuning. Until the first retune, "
-        f"in January 2023, it used the smallest learning rate in its grid: its probabilities stayed between "
-        f"{f2(x0.probability.min())} and {f2(x0.probability.max())}, and it predicted value leadership in all but "
-        f"one week and was right in {pct_r(acc_of(x0))} of the weeks. The retune added the largest L2 penalty in its grid "
-        f"(Table C.6). For the following year its probabilities stayed between {f2(x1.probability.min())} and "
-        f"{f2(x1.probability.max())}, and it predicted momentum leadership in all but one week and was right in "
-        f"{pct_r(acc_of(x1))}. Both were in effect constant forecasts that followed the dominant factor of the year, "
-        f"and XGBoost's overall accuracy of {pct(xmv.acc)} is close to the {pct(hind[mv])} that would be achieved by "
-        f"predicting, in every week, the factor that led most often in that calendar year, a rule that requires "
-        f"hindsight. Only after the January 2024 retune, which selected its largest learning rate and smallest "
-        f"penalty, did its probabilities spread, from {f2(x2.probability.min())} to {f2(x2.probability.max())}; its "
-        f"{num(len(x_conf))} confidently wrong weeks all fall in this period."])
-    set_ppr(second, body_ppr)
-    compose(e, second, [
-        "The same figure shows why logistic regression and the GAM have such poor log-loss. At every tuning point "
-        "logistic regression selected the weakest penalty in its grid (λ = 0.01), which leaves its coefficients "
-        "almost unshrunk ", (["Zou05"], "(Zou & Hastie, 2005)"),
-        ", and the GAM its most flexible setting, λ = 1 with 10 splines ", woo,
-        f". The probabilities of both therefore range from close to zero to close to one, and they were confidently "
-        f"wrong in {len(l_conf)} and {len(g_conf)} weeks, which account for {pct_r(l_share)} and {pct_r(g_share)} of "
-        f"their log-loss. In four weeks of May and June 2023, for example, both gave momentum leadership a "
-        f"probability of almost one while value led. The validation offered little to choose between penalties: at "
-        f"the initial tuning point, the mean ROC-AUC over the ten CPCV combinations ranged only from "
-        f"{f3(lg.mean_auc.min())} to {f3(lg.mean_auc.max())} across the 18 logistic settings, and a penalty 10,000 "
-        f"times stronger (λ = 100) scored within {f3(flat_gap)} of the one selected. For this pair, then, the gap "
-        f"between XGBoost and logistic regression says more about the penalty selected on a nearly flat validation "
-        f"surface than about nonlinearity."])
-    p.addnext(second)
-    note("4.2.1", "Opening rewritten: XGBoost is the only model with a ROC-AUC well above 0.5 for this pair; logistic "
-         "regression and the GAM are close to random on ROC-AUC with log-loss far above 0.693. Deleted with the old "
-         "results: 'provides the strongest classification result in the study', the GAM's accuracy, 'XGBoost's lead "
-         "suggests that nonlinear structure contributes …', 'While results support … factor outperformance', 'The "
-         "size of the effect remains moderate …', logistic regression's ROC-AUC and accuracy and its log-loss "
-         "explanation, with the citation Hastie & Tibshirani (1986), which introduces GAMs and does not support the "
-         "shrinkage claim.", rerun)
-    note(f"4.2.1 / Figure {fig('roc', mv)}", "Paragraph rewritten: XGBoost's curve is highest from a false-positive "
-         "rate of about 0.25; its advantage lies in the value-led weeks of 2022 it ranks lowest; its ROC-AUC within "
-         "each 52-week period between tuning points is 0.55 or more, logistic regression's below 0.5 (Fawcett, 2006).",
-         rerun)
-    note(f"4.2.1 / Figure {fig('prob', mv)}", "Paragraph (styled as a caption) restyled as body text and rewritten "
-         "as two paragraphs. (1) XGBoost's forecasts per tuning period: in effect constant forecasts in the first two "
-         "years, so that its accuracy is close to that of predicting each calendar year's most frequent leader with "
-         "hindsight (a rule defined here and referred to in Sections 4.2.2–4.2.3); its probabilities spread only "
-         "after the January 2024 retune, when all its confident errors occur. (2) Logistic regression (λ = 0.01, "
-         "Zou & Hastie, 2005) and the GAM (λ = 1, 10 splines; Wood, 2017) selected their weakest penalties, hence "
-         "their confident errors; the CPCV surface for logistic regression was nearly flat, so the gap to XGBoost "
-         "reflects the selected penalty more than nonlinearity.", rerun + " Tuning grid: results/model_outputs/"
-         "artifacts/logistic_momentum_vs_value_tuning_grid.pkl (a CSV file).")
+        f"Figure {fig('prob', mv)} shows that, until January 2024, XGBoost assigned probabilities between "
+        f"{f2(x01.probability.min())} and {f2(x01.probability.max())} under the smallest learning rate and, from "
+        f"January 2023, the largest L2 penalty in its grid (Table C.6), predicting the dominant factor of each period "
+        f"in all but two weeks. Its accuracy ({pct(xmv.acc)}) is therefore close to the {pct(hind[mv])} of a "
+        f"hindsight rule that predicts, in every week, the factor that led most often in that calendar year, and "
+        f"derives mainly from identifying the prevailing leader rather than from week-to-week timing. Its log-loss "
+        f"exceeds 0.693 because its probabilities widened to between {f2(x2.probability.min())} and "
+        f"{f2(x2.probability.max())} in the third period. Logistic regression and the GAM, which selected their "
+        f"weakest penalties at every tuning point ", (["Zou05", "Woo17"], "(Zou & Hastie, 2005; Wood, 2017)"),
+        f", were confidently wrong in {len(l_conf)} and {len(g_conf)} weeks, accounting for {pct_r(l_share)} and "
+        f"{pct_r(g_share)} of their log-loss."])
+    note("4.2.1", "Opening: the author's version in the thesis kept (the ROC-AUC interval clause, which she removed, is "
+         "not restored), with her wording of the 0.693 footnote.", "Author's transplant of 2 November, 22:46.")
+    note(f"4.2.1 / Figure {fig('roc', mv)}", "Graph description shortened and written in a formal register: the "
+         "XGBoost curve is the highest above a false-positive rate of about 0.25, but its within-period ROC-AUCs are "
+         f"lower than the pooled value and decline ({f2(w_xmv[0])}, {f2(w_xmv[1])}, {f2(w_xmv[2])}), so part of the "
+         "pooled discrimination reflects differences between periods (Fawcett, 2006); logistic regression is below "
+         "0.5 in every period. 'its curve lies below the diagonal over about half the range' deleted (the period "
+         "result makes the same point).", "Author: shorten and polish the graph descriptions.")
+    note(f"4.2.1 / Figure {fig('prob', mv)}", "Graph description shortened and written in a formal register. 'a rule "
+         "that requires hindsight' is restored: Section 4.2.3 refers to 'the hindsight rule of Section 4.2.1', which "
+         "needs it. Deleted: the third-period log-loss (0.832) and 'in the first two it was below 0.693' (the "
+         "widened probabilities make the point) and the qualification on the penalty, as in the author's version; "
+         "the penalties are now stated alongside the confident errors rather than as their cause, and their values "
+         "(λ = 0.01; λ = 1 with 10 splines) are left to Table C.6.",
+         "Author: shorten and polish the graph descriptions.")
 
     # ---------------------------------------------------------------- 4.2.2 momentum versus quality
-    compose(e, find_para(body, startswith="Logistic regression is the strongest model on all three measures"), [
-        f"Momentum versus quality gives the weakest support for the more flexible models. XGBoost again leads on "
-        f"all three measures, but its ROC-AUC ({f3(xmq.auc)}) exceeds that of logistic regression ({f3(lmq.auc)}) "
-        f"by only {f3(xmq.auc - lmq.auc)}, and the GAM is last on all three. As for momentum versus value, "
-        f"leadership changed between years: quality led in {pct_r(1 - share_y(mq, 2022))} of the weeks of 2022 and "
-        f"{pct_r(1 - share_y(mq, 2024))} of those of 2024, momentum in {pct_r(share_y(mq, 2023))} of those of 2023."])
+    cmq, (hit_m, all_m), (hit_q, all_q) = ci.loc[(mq, "XGBoost")], found(mq, "XGBoost"), found0(mq, "XGBoost")
+    compose(e, find_para_any(body, "Logistic regression is the strongest model on all three measures",
+                             "For momentum versus quality, XGBoost's lead in accuracy"), [
+        f"For momentum versus quality, XGBoost's lead in accuracy overstates its usefulness, because it recognised "
+        f"only one leadership state. It leads on all three measures, but its ROC-AUC ({f3(xmq.auc)}) exceeds logistic "
+        f"regression's ({f3(lmq.auc)}) by only {f3(xmq.auc - lmq.auc)}, and the GAM is last on all three. XGBoost "
+        f"identified {hit_m} of the {all_m} momentum-led weeks but only {hit_q} of the {all_q} quality-led weeks, so "
+        f"its accuracy reflects predicting momentum, the more frequent leader, rather than recognising shifts towards "
+        f"quality."])
+    q3 = [w_mq[k][2] for k in MODELS]
+    assert min(q3) >= 0.70
     figure_text("roc", mq, [
-        f"Figure {fig('roc', mq)} shows that the two leading models are informative in different weeks. Logistic "
-        f"regression's curve is the highest at false-positive rates up to about 0.55, and {lmq.top20_pos} of its 20 "
-        f"highest-probability weeks were led by momentum. XGBoost's is the highest from there on, because "
-        f"{xmq.bottom30_neg} of its 30 lowest-probability weeks, most of them in 2024, were led by quality. All "
-        f"three models rank the weeks of the third period (from January 2024) well, with ROC-AUCs within it of "
-        f"{f2(w_mq['Logistic'][2])} (logistic regression), {f2(w_mq['GAM'][2])} (GAM) and {f2(w_mq['XGBoost'][2])} "
-        f"(XGBoost), whereas within the second period all three are below 0.4. Most of the ranking information in "
-        f"this pair therefore comes from a single year."])
+        f"In Figure {fig('roc', mq)}, logistic regression has the highest curve at false-positive rates below "
+        f"approximately 0.55 and XGBoost above that point, so neither model dominates. Ranking is also unstable "
+        f"across periods: all three models fall below 0.4 in the second period and reach {f2(min(q3))} to "
+        f"{f2(max(q3))} in the third, and only XGBoost ranks the first period well ({f2(w_mq['XGBoost'][0])}, "
+        f"against {f2(w_mq['Logistic'][0])} and {f2(w_mq['GAM'][0])}). This common reversal suggests a change in the "
+        f"relationship between the predictors and factor leadership ", (["Ang12"], "(Ang & Timmermann, 2012)"), "."])
     figure_text("prob", mq, [
-        f"Figure {fig('prob', mq)} shows that for two of the three years XGBoost's forecast was in effect constant. "
-        f"At the first two tuning points it selected its smallest learning rate and largest L2 penalty (Table C.6): "
-        f"its probabilities stayed between {f2(q01.min())} and {f2(q01.max())}, and it predicted momentum "
-        f"leadership in every week until January 2024, wrongly in most weeks of the first period and correctly in "
-        f"{pct_r(acc_of(q[1]))} of those of the second. Only after the January 2024 retune, which selected its "
-        f"largest learning rate and smallest penalty, did its probabilities spread, from "
-        f"{f2(q[2].probability.min())} to {f2(q[2].probability.max())}. Its accuracy is therefore below logistic "
-        f"regression's in the first period and above it in the second, when the constant forecast matched the "
-        f"dominant factor, and in the third; overall ({pct(xmq.acc)}) it is again close to the hindsight rule "
-        f"({pct(hind[mq])}). Logistic regression, with a moderate penalty (λ = 10) at every tuning point, was "
-        f"confidently wrong only once. The GAM's probabilities follow logistic regression's but are more extreme, "
-        f"so that it was confidently wrong in {num(len(gq_conf))} weeks. It selected strong smoothing penalties "
-        f"(λ = 1000 or 10000), which make its terms close to linear but leave their slopes unpenalised ", woo,
-        ", so that, unlike in logistic regression, nothing shrinks its estimates ", hoe,
-        ". Here too, what separates the models is the degree of shrinkage rather than the degree of nonlinearity."])
-    note("4.2.2", "Opening rewritten: XGBoost leads on all three measures but its ROC-AUC exceeds logistic "
-         "regression's by only " + f3(xmq.auc - lmq.auc) + "; the GAM is last. Deleted with the old results: the "
-         "sentences on logistic regression as the strongest model, 'XGBoost again produces the strongest overall "
-         "classification results', the log-loss of 0.687 and accuracy of 51.3%, the confusion-matrix sentence and the "
-         "GAM's error pattern.", rerun)
-    note(f"4.2.2 / Figure {fig('roc', mq)}", "Paragraph rewritten: logistic regression ranks best among the weeks it "
-         "ranks highest, XGBoost among those it ranks lowest; all three models rank the third period well and the "
-         "second poorly, so most of the information comes from one year. The bias–variance sentence and its "
-         "citation (Hastie et al., 2009; Israel et al., 2020) no longer apply and are deleted.", rerun)
-    note(f"4.2.2 / Figure {fig('prob', mq)}", "Paragraph restyled as body text and rewritten: XGBoost's forecast was "
-         "in effect constant until January 2024; its accuracy is close to the hindsight rule; logistic regression "
-         "(λ = 10) is confidently wrong once; the GAM follows logistic regression but, with its slopes unpenalised "
-         "(Wood, 2017; Hoerl & Kennard, 1970), is more extreme. 'show log-loss probabilities' replaced.", rerun)
+        f"Figure {fig('prob', mq)} identifies the source of this asymmetry. Until January 2024, under the smallest "
+        f"learning rate and largest L2 penalty in its grid (Table C.6), XGBoost assigned probabilities between "
+        f"{f2(q01.min())} and {f2(q01.max())} and therefore predicted momentum in every week. Although its class "
+        f"prediction was constant, its probabilities still ranked the first period well, so its accuracy was "
+        f"determined by the threshold and the prevailing leader rather than by its ranking. Logistic regression "
+        f"(λ = 10) was confidently wrong once; the GAM, whose smoothing penalties leave the slopes of its "
+        f"near-linear terms unshrunk ", woo,
+        f", produced more extreme probabilities and was confidently wrong in {num(len(gq_conf))} weeks."])
+    note("4.2.2", "Opening: the author's version in the thesis kept (the ROC-AUC interval clause, which she removed, is "
+         f"not restored): XGBoost's lead in accuracy overstates its usefulness, because it identified {hit_m} of "
+         f"{all_m} momentum-led weeks but only {hit_q} of {all_q} quality-led weeks. The counts are given in the text "
+         "because Table 6 comes later (no forward reference).", "Author's transplant of 2 November, 22:46.")
+    note(f"4.2.2 / Figure {fig('roc', mq)}", "Graph description shortened and written in a formal register: neither "
+         "curve dominates; all three models fall below 0.4 in the second period and reach 0.70 or more in the third, "
+         f"and only XGBoost ranks the first period well ({f2(w_mq['XGBoost'][0])}); the common reversal suggests a "
+         "change in the relationship (Ang & Timmermann, 2012). 'although the results do not identify the regime or "
+         "its cause' deleted ('suggests' carries the qualification).",
+         "Author: shorten and polish the graph descriptions.")
+    note(f"4.2.2 / Figure {fig('prob', mq)}", "Graph description shortened and written in a formal register: XGBoost's "
+         "class prediction was constant until January 2024 although its probabilities still ranked the first "
+         "period well, so its accuracy was determined by the threshold and the prevailing leader. Deleted: 'and those "
+         "of the second worse than chance' (stated for Figure " + str(fig('roc', mq)) + ") and 'incorrectly in most weeks "
+         "of the first period and correctly in 73% of the second'.",
+         "Author: shorten and polish the graph descriptions.")
 
     # ---------------------------------------------------------------- 4.2.3 value versus quality
-    compose(e, find_para(body, startswith="Logistic regression is also the strongest model for value versus quality"), [
-        f"Value versus quality gives the strongest evidence of predictability in the study, and it comes from the "
-        f"nonlinear model. XGBoost has the highest accuracy ({pct(xvq.acc)}), the highest ROC-AUC of any model and "
-        f"pair ({f3(xvq.auc)}) and the lowest log-loss ({f3(xvq.ll)}). Logistic regression is second on ROC-AUC and "
-        f"log-loss, and the GAM is close to random (accuracy {pct(gvq.acc)}, ROC-AUC {f3(gvq.auc)}). Leadership "
-        f"swung less between years than in the momentum pairs: value led in {pct_r(share_y(vq, 2022))} of the "
-        f"weeks of 2022, and quality in {pct_r(1 - share_y(vq, 2023))} and {pct_r(1 - share_y(vq, 2024))} of those "
-        f"of 2023 and 2024."])
+    assert all(0 < period(vq, "XGBoost", j).prediction.mean() < 1 for j in range(3))       # never a constant forecast
+    # each factor predicted in at least a quarter of the weeks of every period, whereas in the momentum pairs one
+    # factor was predicted in almost every week of the first two periods
+    minority = lambda pair, j: min(period(pair, "XGBoost", j).prediction.mean(),
+                                   1 - period(pair, "XGBoost", j).prediction.mean())
+    assert all(minority(vq, j) >= 0.25 for j in range(3))
+    assert all(minority(p, j) < 0.05 for p in (mv, mq) for j in (0, 1))
+    neg = lambda s: s.replace("-", "−")
+    hit_v, hit_q2 = found(vq, "XGBoost"), found0(vq, "XGBoost")
+    # the most persistent ranking: the highest lowest-period ROC-AUC of the nine model-pair results
+    assert max(((p, k) for p in PAIRS for k in MODELS), key=lambda key: min(within(*key))) == (vq, "XGBoost")
+    compose(e, find_para_any(body, "Logistic regression is also the strongest model for value versus quality",
+                             "Value versus quality gives the clearest evidence"), [
+        f"Value versus quality gives the clearest evidence of predictability in the study, because the measures "
+        f"agree. XGBoost has the highest accuracy ({pct(xvq.acc)}), the highest ROC-AUC of any model and pair "
+        f"({f3(xvq.auc)}) and the lowest log-loss ({f3(xvq.ll)}), and it recognised both leadership states: "
+        f"{hit_v[0]} of the {hit_v[1]} value-led weeks and {hit_q2[0]} of the {hit_q2[1]} quality-led weeks. Its "
+        f"ROC-AUC interval ({f3(cvq.ci_low)} to {f3(cvq.ci_high)}) is the only one of the nine model–pair results to "
+        f"exclude 0.5, and it still does so when widened to {100 * (1 - 0.05 / 9):.1f}% ({f3(cvq.ci_low_bonferroni)} "
+        f"to {f3(cvq.ci_high_bonferroni)}), the Bonferroni adjustment for the nine results ",
+        (["Har16"], "(Harvey, Liu, & Zhu, 2016)"),
+        f". Its advantage over logistic regression, second on ROC-AUC and log-loss, is less certain: the difference "
+        f"of {f3(dvq.auc_diff)} has a paired interval of {neg(f3(dvq.ci_low))} to {f3(dvq.ci_high)}. The GAM is "
+        f"close to random (ROC-AUC {f3(gvq.auc)})."])
     figure_text("roc", vq, [
-        f"Figure {fig('roc', vq)} shows that XGBoost's curve is the highest from a false-positive rate of about 0.08 "
-        f"to 0.78 and never falls below the diagonal: at a false-positive rate of 0.1 it identifies "
-        f"{pct_r(roc(vq, 'XGBoost')[10])} of the value-led weeks, against {pct_r(roc(vq, 'Logistic')[10])} for "
-        f"logistic regression. Its ranking also holds within each period between tuning points, with ROC-AUCs of "
-        f"{f2(w_xvq[0])}, {f2(w_xvq[1])} and {f2(w_xvq[2])}, whereas logistic regression ranks well only in the "
-        f"first ({f2(w_lvq[0])}, against {f2(w_lvq[1])} and {f2(w_lvq[2])}). The GAM's curve lies below the "
-        f"diagonal over about half of the range."])
+        f"In Figure {fig('roc', vq)}, the XGBoost curve is the highest between false-positive rates of approximately "
+        f"0.08 and 0.78 and never falls below the diagonal. Its within-period ROC-AUC exceeds 0.6 in every period "
+        f"({f2(w_xvq[0])}, {f2(w_xvq[1])} and {f2(w_xvq[2])}), the most persistent ranking in the study, whereas "
+        f"logistic regression ranks well only in the first ({f2(w_lvq[0])}, against {f2(w_lvq[1])} and "
+        f"{f2(w_lvq[2])}). The GAM curve lies below the diagonal over approximately half of the range."])
     figure_text("prob", vq, [
-        f"Figure {fig('prob', vq)} shows that, unlike in the momentum pairs, XGBoost's forecast was never constant. "
-        f"With the shallowest trees in its grid at every tuning point (Table C.6), its probabilities ranged from "
-        f"{f2(v[0].probability.min())} to {f2(v[0].probability.max())} in the first period and spread further after "
-        f"the January 2024 retune, and it was confidently wrong only once. Its accuracy of {pct(xvq.acc)} is "
-        f"{100 * margin_vq:.1f} points above the hindsight rule ({pct(hind[vq])}), whereas in the momentum pairs "
-        f"XGBoost's accuracy was within {100 * margin_mom:.1f} points of that rule. Logistic regression is never "
-        f"confidently wrong. The GAM was confidently wrong in {num(len(gv_conf))} weeks, which account for "
-        f"{pct_r(gv_share)} of its log-loss; {num(len(may_aug))} of them fell between May and August 2023, when "
-        f"value led but the GAM gave value leadership a probability below 0.1, under a strong smoothing penalty "
-        f"(λ = 1000), as for momentum versus quality. For this pair, then, the tree ensemble ranks the weeks better "
-        f"than the linear and additive models within every period, the clearest indication in the study that "
-        f"nonlinearity adds value, whereas the GAM's smooth additive terms add none."])
-    note("4.2.3", "Opening rewritten: the strongest evidence in the study, from XGBoost (highest ROC-AUC of any "
-         "model and pair); logistic regression second; the GAM close to random. Deleted with the old results: "
-         "logistic regression as the strongest model, XGBoost's lower accuracy and 'The evidence for predictable "
-         "value versus quality … linear specification'.", rerun)
-    note(f"4.2.3 / Figure {fig('roc', vq)}", "Paragraph restyled as body text and rewritten: XGBoost's curve is "
-         "highest over most of the range and never below the diagonal; its ranking holds within every period, "
-         "logistic regression's only in the first; the GAM's curve below the diagonal over half the range.", rerun)
-    note(f"4.2.3 / Figure {fig('prob', vq)}", "Paragraph restyled as body text and rewritten: XGBoost's forecast "
-         "never constant and its accuracy clearly above the hindsight rule; the GAM's confident errors, most of them "
-         "in May–August 2023. The citation (Friedman, 2001; Chen, Pelger, & Zhu, 2019) belonged to the deleted "
-         "sentence on XGBoost's shrinkage; Chen, Pelger and Zhu (2019) is a deep-learning paper in any case (XGBoost "
-         "is Chen & Guestrin, 2016, tag Che16).", rerun)
+        f"Figure {fig('prob', vq)} shows that, unlike in the momentum pairs, XGBoost predicted each factor in at least "
+        f"a quarter of the weeks of every period and was confidently wrong only once. Its accuracy exceeds the "
+        f"hindsight rule of Section 4.2.1 by {100 * margin_vq:.1f} percentage points ({pct(xvq.acc)} against "
+        f"{pct(hind[vq])}), compared with at most {100 * margin_mom:.1f} points in the momentum pairs, indicating timing "
+        f"within years. The relationship nevertheless weakened, with accuracy declining from {pct(acc_xvq[0])} to "
+        f"{pct(acc_xvq[1])} and {pct(acc_xvq[2])} and log-loss rising from {f3(ll_xvq[0])} to {f3(ll_xvq[1])} and "
+        f"{f3(ll_xvq[2])} across the three periods. The GAM was confidently wrong in {num(len(gv_conf))} weeks and "
+        f"logistic regression in none. The pair therefore provides clearer evidence of above-chance ranking by "
+        f"XGBoost than of an advantage over the regularised linear model."])
+    note("4.2.3", "Opening: the author's version in the thesis kept (as in the 22:06 draft): the clearest evidence "
+         f"because the measures agree; XGBoost recognised both states ({hit_v[0]}/{hit_v[1]} and "
+         f"{hit_q2[0]}/{hit_q2[1]}); its interval is the only one to exclude 0.5, also after the Bonferroni adjustment "
+         "for nine results (Harvey et al., 2016); its advantage over logistic regression is uncertain (paired "
+         f"interval {neg(f3(dvq.ci_low))} to {f3(dvq.ci_high)}; results/model_outputs/bootstrap/"
+         "auc_paired_differences.csv).", "Author's transplant of 2 November, 22:46.")
+    note(f"4.2.3 / Figure {fig('roc', vq)}", "Graph description shortened and written in a formal register: XGBoost's "
+         "within-period ROC-AUC exceeds 0.6 in every period, the most persistent ranking in the study (the highest "
+         "lowest-period value of the nine results); logistic regression ranks well only in the first period ('so its "
+         "second place rests on a single year' deleted).",
+         "Author: shorten and polish the graph descriptions.")
+    note(f"4.2.3 / Figure {fig('prob', vq)}", "Graph description shortened and written in a formal register: XGBoost "
+         "predicted both factors in every period and beat the hindsight rule, which indicates timing within years; "
+         f"the relationship weakened over time (accuracy {', '.join(pct(v) for v in acc_xvq)}; log-loss "
+         f"{', '.join(f3(v) for v in ll_xvq)} by period). Deleted: 'eight of them between May and August 2023, when "
+         "value led but it gave value leadership a "
+         "probability below 0.1' (the count of confident errors suffices). The citation (Friedman, 2001; Chen, "
+         "Pelger, & Zhu, 2019) in the author's earlier version belonged to a deleted sentence on XGBoost's shrinkage; "
+         "Chen, Pelger and Zhu (2019) is a deep-learning paper in any case (XGBoost is Chen & Guestrin, 2016, tag "
+         "Che16).", "Author: shorten and polish the graph descriptions.")
+    note("4.2", "Section 4.2 rewritten in analytical form: each paragraph opens with a finding, then gives the evidence "
+         "and its qualification (results/Chapter4_Analytical_Review.md). The graph descriptions are shortened and "
+         "written in a formal academic register (impersonal constructions, 'approximately', no contractions or "
+         "colloquial verbs), with each figure cited as evidence rather than described. Secondary statistics (counts "
+         "of the highest- and lowest-ranked weeks, single-week examples) and the discussion of the CPCV tuning "
+         "surface are omitted.",
+         "Author: analytical rather than descriptive; shorten and polish the graph descriptions.")
 
     # The figures themselves: the current renders from the rerun outputs
     swapped = []
@@ -866,17 +1048,17 @@ def build():
             for r in cap.iter(qn("w:r")):
                 e.mark(r)
             swapped.append(n)
-    assert len(swapped) == 6, swapped
-    note(f"4.2 / Figures {swapped[0]}–{swapped[-1]}", "Pictures replaced by the renders from the rerun outputs "
-         "(captions highlighted; caption text unchanged).", rerun + " build_chapter4_corrected_figures.py.")
+    if swapped:                                  # the others are already the current renders in the thesis
+        note(f"4.2 / Figures {swapped[0]}–{swapped[-1]}", "Pictures replaced by the renders from the rerun outputs "
+             "(captions highlighted; caption text unchanged).", rerun + " build_chapter4_corrected_figures.py.")
     note("4.2 / citations", "Every citation in the rewritten paragraphs is a Word citation field (Source Manager "
-         "tags Hos13, Isr20, Pag241, Faw06, Zou05, Woo17, Hoe70), so the paragraphs can be copied into the thesis "
-         "as they are and the reference list updates with them.", "Citations.")
+         "tags Hos13, Isr20, Pag241, Faw06, Zou05, Woo17, Ang12, Har16), so the paragraphs can be copied into the "
+         "thesis as they are and the reference list updates with them.", "Citations.")
     for old, new in heads.items():
         e.replace(head_els[old], old, new)
-    note("4.1, 4.2, 4.2.1, 4.4 / headings", "Headings in sentence case, as in Chapters 1 and 3: 'Overview of the "
-         "evaluation framework', 'Out-of-sample predictive performance', 'Momentum versus value', 'Feature "
-         "importance'.", "Consistency.")
+    if heads:
+        note("Headings", "Headings in sentence case, as in Chapters 1 and 3: "
+             + ", ".join(f"'{new}'" for new in heads.values()) + ".", "Consistency.")
 
     # ---------------------------------------------------------------- 4.3
     p = find_para(body, startswith="Table 4.1 reports the realised class distribution")
@@ -915,88 +1097,140 @@ def build():
     note(f"4.3 / Table {t_conf}", "Confusion-matrix counts and predicted- and actual-positive shares replaced. "
          "Renumbered (was 4.4) in the text and the caption, which follows the thesis format 'Table N: Title'.", rerun)
 
+    lr_mq, lr_vq = m.loc[(mq, "Logistic")], m.loc[(vq, "Logistic")]
     rewrite(e, find_para(body, startswith="XGBoost provides the most balanced class treatment"),
-            f"XGBoost provides the most balanced class treatment for momentum versus value and value versus quality, "
-            f"and logistic regression for momentum versus quality (Table {t_conf}).")
-    note("4.3", "Most balanced model per pair updated; the shares behind it deleted from the text (they are in "
-         f"Table {t_conf}).", rerun)
-    xr, lr_ = m.loc[(mq, "XGBoost")], m.loc[(vq, "Logistic")]
+            f"Matching the realised class share does not mean that both classes are recognised. Logistic regression's "
+            f"predicted share for momentum versus quality ({pct(lr_mq.pred_pos)}) is the closest to the realised "
+            f"{pct(lr_mq.act_pos)}, yet it identified only {found0(mq, 'Logistic')[0]} of the "
+            f"{found0(mq, 'Logistic')[1]} quality-led weeks. Only XGBoost, for momentum versus value and value versus "
+            f"quality, identified more than half of the weeks of each class (Table {t_conf}).")
+    note("4.3", "'XGBoost provides the most balanced class treatment …' replaced: a predicted-positive share close to "
+         "the realised share does not show that both classes are recognised (logistic regression for momentum vs "
+         "quality is closest in share but identified fewer than half the quality-led weeks). Now judged by the share "
+         "of each class identified (from Table " + str(t_conf) + "): only XGBoost for momentum vs value and value vs "
+         "quality identifies more than half of each class.", rerun + " Analytical review, Section 4.3.")
+    xr = m.loc[(mq, "XGBoost")]
+    assert ordered[:2] == [(mq, "XGBoost"), (vq, "Logistic")]       # the two largest imbalances
     rewrite(e, find_para(body, startswith="The extreme positive-class tendencies"),
-            f"The two largest imbalances illustrate these inconsistencies. XGBoost predicted momentum "
-            f"leadership against quality in {pct(xr.pred_pos)} of weeks, the result of its constant forecast until "
-            f"January 2024 (Section 4.2.2), and so identified only {int(xr.TN)} of the {int(xr.TN + xr.FP)} "
-            f"quality-led weeks. Logistic regression predicted value leadership against quality in only "
-            f"{pct(lr_.pred_pos)} of weeks, against {pct(lr_.act_pos)} realised, so that its second-highest ROC-AUC "
-            f"for that pair translates into an accuracy of only {pct(lr_.acc)}.")
-    note("4.3", "Paragraph on positive-class tendencies rewritten: the two largest imbalances are now XGBoost for "
-         "momentum vs quality (its constant forecast) and logistic regression for value vs quality (too few "
-         "positive predictions), as examples of the inconsistencies between ROC-AUC and accuracy that the author's "
-         "preceding sentence announces.", rerun)
+            f"The 0.5 threshold can also work against a model's ranking. Logistic regression predicted value leadership "
+            f"against quality in only {pct(lr_vq.pred_pos)} of weeks, against {pct(lr_vq.act_pos)} realised, and "
+            f"identified only {found(vq, 'Logistic')[0]} of the {found(vq, 'Logistic')[1]} value-led weeks, so that "
+            f"its second-highest ROC-AUC for that pair translates into an accuracy of only {pct(lr_vq.acc)}, the "
+            f"reverse of XGBoost for momentum versus quality (Section 4.2.2).")
+    note("4.3", "Paragraph on the two largest imbalances rewritten around logistic regression for value vs quality, "
+         "whose threshold works against its ranking (too few positive predictions), as the reverse of XGBoost for "
+         "momentum vs quality, which Section 4.2.2 already explains (not repeated here). 'the result of its constant "
+         "forecast' deleted (its class decision, not its probabilities, was constant).",
+         rerun + " Analytical review, Section 4.3. Author: limit repetition.")
     lq = [m.loc[(p, "Logistic"), "ll"] for p in (mq, vq)]
-    rewrite(e, find_para(body, startswith="The probability results introduce"),
-            f"The probability results show a clearer pattern. Only XGBoost has a log-loss below the uninformative "
-            f"0.693 (Section 3.9), and only for momentum versus quality and value versus quality. Logistic regression "
-            f"is within 0.05 of that value for those two pairs ({f3(min(lq))} and {f3(max(lq))}), where it selected "
-            f"a moderate penalty, but reaches {f3(lmv.ll)} for momentum versus value, where it selected the weakest; "
-            f"the GAM's log-loss lies between {f3(min(lls['GAM']))} and {f3(max(lls['GAM']))}. Probability quality "
-            f"therefore depends more on the shrinkage each model selected than on its flexibility (Sections "
-            f"4.2.1–4.2.3).")
-    note("4.3", "Probability-quality paragraph rewritten: only XGBoost beats the uninformative 0.693, for two "
-         "pairs; logistic regression's log-loss depends on the penalty it selected; the GAM's is the highest. "
-         "Deleted: 'An uninformative forecast of 0.5 … approximately 0.693' (defined in Section 3.9) and 'better "
-         "discrimination does not necessarily imply better probability quality', which no longer holds (XGBoost "
-         "leads on both).", rerun)
+    p_prob = find_para(body, startswith="The probability results introduce")
+    compose(e, p_prob, [
+        f"Three results have a log-loss below the uninformative 0.693 (Section 4.2.1): XGBoost for momentum versus "
+        f"quality and value versus quality, and logistic regression for value versus quality ({f3(lr_vq.ll)}). "
+        f"Logistic regression stays close to 0.693 for the two quality pairs ({f3(min(lq))} and {f3(max(lq))}), "
+        f"where it selected a moderate penalty, but reaches {f3(lmv.ll)} for momentum versus value, where it "
+        f"selected the weakest; the GAM's log-loss lies between {f3(min(lls['GAM']))} and {f3(max(lls['GAM']))}. "
+        f"Probability quality under log-loss therefore varies with the shrinkage each model selected (Sections "
+        f"4.2.1–4.2.3), consistent with shrinkage lowering the variance of the estimates and with it the risk of "
+        f"extreme probabilities ", (["GJa21"], "(James, Witten, Hastie, & Tibshirani, 2021)"),
+        ", although the comparison does not isolate the penalty as the cause."])
+    note("4.3", "Probability-quality paragraph corrected and rewritten. Corrected: 'Only XGBoost has a log-loss below "
+         f"the uninformative 0.693' was false: logistic regression for value vs quality is also below ({f3(lr_vq.ll)}); "
+         "three results are below. Logistic regression's log-loss varies with the penalty it selected; the GAM's is "
+         "the highest. 'depends more on the shrinkage … than on its flexibility' replaced by 'varies with the "
+         "shrinkage each model selected', with the qualification that the comparison does not isolate the penalty. "
+         "Deleted: 'An uninformative forecast of 0.5 … approximately 0.693' (explained in the footnote in Section "
+         "4.2.1) and 'better discrimination does not necessarily imply better probability quality' (replaced by the "
+         "next paragraph). James et al. (2021), tag GJa21.", rerun + " Analytical review, Section 4.3.")
+    synthesis = fresh_copy(p_prob)
+    p_prob.addnext(synthesis)
+    compose(e, synthesis, [
+        "Ranking, the recognition of both classes and probability quality therefore do not coincide; only for value "
+        "versus quality does XGBoost combine all three. Which of these matters depends on how the forecasts would be "
+        "used: for ordering allocation decisions, for switching between styles or for probability-weighted exposures "
+        "(Section 3.9)."])
+    note("4.3", "Closing paragraph added: ranking, the recognition of both classes and probability quality do not "
+         "coincide (XGBoost combines all three only for value vs quality), and which matters depends on how the "
+         "forecasts would be used, as Section 3.9 sets out (binary switching versus probability-weighted exposures).",
+         "Analytical review, Section 4.3: connect the measures.")
 
     # ---------------------------------------------------------------- 4.4 feature importance
     rewrite(e, find_para(body, startswith="Global feature importance is measured"),
             f"Figures {shap_first}–{shap_first + 2} show the ten features with the largest global SHAP importance "
-            f"for each model (Section 3.10).")
+            f"for each model. The values describe the refits on the initial tuning sample (Section 3.10), so they show "
+            f"which information each model uses, not why its walk-forward performance changed between periods. The "
+            f"comparison of interest is whether the models that predict better rely on different information.")
     note("4.4", "Opening reduced to a reference to Section 3.10, which explains how the figures are read (the ten "
          "leading features, ranks rather than magnitudes, colours by the feature categories of Table 1) and the "
-         "limits of the interpretation. Deleted: the definition of global importance, the caveats (Kumar et al., "
-         "2020; Molnar, 2022), the comparison and colour conventions, 'This distinction is important because all "
-         "final ROC-AUC values remain below 0.60' (no longer true) and the reference to 'Table 1 of Section 3.6'.",
-         "Author: say it once; Section 3.10 explains the results section.")
+         "limits of the interpretation, followed by the question the section answers: whether the models that "
+         "predict better rely on different information. One consequence of Section 3.10 is stated because the "
+         "section depends on it: the refits cannot explain why walk-forward performance changed between periods. "
+         "Deleted: the definition of global importance, the caveats (Kumar et al., 2020; Molnar, 2022), the "
+         "comparison and colour conventions, 'This distinction is important because all final ROC-AUC values remain "
+         "below 0.60' (no longer true) and the reference to 'Table 1 of Section 3.6'.",
+         "Author: say it once; analytical rather than descriptive. Analytical review, Section 4.4.")
     compose(e, find_para(body, startswith="Logistic regression is dominated by currency-volatility"), [
-        "A relative-volatility measure ranks first in all three models: that of momentum and value for XGBoost, of "
+        "The three models agree on the leading type of information but not on what follows it. A relative-volatility "
+        "measure ranks first in all three: that of momentum and value for XGBoost, of "
         "value and quality for logistic regression and of momentum and quality for the GAM. Logistic regression "
         "and the GAM then share three South African macroeconomic variables in their top six, medium-term USDZAR "
         "forward pricing, USDZAR entropy and rand PPP valuation, whereas XGBoost draws on the momentum–quality "
         "correlation, South African real-yield-curve curvature, the value–quality volatility ratio, global bond "
         "volatility and the commodity index component. The prominence of relative volatility is consistent with "
         "evidence that momentum's risk varies predictably over time and that its crashes follow volatile markets ",
-        (["Bar15", "Dan16"], "(Barroso & Santa-Clara, 2015; Daniel & Moskowitz, 2016)"), "."])
-    note("4.4.1", "Paragraph rewritten from the new rankings (Figure " + str(shap_first) + "). The citations Ehsani "
-         "& Linnainmaa (2022) and Gupta & Kelly (2019) on factor momentum are dropped here, because short-horizon "
-         "relative returns no longer rank among the leading features for this pair (factor momentum is now cited in "
-         "Section 4.4.3). Barroso & Santa-Clara (2015) and Daniel & Moskowitz (2016) kept, as citation fields.",
-         rerun)
+        (["Bar15", "Dan16"], "(Barroso & Santa-Clara, 2015; Daniel & Moskowitz, 2016)"),
+        ". Since only XGBoost has a ROC-AUC well above 0.5 for this pair (Section 4.2.1), the shared leading feature "
+        "does not by itself deliver prediction; XGBoost's advantage may come from the variables the other two models "
+        "do not use and from how it combines them."])
+    note("4.4.1", "Paragraph rewritten from the new rankings (Figure " + str(shap_first) + ") in analytical form: the "
+         "models agree on the leading type of information (relative volatility) but only XGBoost predicts well, so "
+         "the shared feature is not sufficient; its advantage may come from the variables only it uses and how it "
+         "combines them (stated as a possibility). The citations Ehsani & Linnainmaa (2022) and Gupta & Kelly (2019) "
+         "on factor momentum are dropped here, because short-horizon relative returns no longer rank among the "
+         "leading features for this pair (factor momentum is cited in Section 4.4.3). Barroso & Santa-Clara (2015) "
+         "and Daniel & Moskowitz (2016) kept, as citation fields.", rerun + " Analytical review, Section 4.4.")
+    xs_mq = sel[(mq, "XGBoost")]
+    assert all(xs_mq[j]["learning_rate"] == grid_max["lr_min"] and xs_mq[j]["reg_lambda"] == grid_max["reg_max"]
+               for j in (0, 1))                         # the SHAP refit uses the setting of the first tuning point
     compose(e, find_para(body, startswith="Momentum-versus-quality predictions use"), [
-        "Logistic regression and XGBoost are led by the same two features, the change in the TOP40 price-to-EBITDA "
-        "ratio and South African real-yield-curve curvature, and the commodity index component is in the top four "
-        "of both. That a valuation measure leads both is in line with the debate on valuation-based factor timing ",
+        f"The two models closest in performance also use the most similar information. Logistic regression and "
+        f"XGBoost, whose ROC-AUCs differ by only {f3(xmq.auc - lmq.auc)}, are led by the same two features, the change "
+        f"in the TOP40 price-to-EBITDA ratio and South African real-yield-curve curvature, and the commodity index "
+        f"component is in the top four of both. That a valuation measure leads both is in line with the debate on "
+        f"valuation-based factor timing ",
         (["Arn16", "Asn17"], "(Arnott, Beck, Kalesnik, & West, 2016; Asness, Chandra, Ilmanen, & Israel, 2017)"),
-        ". The GAM is led instead by factor-specific variables, the value–quality correlation and three "
-        "relative-volatility measures, with the EBITDA measure seventh. XGBoost's SHAP values for this pair are "
-        "small, the ten largest summing to less than a sixth of those for the other two pairs, consistent with the "
-        "near-constant forecasts of its initially selected setting (Section 4.2.2)."])
-    note("4.4.2", "Paragraph rewritten from the new rankings (Figure " + str(shap_first + 1) + "). The EBITDA measure "
+        ", but with a ranking that reverses between periods (Section 4.2.2) it does not show that valuation times "
+        "this pair reliably. The GAM, the weakest model for the pair, is led instead by factor-specific variables, "
+        "the value–quality correlation and three relative-volatility measures, with the EBITDA measure seventh. "
+        "XGBoost's SHAP values for this pair are small, the ten largest summing to less than a sixth of those for "
+        "the other two pairs, consistent with the strong shrinkage it selected at the first two tuning points, which "
+        "also kept its walk-forward probabilities in a narrow range (Section 4.2.2)."])
+    note("4.4.2", "Paragraph rewritten from the new rankings (Figure " + str(shap_first + 1) + ") in analytical form: "
+         "the two models closest in performance share the leading features; the valuation link is qualified by the "
+         "ranking that reverses between periods; the GAM, the weakest model, uses different information. 'consistent "
+         "with the near-constant forecasts of its initially selected setting' replaced by the strong shrinkage of "
+         "the setting selected at the first two tuning points (the SHAP refit uses the first). The EBITDA measure "
          "was described as a 'local-versus-global' differential; it is the first difference of the TOP40 "
          "price-to-EBITDA ratio (Appendix A). Arnott et al. (2016) and Asness et al. (2017) kept, as citation "
-         "fields.", rerun + " Appendix A.")
+         "fields.", rerun + " Appendix A. Analytical review, Section 4.4.")
     compose(e, find_para(body, startswith="The standardised value-versus-quality relative-performance measure"), [
-        "Recent relative performance matters most for this pair. The three-month relative return of value and "
-        "quality ranks first for XGBoost and second for logistic regression, and that of momentum and quality is in "
-        "the top five of both, consistent with factor momentum ",
+        "Recent relative performance matters most for this pair, the one XGBoost predicts best. The three-month "
+        "relative return of value and quality ranks first for XGBoost and second for logistic regression, and that "
+        "of momentum and quality is in the top five of both, consistent with factor momentum ",
         (["Gup19", "Arn23"], "(Gupta & Kelly, 2019; Arnott, Kalesnik, & Linnainmaa, 2023)"),
-        ". The value–quality volatility ratio is in the top four of all three models. Beyond these, logistic "
+        ", although global importance does not show whether recent outperformance predicted continuation or "
+        "reversal. The value–quality volatility ratio is in the top four of all three models. Beyond these, logistic "
         "regression and the GAM share USDZAR entropy and global property volatility in their top three, whereas "
-        "XGBoost draws on gold's rolling volatility and US and South African yield-curve curvature."])
-    note("4.4.3", "Paragraph rewritten from the new rankings (Figure " + str(shap_first + 2) + "): the standardised "
-         "relative-performance measure no longer leads. Deleted: 'Logistic regression is the best-performing model "
-         "for this pair, but its AUC of 0.585 remains modest. The feature rankings should therefore be interpreted "
-         "as a description of the fitted decision function rather than evidence of stable economic causality.' (no "
-         "longer true; the caveat is in Section 3.10).", rerun)
+        "XGBoost draws on gold's rolling volatility and US and South African yield-curve curvature. Since logistic "
+        "regression shares the relative-performance features but ranks well only in the first period (Section "
+        "4.2.3), these features alone do not account for XGBoost's more persistent ranking."])
+    note("4.4.3", "Paragraph rewritten from the new rankings (Figure " + str(shap_first + 2) + ") in analytical form: "
+         "the factor-momentum reading is qualified (global importance has no direction), and the shared "
+         "relative-performance features do not account for XGBoost's more persistent ranking, since logistic "
+         "regression uses them too. Deleted: 'Logistic regression is the best-performing model for this pair, but "
+         "its AUC of 0.585 remains modest. The feature rankings should therefore be interpreted as a description of "
+         "the fitted decision function rather than evidence of stable economic causality.' (no longer true; the "
+         "caveat is in Section 3.10).", rerun + " Analytical review, Section 4.4.")
 
     for old, new, pair in (("4.3", shap_first, mv), ("4.4", shap_first + 1, mq), ("4.5", shap_first + 2, vq)):
         name = PAIRS[pair].replace(' vs ', ' versus ').lower()
@@ -1018,53 +1252,82 @@ def build():
     # ---------------------------------------------------------------- 4.5 chapter conclusion
     xb = boot.loc["XGBoost mean AUC"]
     p = find_para(body, startswith="The final results provide modest")
-    e.replace(p, text(p)[len("The final results provide modest and factor-pair-dependent evidence of predictability. "):],
-              f"XGBoost is the strongest model for every pair and on every measure, and its mean ROC-AUC across the "
-              f"three pairs ({f3(means.auc['XGBoost'])}) exceeds those of logistic regression "
-              f"({f3(means.auc['Logistic'])}) and the GAM ({f3(means.auc['GAM'])}). It is the only model whose "
-              f"block-bootstrap 95% interval for the mean ROC-AUC excludes 0.5 ({f3(xb.ci_low)} to {f3(xb.ci_high)}; "
-              f"Section 3.9). The evidence is strongest for value versus quality, the only pair for which XGBoost's ROC-AUC "
-              f"interval excludes 0.5 ({f3(cvq.ci_low)} to {f3(cvq.ci_high)}) and where its ranking holds within "
-              f"every period between tuning points, and weakest for momentum versus quality, where its forecast was in "
-              f"effect constant for two of the three years.")
-    note("4.5", "Model ranking rewritten: XGBoost leads every pair on every measure; mean ROC-AUC of each model; "
-         "XGBoost's bootstrap interval is the only one to exclude 0.5, and per pair only for value vs quality "
-         "(results/model_outputs/bootstrap/auc_ci.csv); where the evidence is strongest and weakest. "
-         "'several models produce strongly asymmetric classifications at the 0.5 threshold' deleted (Section 4.3).",
-         rerun + " results/model_outputs/bootstrap/auc_mean_across_pairs.csv.")
+    opening = "The final results provide modest and factor-pair-dependent evidence of predictability. "
+    assert text(p).startswith(opening)
+    compose(e, p, [
+        opening + f"XGBoost has the highest accuracy and ROC-AUC and the lowest log-loss for every pair, and its mean "
+        f"ROC-AUC across the three pairs ({f3(means.auc['XGBoost'])}) exceeds those of logistic regression "
+        f"({f3(means.auc['Logistic'])}) and the GAM ({f3(means.auc['GAM'])}); it is the only model whose "
+        f"block-bootstrap 95% interval for the mean ROC-AUC excludes 0.5 ({f3(xb.ci_low)} to {f3(xb.ci_high)}; "
+        f"Section 3.9). The ordering does not carry equal weight in every pair. Only for value versus quality does "
+        f"XGBoost's ranking remain above chance after adjustment for the nine model–pair results and persist across "
+        f"the periods (Section 4.2.3); for the momentum pairs its lead rests on identifying the prevailing leader "
+        f"and, for momentum versus quality, on predicting mainly one factor (Sections 4.2.1 and 4.2.2)."])
+    note("4.5", "Model ranking rewritten in analytical form: XGBoost leads every pair on every measure and is the only "
+         "model whose interval for the mean ROC-AUC excludes 0.5, but the ordering does not carry equal weight in "
+         "every pair: only value vs quality is above chance after the adjustment and persistent; the momentum-pair "
+         "leads rest on identifying the prevailing leader and, for momentum vs quality, on predicting mainly one "
+         "factor. The Bonferroni interval and Harvey et al. (2016) moved to Section 4.2.3 (stated once). 'The result "
+         "is therefore not merely the best of many tests' dropped: the adjustment covers the nine reported results, "
+         "not the decisions taken while developing the study (analytical review). 'XGBoost's forecast was in effect "
+         "constant for two of the three years' replaced (its class decision, not its probabilities, was constant). "
+         "'several models produce strongly asymmetric classifications at the 0.5 threshold' deleted (Section 4.3). "
+         "The author's first sentence is unchanged.",
+         rerun + " Analytical review, Section 4.5.")
     p = find_para(body, startswith="The findings therefore qualify")
     head = ("The findings therefore qualify the proposition that increasing model flexibility necessarily improves "
             "out-of-sample prediction (Gu et al., 2020; Kelly et al., 2024). ")
     tail = "The evidence supports limited predictive structure rather than a strongly separable factor-timing signal."
     assert text(p).startswith(head) and text(p).rstrip().endswith(tail), text(p)
     compose(e, p, [
-        head + f"XGBoost's advantage in mean ROC-AUC over the GAM is distinguishable from zero ({f3(xg.estimate)}, "
-        f"95% interval {f3(xg.ci_low)} to {f3(xg.ci_high)}), but its advantage over logistic regression is not "
-        f"({f3(xl.estimate)}, {f3(xl.ci_low)} to {f3(xl.ci_high)}), so on 156 weekly observations the value of "
-        f"nonlinearity over a regularised linear model is not statistically established. The two flexible models "
-        f"also differ in more than nonlinearity: XGBoost can represent interactions between predictors, which the "
-        f"additive GAM cannot ".replace("-0.", "−0."),
+        head + f"Performance does not rise steadily with flexibility. The fitted GAMs do not improve consistently on "
+        f"logistic regression, and on 156 weekly observations XGBoost's advantage in mean ROC-AUC over the "
+        f"regularised linear model is not statistically established ({f3(xl.estimate)}, 95% interval {f3(xl.ci_low)} "
+        f"to {f3(xl.ci_high)}), whereas its advantage over the GAM has an unadjusted paired interval that excludes "
+        f"zero ({f3(xg.estimate)}, {f3(xg.ci_low)} to {f3(xg.ci_high)}). The two flexible models also differ in "
+        f"more than nonlinearity: "
+        f"XGBoost can represent interactions between predictors, which the additive GAM cannot ".replace("-0.", "−0."),
         (["Has86", "JHF01"], "(Hastie & Tibshirani, 1986; Friedman, 2001)"),
         ", and its tuning can shrink each tree's contribution, whereas the GAM's penalty leaves the linear part of "
         "each term unpenalised ", woo,
-        ". The results cannot separate these two differences, but they show that smooth nonlinearity alone adds "
-        "nothing. The clearest regularity across the three models concerns regularisation: the lightly regularised "
-        "specifications, logistic regression for momentum versus value and the GAM, produced overconfident "
-        "probabilities and the poorest log-loss, and the validation data gave little basis for choosing between "
-        "penalties. " + tail])
-    note("4.5", "Flexibility conclusion rewritten: bootstrap intervals for the differences in mean ROC-AUC (method in "
-         "Section 3.9): XGBoost vs GAM distinguishable from zero, XGBoost vs logistic regression not; the two "
-         "flexible models differ in interactions and in regularisation, which the results cannot separate; smooth "
-         "nonlinearity alone adds nothing; the regularisation finding. The author's first and last sentences kept (the "
-         "whole paragraph is highlighted because it now holds citation fields: Has86, JHF01, Woo17). "
-         "'Even the best AUC is below 0.60' deleted (no longer true).", rerun + " results/model_outputs/bootstrap/"
-         "auc_mean_across_pairs.csv.")
+        ". The comparison cannot isolate either difference. A similar pattern has been reported for US stock "
+        "returns, where an additive spline model fails to improve on a linear one and the gains of trees and neural "
+        "networks are traced to interactions between predictors ", (["Shi20"], "(Gu, Kelly, & Xiu, 2020)"),
+        ", and tree ensembles remain the strongest learners on tabular data of moderate size ",
+        (["Gri22"], "(Grinsztajn, Oyallon, & Varoquaux, 2022)"),
+        "; these studies offer an interpretation of XGBoost's advantage rather than evidence of its mechanism here. "
+        "Across the three models, the specifications with the least shrinkage, logistic regression for momentum "
+        "versus value and the GAM, produced overconfident probabilities and the poorest log-loss (Section 4.3), and "
+        "the validation data gave little basis for choosing between penalties. " + tail])
+    note("4.5", "Flexibility conclusion rewritten in analytical form: performance does not rise steadily with "
+         "flexibility; XGBoost vs logistic regression uncertain, XGBoost vs GAM an unadjusted paired interval that "
+         "excludes zero (the nine-result adjustment applies to the individual ROC-AUCs, not to these comparisons); "
+         "the two flexible models differ in interactions and in regularisation, which the comparison cannot isolate. "
+         "Narrowed (analytical review): 'smooth nonlinearity alone adds nothing' becomes 'the fitted GAMs do not "
+         "improve consistently on logistic regression'; Gu, Kelly and Xiu (2020) and Grinsztajn et al. (2022) are "
+         "presented as an interpretation, not as evidence of the mechanism here. The author's first and last "
+         "sentences kept (the whole paragraph is highlighted because it now holds citation fields: Has86, JHF01, "
+         "Woo17, Shi20, Gri22). 'Even the best AUC is below 0.60' deleted (no longer true). Gu, Kelly and Xiu (2020): "
+         "their additive spline model 'fails to robustly outperform the linear specification' and the gains of trees "
+         "and neural networks come from predictor interactions (pp. 3 and 27 of the NBER version). "
+         "The typed citation '(Gu et al., 2020; Kelly et al., 2024)' in the author's first sentence should become a "
+         "citation field (Gu: tag Shi20). Kelly et al. (2024) has no Source Manager entry: Kelly, B., Malamud, S., & "
+         "Zhou, K. (2024). The virtue of complexity in return prediction. The Journal of Finance, 79(1), 459–503.",
+         rerun + " results/model_outputs/bootstrap/auc_mean_across_pairs.csv. Author: add references.")
     p = find_para(body, startswith="The global SHAP analysis indicates")
-    e.replace(p, "sentiment. These patterns differ",
-              "sentiment. Only South African real-yield-curve curvature is among the ten leading features of almost "
-              "every model and pair (eight of the nine); otherwise, the patterns differ")
+    head, tail = text(p).split(" These patterns differ ")
+    assert head.endswith("sentiment.") and tail.startswith("across model classes and factor pairs")
+    compose(e, p, [
+        head + " Only South African real-yield-curve curvature is among the ten leading features of almost every "
+        "model and pair (eight of the nine), in line with evidence that yield-curve variables capture business-cycle "
+        "variation in expected stock returns ", (["Fam89"], "(Fama & French, 1989)"),
+        " and in momentum payoffs ", (["Cho02"], "(Chordia & Shivakumar, 2002)"),
+        "; otherwise, the patterns differ " + tail])
     note("4.5", "SHAP summary: South African real-yield-curve curvature added as the one feature common to almost "
-         f"all models and pairs (Figures {shap_range}).", rerun)
+         f"all models and pairs (Figures {shap_range}), with the literature linking yield-curve variables to "
+         "business-cycle variation in expected returns (Fama & French, 1989, tag Fam89) and in momentum payoffs "
+         "(Chordia & Shivakumar, 2002, tag Cho02). The author's other sentences unchanged.",
+         rerun + " Author: add references.")
 
     for tbl in (t42, t41, t44):
         keep_together(tbl._tbl)

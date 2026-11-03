@@ -1,16 +1,14 @@
-"""Build Appendix C (CPCV and walk-forward formulation) as a standalone Word document.
+"""Appendix C (CPCV and walk-forward formulation): the content written after the thesis's 'Appendix C' heading.
 
-Usage: python build_appendix_c.py [out_dir] [thesis_snapshot.docx]
-
-Takes the CPCV splitter from logistic_classifier_roc.ipynb, the tuning grids, walk-forward selections and
-metrics from results/model_outputs, and the GAM exclusions from the GAM run logs in results/model_outputs/logs
-(the rerun on the corrected data, rerun_pipeline.py), and writes
-Appendix_C_CPCV_Walk_Forward.docx. Nothing is refitted: the only computed predictions are the no-feature
-baselines (the training sample's positive share). Formatting follows Appendix B (build_appendix_b.py).
+Used by build_appendices.py, which assembles Appendices A-C in one document. Takes the CPCV splitter from
+logistic_classifier_roc.ipynb, the tuning grids, walk-forward selections and metrics from results/model_outputs,
+the GAM exclusions from the GAM run logs in results/model_outputs/logs (the rerun on the corrected data,
+rerun_pipeline.py), and the fixed-setting runs of sensitivity_fixed_settings.py (Section C.5, Figure C.1).
+Nothing is refitted: the only computed predictions are the no-feature baselines (the training sample's
+positive share). Formatting follows Appendix B (build_appendix_b.py).
 """
 
 import ast
-import copy
 import json
 import os
 import re
@@ -18,29 +16,31 @@ import sys
 from itertools import combinations
 from pathlib import Path
 
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 from docx.shared import Inches
+from matplotlib.lines import Line2D
 from sklearn.metrics import roc_auc_score
 
-from build_appendix_b import caption, paragraph, subheading, table
-from build_minimal_chapter3 import accept_revisions, strip_comments
+from build_appendix_b import caption, figure, paragraph, subheading, table
+from thesis_style import GRID, INK, INK_2, LINE_THIN, MODEL_COLOURS, RC, TEXT_WIDTH
 
 RESULTS = Path(__file__).resolve().parent
 MODEL_TRAINING = RESULTS.parent / "model_training"
 OUTPUTS = RESULTS / "model_outputs"
-OUT_DIR = Path(sys.argv[1]) if len(sys.argv) > 1 else RESULTS
-# A copy of the thesis (Word keeps the original locked while it is open; snapshot it with cp first).
-SOURCE = Path(sys.argv[2]) if len(sys.argv) > 2 else RESULTS.parents[1] / ".tmp_chapter3_minimal" / "thesis_current.docx"
-OUTPUT = OUT_DIR / "Appendix_C_CPCV_Walk_Forward.docx"
-HEADING = "Appendix C: CPCV and Walk-forward Formulation"
+SENS = OUTPUTS / "sensitivity"
+FIGURE_C1 = SENS / "figure_c1_fixed_settings.png"
 
 PAIRS = {"Momentum_vs_Value": "Momentum vs value", "Momentum_vs_Quality": "Momentum vs quality",
          "Value_vs_Quality": "Value vs quality"}
 MODELS = {"Logistic": "logistic", "GAM": "gam", "XGBoost": "xgboost"}
+KEYS = {"Logistic": ["alpha", "lambda_reg"], "GAM": ["lam", "n_splines"],
+        "XGBoost": ["learning_rate", "max_depth", "min_child_weight", "reg_lambda", "subsample"]}
 LETTERS = "ABCDE"
 RETUNES = (52, 104)
 
@@ -116,29 +116,79 @@ def describe(model, params):
             f"{params['min_child_weight']}, λ = {params['reg_lambda']:g}, subsample {params['subsample']:g}")
 
 
-# ---------------------------------------------------------------- document --
+def sensitivity(schedule):
+    """Walk-forward results of every grid setting held fixed for all predictions (sensitivity_fixed_settings.py),
+    with the selected results of Chapter 4. Where the selected setting never changed, the fixed run of that
+    setting must reproduce the selected result."""
+    metrics = pd.read_csv(OUTPUTS / "metrics_summary.csv").set_index(["model", "factor_pair"])
+    runs, reproduced = {}, []
+    for model, tag in MODELS.items():
+        for pair in PAIRS:
+            grid = pd.read_csv(SENS / f"{tag}_{pair.lower()}_fixed.csv")
+            ok = grid[grid["failed"].isna()]
+            sel = metrics.loc[(model, pair)]
+            used = {tuple(float(s[k]) for k in KEYS[model]) for s in schedule[(model, pair)]}
+            if len(used) == 1:
+                (values,) = used
+                row = ok[np.logical_and.reduce([np.isclose(ok[k].astype(float), v) for k, v in zip(KEYS[model], values)])]
+                assert len(row) == 1 and all(np.isclose(row[m].iloc[0], sel[m]) for m in ("roc_auc", "accuracy",
+                                                                                          "log_loss")), (model, pair)
+                reproduced.append((model, pair))
+            runs[(model, pair)] = dict(grid=grid, auc=ok["roc_auc"].values, ll=ok["log_loss"].values,
+                                       sel_auc=sel["roc_auc"], sel_ll=sel["log_loss"])
+    assert reproduced == [("Logistic", "Value_vs_Quality"), ("GAM", "Momentum_vs_Value")], reproduced
+    return runs
 
-def prepare():
-    document = Document(SOURCE)
-    body = document.element.body
-    children = list(body)
-    heading = next(el for el in children if el.tag == qn("w:p") and text(el).strip() == HEADING)
-    start = children.index(heading)
-    section = next(el for el in children[start:] if el.tag == qn("w:p") and el.find(qn("w:pPr")) is not None
-                   and el.find(qn("w:pPr")).find(qn("w:sectPr")) is not None)
-    accept_revisions(body)
-    strip_comments(body)
-    appendix_sect = copy.deepcopy(section.find(qn("w:pPr")).find(qn("w:sectPr")))
-    for child in list(body):
-        if child is not heading and child.tag != qn("w:sectPr"):
-            body.remove(child)
-    final = body.find(qn("w:sectPr"))
-    final.addprevious(appendix_sect)
-    body.remove(final)
-    return document
+
+def first_period(schedule, model, pair, n_test):
+    """ROC-AUC in the first 52 predictions of the setting selected at each tuning point, after checking that the
+    selected forecasts equal the fixed run of the setting in use in every period."""
+    tag = MODELS[model]
+    probs = pd.read_csv(OUTPUTS / "probs" / f"{tag}_{pair.lower()}_probs.csv")
+    y, q = probs["actual"].values, probs["probability"].values
+    grid = pd.read_csv(SENS / f"{tag}_{pair.lower()}_fixed.csv")
+    fixed = pd.read_csv(SENS / f"{tag}_{pair.lower()}_fixed_probs.csv")
+    bounds = [0, *RETUNES, n_test]
+    aucs = []
+    for k, s in enumerate(schedule[(model, pair)]):
+        match = np.logical_and.reduce([np.isclose(grid[c].astype(float), float(s[c])) for c in KEYS[model]])
+        f = fixed[str(grid[match]["setting"].iloc[0])].values
+        assert np.allclose(f[bounds[k]:bounds[k + 1]], q[bounds[k]:bounds[k + 1]], atol=1e-6), (model, pair, k)
+        aucs.append(roc_auc_score(y[:RETUNES[0]], f[:RETUNES[0]]))
+    return aucs
 
 
-def build():
+def figure_c1(runs):
+    """Strip plot: the walk-forward ROC-AUC of every fixed setting, by pair and model, and the selected result."""
+    plt.rcParams.update(RC)
+    fig, axes = plt.subplots(1, len(PAIRS), figsize=(TEXT_WIDTH, 3.0), sharey=True)
+    rng = np.random.default_rng(0)
+    for ax, (pair, name) in zip(axes, PAIRS.items()):
+        ax.grid(axis="y", color=GRID, linewidth=LINE_THIN)
+        ax.set_axisbelow(True)
+        ax.axhline(0.5, color=INK_2, linewidth=LINE_THIN, linestyle="--", zorder=1)
+        for x, model in enumerate(MODELS):
+            r = runs[(model, pair)]
+            ax.scatter(x + rng.uniform(-0.28, 0.28, len(r["auc"])), r["auc"], s=10, color=MODEL_COLOURS[model],
+                       edgecolors="white", linewidths=0.4, zorder=2)
+            ax.scatter([x], [r["sel_auc"]], marker="D", s=34, color=INK, edgecolors="white", linewidths=0.8, zorder=3)
+        ax.set_xticks(range(len(MODELS)), list(MODELS))
+        ax.set_xlim(-0.6, len(MODELS) - 0.4)
+        ax.set_title(name)
+    axes[0].set_ylabel("Walk-forward ROC-AUC")
+    handles = [Line2D([], [], marker="o", linestyle="", color=INK_2, markeredgecolor="white", markersize=5,
+                      label="Setting held fixed for all 156 predictions"),
+               Line2D([], [], marker="D", linestyle="", color=INK, markeredgecolor="white", markersize=6,
+                      label="Selected by CPCV, retuned annually (Chapter 4)")]
+    fig.legend(handles=handles, loc="lower center", ncol=2, bbox_to_anchor=(0.5, 0.0))
+    fig.tight_layout(rect=(0, 0.08, 1, 1))
+    fig.savefig(FIGURE_C1, dpi=300)
+    plt.close(fig)
+    return FIGURE_C1
+
+
+def content(doc):
+    """Append Appendix C after its heading."""
     ns = notebook_namespace()
     cv, n_test, gap = ns["CombinatorialPurgedCV"](), ns["FINAL_TEST_POINTS"], ns["PURGE_GAP"]
     data = {pair: ns["load_data"](pair) for pair in PAIRS}
@@ -183,14 +233,14 @@ def build():
     strip = lambda s: {k: v for k, v in s.items() if k not in ("from_step", "n_train", "fit_intercept", "max_iter")}
     changes = sum(strip(v[i]) != strip(v[i - 1]) for v in schedule.values() for i in (1, 2))
 
-    doc = prepare()
     W = Inches
     paragraph(doc, "Review note: this appendix replaces the ‘work in progress’ placeholder; all of its content is "
                    "new.", size=10, highlight=True, align=WD_ALIGN_PARAGRAPH.LEFT)
     paragraph(doc, "This appendix gives the details of the validation design summarised in Section 3.8: the splits "
                    "and combinations used by combinatorial purged cross-validation (CPCV) (C.1), the ROC-AUCs of its "
-                   "back-test paths (C.2), the GAM settings excluded from the search (C.3), and the walk-forward "
-                   "schedule with the hyperparameters selected at each tuning point (C.4). Splits and combinations "
+                   "back-test paths (C.2), the GAM settings excluded from the search (C.3), the walk-forward "
+                   "schedule with the hyperparameters selected at each tuning point (C.4), and the sensitivity of "
+                   "the walk-forward results to the hyperparameters (C.5). Splits and combinations "
                    f"are shown for the initial search, on the {n_tune} weekly observations from {day(dates[0])} to "
                    f"{day(dates[n_tune - 1])}; each retuning search divides its own, longer training window in the "
                    "same way.")
@@ -299,9 +349,128 @@ def build():
            for p in PAIRS for m in MODELS],
           [W(1.05), W(0.7), W(1.5), W(1.5), W(1.5)], font=7)
 
-    doc.save(OUTPUT)
-    return OUTPUT
+    # C.5 -----------------------------------------------------------------------------------------
+    runs = sensitivity(schedule)
+    f2, pct = (lambda x: f"{x:.3f}"), (lambda x: f"{100 * x:.0f}%")
+    R = lambda m, p: runs[(m, p)]
+    mv, mq, vq = PAIRS
+    n_grid = {m: len(R(m, mv)["grid"]) for m in MODELS}
+    assert all(len(R(m, p)["grid"]) == n_grid[m] for m in MODELS for p in PAIRS)
+    failures = [(m, p, r) for (m, p), v in runs.items() for r in v["grid"][v["grid"]["failed"].notna()].itertuples()]
+    assert len(failures) == 1 and failures[0][:2] == ("GAM", mq)
+    fail = failures[0][2]
+    below = lambda m, p: np.mean(R(m, p)["auc"] < R(m, p)["sel_auc"])     # share of fixed settings below selected
+    under_ln2 = lambda m, p: np.mean(R(m, p)["ll"] < np.log(2))
+
+    subheading(doc, "C.5: Sensitivity to the hyperparameters")
+    paragraph(doc, "Chapter 4 reports the walk-forward results of the settings selected by CPCV at each tuning point. "
+                   "To show how far these results depend on that selection, every setting in each model's search grid "
+                   f"(Section 3.8.1) is also held fixed for all {n_test} predictions, without retuning, and evaluated by "
+                   f"the same walk-forward procedure: {n_grid['Logistic']} settings of logistic regression, "
+                   f"{n_grid['GAM']} of the GAM and {n_grid['XGBoost']} of XGBoost for each pair, "
+                   f"{3 * sum(n_grid.values())} runs in all. One GAM setting "
+                   f"({describe('GAM', {'lam': fail.lam, 'n_splines': fail.n_splines})}) could not be fitted in every "
+                   "week for momentum versus quality and is excluded, as in the CPCV search. Where the selected "
+                   "setting never changed (logistic regression for value versus quality and the GAM for momentum "
+                   "versus value), holding it fixed reproduces the result in Chapter 4 exactly, so the fixed runs are "
+                   "comparable with the main results. Table C.7 compares each selected result with the fixed settings, "
+                   "and Figure C.1 shows the ROC-AUC of every fixed setting.", highlight=True)
+
+    best_other = {p: max(R("Logistic", p)["auc"].max(), R("GAM", p)["auc"].max()) for p in PAIRS}
+    x_vq, x_mv, x_mq = R("XGBoost", vq)["auc"], R("XGBoost", mv)["auc"], R("XGBoost", mq)["auc"]
+    share_vq = np.mean(x_vq > best_other[vq])
+    assert x_vq.min() > 0.5 and np.quantile(x_vq, 0.25) > best_other[vq]
+    assert np.median(x_mv) > R("GAM", mv)["auc"].max() and np.median(x_mv) > np.median(R("Logistic", mv)["auc"])
+    lmax_mv, lmax_mq, gmax_mq = R("Logistic", mv)["auc"].max(), R("Logistic", mq)["auc"].max(), R("GAM", mq)["auc"].max()
+    assert lmax_mv < np.median(x_mv) and np.median(x_mq) > lmax_mq and gmax_mq > np.quantile(x_mq, 0.75)
+    ln2 = {(m, p): under_ln2(m, p) for m in MODELS for p in PAIRS}
+    assert [k for k, v in ln2.items() if v > 0.5] == [("XGBoost", mq), ("XGBoost", vq)]
+    assert all(ln2[("GAM", p)] == 0 for p in PAIRS)
+    paragraph(doc, "XGBoost's lead in ranking does not depend on its setting for value versus quality and momentum "
+                   "versus value. For value versus quality every fixed XGBoost setting has a ROC-AUC above 0.5 "
+                   f"({f2(x_vq.min())} to {f2(x_vq.max())}), and {pct(share_vq)} of them exceed the best fixed setting "
+                   f"of both logistic regression ({f2(R('Logistic', vq)['auc'].max())}) and the GAM "
+                   f"({f2(R('GAM', vq)['auc'].max())}). For momentum versus value {(x_mv > 0.5).sum()} of the "
+                   f"{len(x_mv)} settings exceed 0.5, and their median ({f2(np.median(x_mv))}) exceeds every GAM "
+                   f"setting and the median logistic setting ({f2(np.median(R('Logistic', mv)['auc']))}), although "
+                   f"the best logistic setting ({f2(lmax_mv)}) is above {pct(np.mean(x_mv < lmax_mv))} of the XGBoost "
+                   "settings. For momentum versus quality the ranking depends on the settings: the XGBoost median "
+                   f"({f2(np.median(x_mq))}) only just exceeds the best logistic setting ({f2(lmax_mq)}), and the best "
+                   f"GAM setting ({f2(gmax_mq)}) is above {pct(np.mean(x_mq < gmax_mq))} of the XGBoost settings. "
+                   "XGBoost is also the only model whose fixed settings mostly have a log-loss below 0.693, for "
+                   f"momentum versus quality ({pct(ln2[('XGBoost', mq)])}) and value versus quality "
+                   f"({pct(ln2[('XGBoost', vq)])}); no GAM setting does so for any pair.", highlight=True)
+
+    sel_x = {p: below("XGBoost", p) for p in PAIRS}
+    assert sel_x[mv] > 0.9 and sel_x[vq] > 0.75 and 0.4 < sel_x[mq] < 0.6
+    paragraph(doc, f"CPCV selection placed XGBoost above {pct(sel_x[mv])} and {pct(sel_x[vq])} of its fixed settings "
+                   "for momentum versus value and value versus quality, and near the median for momentum versus "
+                   f"quality ({pct(sel_x[mq])}), so the selected results do not overstate what its grid allows. The "
+                   f"best fixed settings reach {f2(x_mv.max())}, {f2(x_mq.max())} and {f2(x_vq.max())}, but they could "
+                   "be identified only with hindsight: the range across settings measures the dependence on the "
+                   "hyperparameters, not an attainable improvement.", highlight=True)
+
+    g_vq, g_mq, g_mv = R("GAM", vq), R("GAM", mq), R("GAM", mv)
+    first = first_period(schedule, "GAM", vq, n_test)
+    initial = schedule[("GAM", vq)][0]
+    assert g_vq["sel_auc"] < g_vq["auc"].min() and (initial["lam"], initial["n_splines"]) == (1, 10)
+    assert len({f2(a) for a in first[1:]}) == 1 and first[0] < 0.55 < first[1]
+    q_gam = np.mean(g_vq["auc"] >= 0.58)
+    assert q_gam >= 0.75 and below("GAM", mq) < 0.2 and g_mv["auc"].min() > 0.45 and g_mv["auc"].max() < 0.55
+    paragraph(doc, "The GAM's results depend more on the selection. For value versus quality its selected ROC-AUC "
+                   f"({f2(g_vq['sel_auc'])}) is below that of every fixed setting ({f2(g_vq['auc'].min())} to "
+                   f"{f2(g_vq['auc'].max())}). In each period the selected forecasts coincide with the fixed run of "
+                   "the setting then in use, so the difference arises in the first period: the weakest penalty "
+                   f"({describe('GAM', initial)}), selected at the initial tuning point, ranks that period's weeks "
+                   f"at {f2(first[0])}, whereas the strongly penalised settings selected at the later tuning points "
+                   f"rank them at {f2(first[1])}. With {pct(q_gam)} of the fixed settings the GAM would have reached "
+                   f"at least 0.580 for this pair, close to logistic regression ({f2(R('Logistic', vq)['sel_auc'])}). "
+                   f"For momentum versus quality its selected result ({f2(g_mq['sel_auc'])}) is near the bottom of "
+                   f"its range ({f2(g_mq['auc'].min())} to {f2(g_mq['auc'].max())}), and for momentum versus value "
+                   f"every setting is close to 0.5 ({f2(g_mv['auc'].min())} to {f2(g_mv['auc'].max())}).",
+              highlight=True)
+
+    l_mv = R("Logistic", mv)
+    lam_mv = {s["lambda_reg"] for s in schedule[("Logistic", mv)]}
+    assert l_mv["auc"].max() < 0.56 and lam_mv == {0.01} and l_mv["sel_ll"] >= l_mv["ll"].max() - 1e-3
+    paragraph(doc, "For logistic regression the selection matters mainly for its probabilities. For momentum versus "
+                   "value no setting ranks the weeks reliably better than chance: the ROC-AUCs range from "
+                   f"{f2(l_mv['auc'].min())} to {f2(l_mv['auc'].max())}, and {(l_mv['auc'] < 0.5).sum()} of the "
+                   f"{len(l_mv['auc'])} settings fall below 0.5, so its weak ranking for this pair does not come from "
+                   "the selection. The weakest penalty (λ = 0.01), selected at every tuning point for this pair, "
+                   f"gives a log-loss of {f2(l_mv['sel_ll'])}, as high as the worst fixed setting, against a median "
+                   f"of {f2(np.median(l_mv['ll']))}. For the other two pairs the selected results exceed "
+                   f"{pct(below('Logistic', mq))} and {pct(below('Logistic', vq))} of the fixed settings.",
+              highlight=True)
+    assert g_vq["auc"].max() < np.quantile(x_vq, 0.25)
+    paragraph(doc, "The sensitivity analysis therefore supports the finding that XGBoost ranks the weeks better than "
+                   "the other models for value versus quality and momentum versus value whatever its setting, but not "
+                   "for momentum versus quality. The GAM's weak results partly reflect the setting selected at the "
+                   "initial tuning point rather than the model class: with a fixed, strongly penalised setting it is "
+                   "comparable with logistic regression for value versus quality, but it does not approach XGBoost.",
+              highlight=True)
+
+    caption(doc, "Table C.7: Walk-forward ROC-AUC and log-loss of the selected settings and of every setting held "
+                 "fixed")
+    rows = []
+    for pair, name in PAIRS.items():
+        for model in MODELS:
+            r = R(model, pair)
+            n_ok, n_all = len(r["auc"]), len(r["grid"])
+            rows.append([name if model == "Logistic" else "", model,
+                         n_ok if n_ok == n_all else f"{n_ok} of {n_all}", f2(r["sel_auc"]),
+                         f"{f2(np.median(r['auc']))} ({f2(r['auc'].min())}–{f2(r['auc'].max())})",
+                         pct(below(model, pair)), f2(r["sel_ll"]),
+                         f"{f2(np.median(r['ll']))} ({f2(r['ll'].min())}–{f2(r['ll'].max())})"])
+    table(doc, ["Factor pair", "Model", "Fixed settings", "Selected ROC-AUC", "Fixed ROC-AUC: median (range)",
+                "Fixed settings below selected", "Selected log-loss", "Fixed log-loss: median (range)"], rows,
+          [W(1.0), W(0.65), W(0.55), W(0.6), W(1.05), W(0.7), W(0.6), W(1.05)], font=7.5,
+          align_right=(2, 3, 4, 5, 6, 7))
+    figure(doc, figure_c1(runs))
+    caption(doc, "Figure C.1: Walk-forward ROC-AUC of every hyperparameter setting held fixed, by factor pair and "
+                 "model, and of the settings selected by CPCV")
+    return runs
 
 
 if __name__ == "__main__":
-    print("Wrote", build())
+    sys.exit("Appendix C is built with Appendices A and B by build_appendices.py.")

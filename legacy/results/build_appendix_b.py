@@ -1,9 +1,9 @@
-"""Build Appendix B (Feature Selection) as a standalone Word document.
+"""Appendix B (Feature Selection): the content written after the thesis's 'Appendix B' heading.
 
-Reads the outputs of appendix_b_feature_selection.py and writes
-Appendix_B_Feature_Selection.docx to the folder given as the first argument
-(default: this results folder). Formatting follows Appendix A of the thesis:
-'Appendix Heading 1' title, bold 'B.n:' subheadings and 8-point grid tables.
+Reads the outputs of appendix_b_feature_selection.py. Used by build_appendices.py, which assembles
+Appendices A-C in one document; Table B.8 (the economic classification of the 50 modelling features) is
+taken from the Chapter 3 amendment document, where it was moved out of Section 3.6. Formatting follows
+Appendix A of the thesis: 'Appendix Heading 1' title, bold 'B.n:' subheadings and 8-point grid tables.
 """
 
 import copy
@@ -12,23 +12,14 @@ import sys
 from pathlib import Path
 
 import pandas as pd
-from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Inches, Pt
 
 RESULTS = Path(__file__).resolve().parent
-ROOT = RESULTS.parent.parent
-SOURCE = ROOT / ".tmp_chapter3_minimal" / "thesis_current.docx"
 DATA = RESULTS / "appendix_b"
-OUT_DIR = Path(sys.argv[1]) if len(sys.argv) > 1 else RESULTS
-OUTPUT = OUT_DIR / "Appendix_B_Feature_Selection.docx"
-HEADING_INDEX, SECTION_INDEX = 806, 822          # Appendix B heading and the appendix section break
 TEXT_WIDTH = Inches(6.27)
-
-sys.path.insert(0, str(ROOT / ".tmp_chapter3_minimal"))
-from build_minimal_chapter3 import accept_revisions, strip_comments  # noqa: E402
 
 S = json.loads((DATA / "summary.json").read_text())
 b1 = pd.read_csv(DATA / "b1_clusters.csv")
@@ -49,23 +40,6 @@ def fmt_date(iso):
 
 
 # --------------------------------------------------------------- document --
-
-def prepare():
-    document = Document(SOURCE)
-    body = document.element.body
-    paragraphs = document.paragraphs
-    heading, section = paragraphs[HEADING_INDEX]._p, paragraphs[SECTION_INDEX]._p
-    accept_revisions(body)
-    strip_comments(body)
-    appendix_sect = copy.deepcopy(section.find(qn("w:pPr")).find(qn("w:sectPr")))
-    for child in list(body):
-        if child is not heading and child.tag != qn("w:sectPr"):
-            body.remove(child)
-    final = body.find(qn("w:sectPr"))
-    final.addprevious(appendix_sect)
-    body.remove(final)
-    return document
-
 
 def paragraph(document, text, bold=False, size=None, align=WD_ALIGN_PARAGRAPH.JUSTIFY, after=6,
               highlight=False, keep_next=False):
@@ -135,9 +109,20 @@ def figure(document, path):
 
 # ---------------------------------------------------------------- content --
 
-def build():
-    doc = prepare()
+def classification(table_el):
+    """Feature -> category, from Table B.8 (the category is given on the first row of each group)."""
+    mapping, current = {}, None
+    for tr in table_el.findall(qn("w:tr"))[1:]:
+        cells = ["".join(t.text or "" for t in tc.iter(qn("w:t"))).strip() for tc in tr.findall(qn("w:tc"))]
+        current = cells[0] or current
+        mapping[cells[1]] = current
+    return mapping
+
+
+def content(doc, table_b8):
+    """Append Appendix B after its heading. `table_b8` is the w:tbl of Table B.8 (copied, not moved)."""
     W = Inches
+    categories = classification(table_b8)
 
     paragraph(doc, "Review note: this appendix replaces the ‘work in progress’ placeholder; all of its "
                    "content is new.", size=10, highlight=True, align=WD_ALIGN_PARAGRAPH.LEFT)
@@ -181,11 +166,10 @@ def build():
 
     # B.2 ------------------------------------------------------------------
     subheading(doc, "B.2: Cluster membership and representatives")
-    categories = category_map()
     n_duplicates = int(((b1["size"] == 2) & (b1["within_mean_distance"] == 0)).sum())
     paragraph(doc, "Table B.3 lists the 32 clusters formed at a cut height of 2, ordered by size. For each cluster "
-                   "it reports the representative retained for modelling, its category in Table 1, the cluster "
-                   "size, the representative’s mean MI distance to the members of its cluster (Equation 7), the "
+                   "it reports the representative retained for modelling, its category in Table 2, the cluster "
+                   "size, the representative’s mean MI distance to the members of its cluster, the "
                    "mean distance between all pairs of members, and the remaining members in order of increasing "
                    "mean distance. Clusters with low within-cluster distances group closely related series, such "
                    "as the same instrument at different tenors (ZAR forward points, USDZAR implied volatility and "
@@ -200,8 +184,8 @@ def build():
                    f"{fmt_date(S['ppp_first_change'])} and varies only within the evaluation block. It is "
                    "selected because it is the only member of its cluster with any variation: the other ten "
                    "members are the constant Lambda features (within-cluster distance 1.00). It therefore carries "
-                   "no information in the initial training window and does not appear among the 20 most "
-                   "influential features of any model in Chapter 4.")
+                   "no information in the initial training window and is not among the ten most influential "
+                   "features of any model in Chapter 4.")
     caption(doc, "Table B.3: Clusters, representatives and members (cut height 2)")
     table(doc, ["Representative", "Category", "Size", "Rep. mean dist.", "Within-cluster dist.", "Other members"],
           [[r.representative, categories.get(r.representative, ""), r.size, f"{r.rep_mean_distance:.2f}",
@@ -306,7 +290,18 @@ def build():
                    "persistence between slow-moving series.")
 
     # B.6 ------------------------------------------------------------------
-    subheading(doc, "B.6: Summary")
+    subheading(doc, "B.6: Economic classification of the modelling features")
+    assert len(categories) == 50 and set(b1.representative) <= set(categories), "Table B.8 does not match"
+    paragraph(doc, "Table B.8 lists the 50 modelling features, the 32 cluster representatives and the 18 "
+                   "relative-factor features added by design, by the categories of Table 2, with the economic "
+                   "rationale for including each and the empirical evidence that supports it. Appendix A defines "
+                   "each feature.", highlight=True)
+    caption(doc, "Table B.8: Economic classification of the 50 modelling features")
+    doc.element.body.find(qn("w:sectPr")).addprevious(copy.deepcopy(table_b8))
+    doc.add_paragraph(style="Normal").paragraph_format.space_after = Pt(2)
+
+    # B.7 ------------------------------------------------------------------
+    subheading(doc, "B.7: Summary")
     paragraph(doc, "The documented procedure reproduces the selected features exactly. The selection is sensitive "
                    "to the bin count, the estimation sample and the dependence measure: about a third of the "
                    "representatives change under each reasonable alternative, although most are replaced by "
@@ -317,20 +312,7 @@ def build():
                    "should therefore be read as one reasonable, non-redundant subset of the candidate universe, not "
                    "as a uniquely identified set of informative predictors.")
 
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    doc.save(OUTPUT)
-    print(OUTPUT)
-
-
-def category_map():
-    document = Document(SOURCE)
-    mapping, current = {}, None
-    for row in document.tables[4].rows[1:]:
-        cat = row.cells[0].text.strip()
-        current = cat or current
-        mapping[row.cells[1].text.strip()] = current
-    return mapping
 
 
 if __name__ == "__main__":
-    build()
+    sys.exit("Appendix B is built with Appendices A and C by build_appendices.py.")
