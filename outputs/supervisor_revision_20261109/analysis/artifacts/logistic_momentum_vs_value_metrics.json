@@ -1,0 +1,13 @@
+{
+  "model": "Logistic",
+  "factor_pair": "Momentum_vs_Value",
+  "n_test": 156,
+  "accuracy": 0.5512820512820513,
+  "roc_auc": 0.5534382767191384,
+  "log_loss": 0.7982565369521167,
+  "tn": 17,
+  "fp": 54,
+  "fn": 16,
+  "tp": 69,
+  "elapsed_minutes": 14.574967805544535
+}

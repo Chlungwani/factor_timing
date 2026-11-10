@@ -1,0 +1,13 @@
+{
+  "model": "XGBoost",
+  "factor_pair": "Momentum_vs_Value",
+  "n_test": 156,
+  "accuracy": 0.5384615384615384,
+  "roc_auc": 0.5719966859983431,
+  "log_loss": 0.8086854777850422,
+  "tn": 36,
+  "fp": 35,
+  "fn": 37,
+  "tp": 48,
+  "elapsed_minutes": 77.40644828478496
+}

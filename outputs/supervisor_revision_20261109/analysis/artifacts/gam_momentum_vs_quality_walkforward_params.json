@@ -1,0 +1,26 @@
+[
+  {
+    "from_step": 0,
+    "n_train": 606,
+    "train_end": "2021-11-01",
+    "mean_auc": 0.5316986027376324,
+    "lam": 1000,
+    "n_splines": 7
+  },
+  {
+    "from_step": 52,
+    "n_train": 658,
+    "train_end": "2022-10-31",
+    "mean_auc": 0.5597795416280692,
+    "lam": 10000,
+    "n_splines": 4
+  },
+  {
+    "from_step": 104,
+    "n_train": 710,
+    "train_end": "2023-10-30",
+    "mean_auc": 0.5096039667176107,
+    "lam": 1000,
+    "n_splines": 4
+  }
+]

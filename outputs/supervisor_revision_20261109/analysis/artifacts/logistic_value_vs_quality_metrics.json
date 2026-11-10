@@ -1,0 +1,13 @@
+{
+  "model": "Logistic",
+  "factor_pair": "Value_vs_Quality",
+  "n_test": 156,
+  "accuracy": 0.5897435897435898,
+  "roc_auc": 0.6064441887226697,
+  "log_loss": 0.6842316733199582,
+  "tn": 53,
+  "fp": 26,
+  "fn": 38,
+  "tp": 39,
+  "elapsed_minutes": 13.62859223683675
+}

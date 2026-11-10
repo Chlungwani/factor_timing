@@ -1,0 +1,117 @@
+[
+  {
+    "feature": "OVXStructBreak",
+    "pre_selection_missing_share": 0.34073107049608353,
+    "first_available": "2012-03-05"
+  },
+  {
+    "feature": "SA_CDS_Level_QS",
+    "pre_selection_missing_share": 0.34464751958224543,
+    "first_available": "2012-03-26"
+  },
+  {
+    "feature": "SA_CDS_Slope_QS",
+    "pre_selection_missing_share": 0.34464751958224543,
+    "first_available": "2012-03-26"
+  },
+  {
+    "feature": "SA_CDS_Curvature_QS",
+    "pre_selection_missing_share": 0.34464751958224543,
+    "first_available": "2012-03-26"
+  },
+  {
+    "feature": "SA_CDS_Lambda_QS",
+    "pre_selection_missing_share": 0.34464751958224543,
+    "first_available": "2012-03-26"
+  },
+  {
+    "feature": "SA_CDS_R2_QS",
+    "pre_selection_missing_share": 0.34464751958224543,
+    "first_available": "2012-03-26"
+  },
+  {
+    "feature": "USDZAR_Vol_Level",
+    "pre_selection_missing_share": 0.33550913838120106,
+    "first_available": "2012-02-06"
+  },
+  {
+    "feature": "USDZAR_Vol_Slope",
+    "pre_selection_missing_share": 0.33550913838120106,
+    "first_available": "2012-02-06"
+  },
+  {
+    "feature": "USDZAR_Vol_QS_Level",
+    "pre_selection_missing_share": 0.5953002610966057,
+    "first_available": "2015-11-30"
+  },
+  {
+    "feature": "USDZAR_Vol_QS_Slope",
+    "pre_selection_missing_share": 0.5953002610966057,
+    "first_available": "2015-11-30"
+  },
+  {
+    "feature": "SAImplYld_Level",
+    "pre_selection_missing_share": 0.5352480417754569,
+    "first_available": "2015-01-12"
+  },
+  {
+    "feature": "SAImplYld_Slope",
+    "pre_selection_missing_share": 0.5352480417754569,
+    "first_available": "2015-01-12"
+  },
+  {
+    "feature": "SAImplYld_QS_Level",
+    "pre_selection_missing_share": 0.7950391644908616,
+    "first_available": "2018-11-05"
+  },
+  {
+    "feature": "SAImplYld_QS_Slope",
+    "pre_selection_missing_share": 0.7950391644908616,
+    "first_available": "2018-11-05"
+  },
+  {
+    "feature": "ZARI2M.Curncy_QS",
+    "pre_selection_missing_share": 0.40339425587467365,
+    "first_available": "2013-02-04"
+  },
+  {
+    "feature": "ZARI2W.Curncy_QS",
+    "pre_selection_missing_share": 0.40339425587467365,
+    "first_available": "2013-02-04"
+  },
+  {
+    "feature": "ZARI2Y.Curncy_QS",
+    "pre_selection_missing_share": 0.40339425587467365,
+    "first_available": "2013-02-04"
+  },
+  {
+    "feature": "ZARI3M.Curncy_QS",
+    "pre_selection_missing_share": 0.40339425587467365,
+    "first_available": "2013-02-04"
+  },
+  {
+    "feature": "ZARI3Y.Curncy_QS",
+    "pre_selection_missing_share": 0.40339425587467365,
+    "first_available": "2013-02-04"
+  },
+  {
+    "feature": "ZARI4M.Curncy_QS",
+    "pre_selection_missing_share": 0.40339425587467365,
+    "first_available": "2013-02-04"
+  },
+  {
+    "feature": "ZARI4Y.Curncy_QS",
+    "pre_selection_missing_share": 0.40339425587467365,
+    "first_available": "2013-02-04"
+  },
+  {
+    "feature": "ZARI5M.Curncy_QS",
+    "pre_selection_missing_share": 0.40339425587467365,
+    "first_available": "2013-02-04"
+  },
+  {
+    "feature": "ZARI5Y.Curncy_QS",
+    "pre_selection_missing_share": 0.40339425587467365,
+    "first_available": "2013-02-04"
+  }
+]

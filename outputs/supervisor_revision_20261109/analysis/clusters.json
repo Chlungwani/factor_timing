@@ -1,0 +1,560 @@
+[
+  {
+    "cluster": 1,
+    "representative": "BCMPEBLS.Index",
+    "size": 14,
+    "mean_distance": 0.4650159906659449,
+    "members": [
+      "MichgnConcIndx",
+      "SACWC_YoY",
+      "OEZAKLAF_YoY",
+      "BCMPEBLS.Index",
+      "LEI.TOTL.Index",
+      "SACWC.Index_QS",
+      "LocalEquityVol12",
+      "LocalBondsVol12",
+      "LocalPropertyVol12",
+      "GlobalEquityVol1",
+      "GlobalEquityVol12",
+      "GlobalBondVol12",
+      "GlobalPropertyVol12",
+      "SA_RB_Level"
+    ]
+  },
+  {
+    "cluster": 2,
+    "representative": "MXWD_Fundamental_PC1",
+    "size": 5,
+    "mean_distance": 0.3792297043900356,
+    "members": [
+      "MXWD.Index.PE.Ratio_Diff",
+      "MXWD.Index.PE.Ratio.Next.FY.Aggregated_Diff",
+      "MXWD.Index.Price.to.Ebitda_Diff",
+      "MXWD.Index.Forward.PE_Diff",
+      "MXWD_Fundamental_PC1"
+    ]
+  },
+  {
+    "cluster": 3,
+    "representative": "SA_CDS_Slope",
+    "size": 4,
+    "mean_distance": 0.37403619812750594,
+    "members": [
+      "SA_CDS_Level",
+      "SA_CDS_Slope",
+      "SA_CDS_Curvature",
+      "SA_CDS_R2"
+    ]
+  },
+  {
+    "cluster": 4,
+    "representative": "US_NB_Curvature",
+    "size": 43,
+    "mean_distance": 0.6476582650765148,
+    "members": [
+      "DXY_RV_12",
+      "JALSH_RV_12_TS",
+      "RandPPP_Factor_Inst",
+      "ZAR_FwdPts_PC2_TS",
+      "ZAR_FwdPts_PC1_TS",
+      "DXY_TS",
+      "GE_GB_Corr",
+      "LE_LB_Corr",
+      "SubIndex_PC1",
+      "BCMPEBLS.Index_QS",
+      "LocalEquityVol6",
+      "LocalBondsVol6",
+      "LocalPropertyGret12",
+      "LocalPropertyVol6",
+      "GlobalEquityVol6",
+      "GlobalPropertyVol6",
+      "USDZARVol12",
+      "SA_NB_Curvature",
+      "SA_RB_Slope",
+      "SA_RB_Curvature",
+      "SA_RB_R2",
+      "SA_RB_Level_QS",
+      "SA_RB_Slope_QS",
+      "SA_RB_Curvature_QS",
+      "SA_RB_R2_QS",
+      "SA_RB_Level_TS",
+      "SABreakEvenInflPC_1",
+      "US_NB_Slope",
+      "US_NB_Curvature",
+      "US_NB_R2",
+      "US_NB_Curvature_QS",
+      "US_NB_R2_QS",
+      "US_RB_Slope_TS",
+      "SAFwdPtsl_Level",
+      "SAFwdPts_Slope",
+      "JALSH.Index.PE.Ratio_QS",
+      "JALSH.Index.Forward.PE_QS",
+      "JALSH.Index.PE.Ratio_Diff",
+      "JALSH.Index.Forward.PE_Diff",
+      "JALSH_Fundamental_PC1",
+      "JALSH_Fundamental_PC2",
+      "JALSH_PEvFwdPE",
+      "JALSH_PEvAgrgtPE_1FY"
+    ]
+  },
+  {
+    "cluster": 5,
+    "representative": "RandPPP_Factor_Inst_TS_ST",
+    "size": 2,
+    "mean_distance": 0.0,
+    "members": [
+      "RandPPP_Factor_Inst_TS_ST",
+      "RandPPP_Factor_Inst_TS_LT"
+    ]
+  },
+  {
+    "cluster": 6,
+    "representative": "CONCCONF.Index",
+    "size": 8,
+    "mean_distance": 0.516667134239609,
+    "members": [
+      "SAPMI_YoY",
+      "CONCCONF.Index",
+      "EPUCCUSM.Index",
+      "CONCCONF.Index_QS",
+      "CONSSENT.Index_QS",
+      "EPUCCUSM.Index_QS",
+      "SSICCONF.Index_QS",
+      "SAPMI.Index_QS"
+    ]
+  },
+  {
+    "cluster": 7,
+    "representative": "USDZAR_EntDyn",
+    "size": 2,
+    "mean_distance": 0.0,
+    "members": [
+      "USDZAR_EntDyn",
+      "LocalBonds_EntDyn"
+    ]
+  },
+  {
+    "cluster": 8,
+    "representative": "GLD_LempZiev",
+    "size": 2,
+    "mean_distance": 0.049112112845351275,
+    "members": [
+      "GLD_LempZiev",
+      "XAULempZiev"
+    ]
+  },
+  {
+    "cluster": 9,
+    "representative": "GlobalEquity_EntDyn",
+    "size": 11,
+    "mean_distance": 0.8141508844972577,
+    "members": [
+      "LEI.TOTL.Index_QS",
+      "LA1LempZiev",
+      "USDZAR_Ent",
+      "MultiAssetEnt",
+      "LocalBonds_Ent",
+      "GlobalBonds_EntDyn",
+      "GlobalBonds_Ent",
+      "LocalEquity_EntDyn",
+      "LocalEquity_Ent",
+      "GlobalEquity_EntDyn",
+      "GlobalEquity_Ent"
+    ]
+  },
+  {
+    "cluster": 10,
+    "representative": "GLD_RollKurt",
+    "size": 2,
+    "mean_distance": 0.0,
+    "members": [
+      "GLD_RollKurt",
+      "XAURollKurt"
+    ]
+  },
+  {
+    "cluster": 11,
+    "representative": "GLD_RollSkew",
+    "size": 2,
+    "mean_distance": 0.0,
+    "members": [
+      "GLD_RollSkew",
+      "XAURollSkew"
+    ]
+  },
+  {
+    "cluster": 12,
+    "representative": "GLD_FracDiff",
+    "size": 2,
+    "mean_distance": 0.0,
+    "members": [
+      "GLD_FracDiff",
+      "XAUFracDiff"
+    ]
+  },
+  {
+    "cluster": 13,
+    "representative": "GLD_StructBreak",
+    "size": 2,
+    "mean_distance": 0.0,
+    "members": [
+      "GLD_StructBreak",
+      "XAUStructBreak"
+    ]
+  },
+  {
+    "cluster": 14,
+    "representative": "GlobalEquityGret1",
+    "size": 12,
+    "mean_distance": 0.7652289973450158,
+    "members": [
+      "OPCVTPCR.Index",
+      "AAIIBEAR.Index_QS",
+      "AAIIBULL.Index_QS",
+      "OPCVTPCR.Index_QS",
+      "LA1StructBreak",
+      "LocalEquityGret1",
+      "LocalBondsGret1",
+      "LocalPropertyGret1",
+      "GlobalEquityGret1",
+      "GlobalBondGret1",
+      "GlobalPropertyGret1",
+      "USDZARGret1"
+    ]
+  },
+  {
+    "cluster": 15,
+    "representative": "GenComIndexPC2",
+    "size": 35,
+    "mean_distance": 0.8180163847068493,
+    "members": [
+      "SA_PMI_TS",
+      "TINSALNL.Index",
+      "TINSALNL.Index_QS",
+      "HG1.Comdty_Diff_QS",
+      "XAU.Curncy_Diff_QS",
+      "GenComIndexPC2",
+      "GenComIndexPC2_QS",
+      "USNomBndStructBreak_Level",
+      "USNomBndStructBreak_Slope",
+      "USRealBndStructBreak_Level",
+      "USRealBndStructBreak_Slope",
+      "SANomBndStructBreak_Level",
+      "SANomBndStructBreak_Slope",
+      "MOVEStructBreak",
+      "LocalEquityGret3",
+      "LocalEquityGret6",
+      "LocalEquityVol1",
+      "LocalEquitySB",
+      "LocalBondsGret3",
+      "LocalBondsGret6",
+      "LocalBondsVol1",
+      "LocalBondsSB",
+      "LocalPropertyVol1",
+      "LocalPropertySB",
+      "GlobalEquityGret3",
+      "GlobalEquitySB",
+      "GlobalBondGret3",
+      "GlobalBondVol1",
+      "GlobalBondSB",
+      "GlobalPropertyGret3",
+      "GlobalPropertyVol1",
+      "GlobalBondSB.1",
+      "USDZARGret3",
+      "USDZARVol1",
+      "USDZARSB"
+    ]
+  },
+  {
+    "cluster": 16,
+    "representative": "GenComIndexPC1_QS",
+    "size": 4,
+    "mean_distance": 0.4089965690383391,
+    "members": [
+      "LA1.Comdty_Diff_QS",
+      "GenComIndexPC1",
+      "GenComIndexPC1_QS",
+      "LA1FracDiff"
+    ]
+  },
+  {
+    "cluster": 17,
+    "representative": "TOP40.Index.Price.to.Book.Ratio_Diff",
+    "size": 8,
+    "mean_distance": 0.6361360779599294,
+    "members": [
+      "JALSH.Index.Price.to.Sales.Ratio_QS",
+      "TOP40.Index.Price.to.Sales.Ratio_QS",
+      "JALSH.Index.Price.to.Book.Ratio_QS",
+      "TOP40.Index.Price.to.Book.Ratio_QS",
+      "JALSH.Index.Price.to.Sales.Ratio_Diff",
+      "TOP40.Index.Price.to.Sales.Ratio_Diff",
+      "JALSH.Index.Price.to.Book.Ratio_Diff",
+      "TOP40.Index.Price.to.Book.Ratio_Diff"
+    ]
+  },
+  {
+    "cluster": 18,
+    "representative": "ZAR18M.Curncy_QS",
+    "size": 9,
+    "mean_distance": 0.24221998196149583,
+    "members": [
+      "SAFwdPts_QS_Level",
+      "ZAR10M.Curncy_QS",
+      "ZAR12M.Curncy_QS",
+      "ZAR15M.Curncy_QS",
+      "ZAR18M.Curncy_QS",
+      "ZAR21M.Curncy_QS",
+      "ZAR2Y.Curncy_QS",
+      "ZAR3Y.Curncy_QS",
+      "ZAR5Y.Curncy_QS"
+    ]
+  },
+  {
+    "cluster": 19,
+    "representative": "TOP40.Index.Price.to.Ebitda_Diff",
+    "size": 10,
+    "mean_distance": 0.6335338919915313,
+    "members": [
+      "JALSH.Index.PE.Ratio.Next.FY.Aggregated_QS",
+      "TOP40.Index.PE.Ratio.Next.FY.Aggregated_QS",
+      "JALSH.Index.Price.to.Ebitda_QS",
+      "TOP40.Index.Price.to.Ebitda_QS",
+      "TOP40.Index.Forward.PE_QS",
+      "JALSH.Index.PE.Ratio.Next.FY.Aggregated_Diff",
+      "TOP40.Index.PE.Ratio.Next.FY.Aggregated_Diff",
+      "JALSH.Index.Price.to.Ebitda_Diff",
+      "TOP40.Index.Price.to.Ebitda_Diff",
+      "TOP40.Index.Forward.PE_Diff"
+    ]
+  },
+  {
+    "cluster": 20,
+    "representative": "MXWD.Index.Price.to.Sales.Ratio_Diff",
+    "size": 8,
+    "mean_distance": 0.6295673269301099,
+    "members": [
+      "MXWD.Index.PE.Ratio_QS",
+      "MXWD.Index.PE.Ratio.Next.FY.Aggregated_QS",
+      "MXWD.Index.Price.to.Ebitda_QS",
+      "MXWD.Index.Price.to.Sales.Ratio_QS",
+      "MXWD.Index.Forward.PE_QS",
+      "MXWD.Index.Price.to.Book.Ratio_QS",
+      "MXWD.Index.Price.to.Sales.Ratio_Diff",
+      "MXWD.Index.Price.to.Book.Ratio_Diff"
+    ]
+  },
+  {
+    "cluster": 21,
+    "representative": "SA_NB_Slope",
+    "size": 14,
+    "mean_distance": 0.6643056044708422,
+    "members": [
+      "RandPPP_QuantileScale",
+      "InflGrowthSurpPC1",
+      "InflGrowthSurpPC1_QS",
+      "BCMPUSIF.Index_QS",
+      "USDZARTS",
+      "USDZARGret6",
+      "USDZARGret12",
+      "SA_NB_Level",
+      "SA_NB_Slope",
+      "SA_NB_R2",
+      "SA_NB_Level_QS",
+      "SA_NB_Slope_QS",
+      "SA_NB_R2_QS",
+      "SABreakEvenInflPC_2"
+    ]
+  },
+  {
+    "cluster": 22,
+    "representative": "GlobalEquityTS",
+    "size": 55,
+    "mean_distance": 0.788134189051189,
+    "members": [
+      "VolTermStructPC2",
+      "VolTermStructPC1_QS",
+      "VolTermStructPC2_QS",
+      "VIX.Index",
+      "VixMoveSpread",
+      "ACWI_RV_3_TS",
+      "LEI.Totl_TS",
+      "AAII_Bull_TS",
+      "MichgnConcIndx_QuantileScale",
+      "MichgnConcIndx_TS",
+      "DXY_QuantScale",
+      "SubIndex_PC1_TS",
+      "AAIIBULL.Index",
+      "AAIIBEAR.Index",
+      "BASPCAAA.Index_QS",
+      "BICLB10Y.Index_QS",
+      "DXY.Curncy_QS",
+      "ECSURPUS.Index_QS",
+      "XAG.Curncy_Diff_QS",
+      "NG1.Comdty_Diff_QS",
+      "LA1RollSD",
+      "LA1RollSkew",
+      "LA1RollKurt",
+      "RepSouCDSStructBreak",
+      "VIXStructBreak",
+      "LocalEquityTS",
+      "LocalEquityGret12",
+      "LocalBondsTS",
+      "LocalBondsGret12",
+      "LocalPropertyGret3",
+      "GlobalEquityTS",
+      "GlobalEquityGret6",
+      "GlobalEquityGret12",
+      "GlobalBondTS",
+      "GlobalBondGret6",
+      "GlobalBondGret12",
+      "GlobalBondVol3",
+      "GlobalPropertyTS",
+      "GlobalPropertyGret6",
+      "GlobalPropertyGret12",
+      "USDZARVol3",
+      "LE_LB_Corr.1",
+      "GE_GB_Corr.1",
+      "GE_LE_Corr",
+      "GB_LB_Corr",
+      "SA_NB_Curvature_QS",
+      "SABreakEvenInflPC_3",
+      "US_RB_R2",
+      "US_RB_R2_QS",
+      "USDEUR_Vol_Slope",
+      "USDEUR_Vol_QS_Slope",
+      "SAFwdPts_QS_Slope",
+      "MXWD_Fundamental_PC2",
+      "LocalGlobalPESpreadQS",
+      "LocalGlobalPEFwdSpreadQS"
+    ]
+  },
+  {
+    "cluster": 23,
+    "representative": "VolTermStructPC1",
+    "size": 4,
+    "mean_distance": 0.3030950024526484,
+    "members": [
+      "VolTermStructPC1",
+      "VIX3M.Index",
+      "VIX6M.Index",
+      "VIX1Y.Index"
+    ]
+  },
+  {
+    "cluster": 24,
+    "representative": "US_RB_Curvature",
+    "size": 4,
+    "mean_distance": 0.3096187584196478,
+    "members": [
+      "US_RB_Slope",
+      "US_RB_Curvature",
+      "US_RB_Slope_QS",
+      "US_RB_Curvature_QS"
+    ]
+  },
+  {
+    "cluster": 25,
+    "representative": "GLD_RollSD",
+    "size": 2,
+    "mean_distance": 0.0,
+    "members": [
+      "GLD_RollSD",
+      "XAURollSD"
+    ]
+  },
+  {
+    "cluster": 26,
+    "representative": "MXWD_PEvFwdPE",
+    "size": 41,
+    "mean_distance": 0.7268277990722094,
+    "members": [
+      "VolSpread6M",
+      "DXY_RV_3",
+      "WOG1_Ent_TS",
+      "ACWI_Ent_TS",
+      "JALSH_Ent_TS",
+      "ACWI_RV_12_TS",
+      "JALSH_RV_3_TS",
+      "LB_GB_Corr",
+      "SubIndex_PC2",
+      "InflGrowthSurpPC2",
+      "InflGrowthSurpPC2_QS",
+      "BCMPUSGR.Index_QS",
+      "OEZAKLAF.Index_QS",
+      "LocalEquityVol3",
+      "LocalBondsVol3",
+      "LocalPropertyTS",
+      "LocalPropertyGret6",
+      "LocalPropertyVol3",
+      "GlobalEquityVol3",
+      "GlobalBondVol6",
+      "GlobalPropertyVol3",
+      "USDZARVol6",
+      "SA_NB_Level_TS",
+      "SA_NB_Slope_TS",
+      "SA_RB_Slope_TS",
+      "SABreakEvenInflPCA_TS",
+      "SABreakEvenInflPCA_TS.1",
+      "US_NB_Level",
+      "US_NB_Level_QS",
+      "US_NB_Slope_QS",
+      "US_NB_Level_TS",
+      "US_NB_Slope_TS",
+      "US_RB_Level",
+      "US_RB_Level_QS",
+      "US_RB_Level_TS",
+      "USDZARV3Y.Curncy_QS",
+      "USDZARV4Y.Curncy_QS",
+      "TOP40.Index.PE.Ratio_QS",
+      "TOP40.Index.PE.Ratio_Diff",
+      "MXWD_PEvFwdPE",
+      "MXWD_PEvAgrgtPE_1FY"
+    ]
+  },
+  {
+    "cluster": 27,
+    "representative": "EURUSDV6M.Curncy_QS",
+    "size": 10,
+    "mean_distance": 0.5017927060220908,
+    "members": [
+      "USDEUR_Vol_Level",
+      "USDEUR_Vol_QS_Level",
+      "EURUSDV1M.Curncy_QS",
+      "EURUSDV1W.Curncy_QS",
+      "EURUSDV1Y.Curncy_QS",
+      "EURUSDV2M.Curncy_QS",
+      "EURUSDV2W.Curncy_QS",
+      "EURUSDV3M.Curncy_QS",
+      "EURUSDV6M.Curncy_QS",
+      "EURUSDV9M.Curncy_QS"
+    ]
+  },
+  {
+    "cluster": 28,
+    "representative": "USDZARV1Y.Curncy_QS",
+    "size": 5,
+    "mean_distance": 0.28912074489033524,
+    "members": [
+      "USDZARV18M.Curncy_QS",
+      "USDZARV1Y.Curncy_QS",
+      "USDZARV2Y.Curncy_QS",
+      "USDZARV6M.Curncy_QS",
+      "USDZARV9M.Curncy_QS"
+    ]
+  },
+  {
+    "cluster": 29,
+    "representative": "USDZARV1M.Curncy_QS",
+    "size": 6,
+    "mean_distance": 0.4094657891690204,
+    "members": [
+      "USDZARV1M.Curncy_QS",
+      "USDZARV1W.Curncy_QS",
+      "USDZARV2M.Curncy_QS",
+      "USDZARV3M.Curncy_QS",
+      "USDZARV3W.Curncy_QS",
+      "USDZARVON.Curncy_QS"
+    ]
+  }
+]

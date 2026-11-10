@@ -1,0 +1,237 @@
+{
+  "BCMPEBLS.Index": [
+    "Macroeconomic",
+    "US business-cycle index.",
+    "Business-cycle conditions"
+  ],
+  "MXWD_Fundamental_PC1": [
+    "Fundamental valuation",
+    "First principal component of the supplied MSCI World fundamental valuation indicators.",
+    "Common variation in global valuations"
+  ],
+  "SA_CDS_Slope": [
+    "Macroeconomic",
+    "Slope factor of the South African sovereign credit-default-swap term structure.",
+    "Sovereign credit conditions"
+  ],
+  "US_NB_Curvature": [
+    "Macroeconomic",
+    "Curvature factor of the US nominal government bond yield curve.",
+    "Shape of the nominal yield curve"
+  ],
+  "RandPPP_Factor_Inst_TS_ST": [
+    "Macroeconomic",
+    "Short-term time-series measure of the institutional rand purchasing-power-parity valuation factor.",
+    "Rand valuation relative to purchasing power"
+  ],
+  "CONCCONF.Index": [
+    "Sentiment and risk appetite",
+    "US Conference Board Consumer Confidence Index.",
+    "Household confidence"
+  ],
+  "USDZAR_EntDyn": [
+    "Macroeconomic",
+    "Change in the supplied entropy measure of the USD/ZAR exchange-rate series.",
+    "Changes in exchange-rate uncertainty"
+  ],
+  "GLD_LempZiev": [
+    "Sentiment and risk appetite",
+    "Supplied Lempel–Ziv complexity measure of the gold price series.",
+    "Complexity of gold price dynamics"
+  ],
+  "GlobalEquity_EntDyn": [
+    "Sentiment and risk appetite",
+    "Change in the supplied entropy measure of the global equity series.",
+    "Changes in equity-market uncertainty"
+  ],
+  "GLD_RollKurt": [
+    "Sentiment and risk appetite",
+    "Rolling kurtosis of the supplied gold series.",
+    "Tail behaviour in gold returns"
+  ],
+  "GLD_RollSkew": [
+    "Sentiment and risk appetite",
+    "Rolling skewness of the supplied gold series.",
+    "Asymmetry in gold returns"
+  ],
+  "GLD_FracDiff": [
+    "Price-based indicators",
+    "Fractionally differenced gold price series.",
+    "Persistent gold price information"
+  ],
+  "GLD_StructBreak": [
+    "Sentiment and risk appetite",
+    "Supplied structural-break statistic for the gold price series.",
+    "Changes in the gold price regime"
+  ],
+  "GlobalEquityGret1": [
+    "Price-based indicators",
+    "One-month geometric return of the supplied global equity series.",
+    "Recent global equity performance"
+  ],
+  "GenComIndexPC2": [
+    "Sentiment and risk appetite",
+    "Second principal component of the supplied broad commodity indicator set.",
+    "Common commodity-market variation"
+  ],
+  "GenComIndexPC1_QS": [
+    "Sentiment and risk appetite",
+    "Quantile-scaled first principal component of the supplied broad commodity indicator set.",
+    "Commodity conditions relative to their distribution"
+  ],
+  "TOP40.Index.Price.to.Book.Ratio_Diff": [
+    "Fundamental valuation",
+    "First difference of the FTSE/JSE Top 40 price-to-book ratio.",
+    "Changes in local equity valuation"
+  ],
+  "ZAR18M.Curncy_QS": [
+    "Macroeconomic",
+    "Quantile-scaled 18-month USD/ZAR forward-points series.",
+    "Medium-term currency forward pricing"
+  ],
+  "TOP40.Index.Price.to.Ebitda_Diff": [
+    "Fundamental valuation",
+    "First difference of the FTSE/JSE Top 40 price-to-EBITDA ratio.",
+    "Changes in local earnings-based valuation"
+  ],
+  "MXWD.Index.Price.to.Sales.Ratio_Diff": [
+    "Fundamental valuation",
+    "First difference of the MSCI World price-to-sales ratio.",
+    "Changes in global sales-based valuation"
+  ],
+  "SA_NB_Slope": [
+    "Macroeconomic",
+    "Slope factor of the South African nominal government bond yield curve.",
+    "Local growth and interest-rate conditions"
+  ],
+  "GlobalEquityTS": [
+    "Sentiment and risk appetite",
+    "Level of the supplied global equity index time series.",
+    "Global market state"
+  ],
+  "VolTermStructPC1": [
+    "Price-based indicators",
+    "First principal component of the supplied equity implied-volatility term structure.",
+    "Common variation across volatility maturities"
+  ],
+  "US_RB_Curvature": [
+    "Macroeconomic",
+    "Curvature factor of the US real government bond yield curve.",
+    "Shape of the real yield curve"
+  ],
+  "GLD_RollSD": [
+    "Price-based indicators",
+    "Rolling standard deviation of the supplied gold series.",
+    "Gold volatility"
+  ],
+  "MXWD_PEvFwdPE": [
+    "Fundamental valuation",
+    "Supplied comparison of the MSCI World current and forward price-to-earnings ratios.",
+    "Current valuation relative to expected earnings"
+  ],
+  "EURUSDV6M.Curncy_QS": [
+    "Price-based indicators",
+    "Quantile-scaled six-month EUR/USD option-implied volatility.",
+    "Currency-market uncertainty"
+  ],
+  "USDZARV1Y.Curncy_QS": [
+    "Price-based indicators",
+    "Quantile-scaled one-year USD/ZAR option-implied volatility.",
+    "Longer-horizon rand uncertainty"
+  ],
+  "USDZARV1M.Curncy_QS": [
+    "Price-based indicators",
+    "Quantile-scaled one-month USD/ZAR option-implied volatility.",
+    "Shorter-horizon rand uncertainty"
+  ],
+  "zrel_momentum_vs_value_12": [
+    "Factor relative performance",
+    "Current weekly momentum versus value return spread minus its trailing 12-week mean, divided by its trailing 12-week sample standard deviation.",
+    "Standardised relative return"
+  ],
+  "relvol_momentum_vs_value_12": [
+    "Factor relative volatility",
+    "Trailing 12-week sample standard deviation of the weekly momentum versus value return spread.",
+    "Volatility of relative performance"
+  ],
+  "corr_momentum_value_12": [
+    "Factor relative performance",
+    "Trailing 12-week Pearson correlation of the weekly momentum and value returns.",
+    "Co-movement between factors"
+  ],
+  "volratio_momentum_value_12": [
+    "Factor relative volatility",
+    "Trailing 12-week sample standard deviation of momentum returns divided by that of value returns.",
+    "Relative factor risk"
+  ],
+  "mom1m_momentum_vs_value": [
+    "Factor relative performance",
+    "Compounded momentum return over the trailing 4 weeks minus the compounded value return over the same weeks.",
+    "Recent relative factor performance"
+  ],
+  "mom3m_momentum_vs_value": [
+    "Factor relative performance",
+    "Compounded momentum return over the trailing 12 weeks minus the compounded value return over the same weeks.",
+    "Recent relative factor performance"
+  ],
+  "zrel_momentum_vs_quality_12": [
+    "Factor relative performance",
+    "Current weekly momentum versus quality return spread minus its trailing 12-week mean, divided by its trailing 12-week sample standard deviation.",
+    "Standardised relative return"
+  ],
+  "relvol_momentum_vs_quality_12": [
+    "Factor relative volatility",
+    "Trailing 12-week sample standard deviation of the weekly momentum versus quality return spread.",
+    "Volatility of relative performance"
+  ],
+  "corr_momentum_quality_12": [
+    "Factor relative performance",
+    "Trailing 12-week Pearson correlation of the weekly momentum and quality returns.",
+    "Co-movement between factors"
+  ],
+  "volratio_momentum_quality_12": [
+    "Factor relative volatility",
+    "Trailing 12-week sample standard deviation of momentum returns divided by that of quality returns.",
+    "Relative factor risk"
+  ],
+  "mom1m_momentum_vs_quality": [
+    "Factor relative performance",
+    "Compounded momentum return over the trailing 4 weeks minus the compounded quality return over the same weeks.",
+    "Recent relative factor performance"
+  ],
+  "mom3m_momentum_vs_quality": [
+    "Factor relative performance",
+    "Compounded momentum return over the trailing 12 weeks minus the compounded quality return over the same weeks.",
+    "Recent relative factor performance"
+  ],
+  "zrel_value_vs_quality_12": [
+    "Factor relative performance",
+    "Current weekly value versus quality return spread minus its trailing 12-week mean, divided by its trailing 12-week sample standard deviation.",
+    "Standardised relative return"
+  ],
+  "relvol_value_vs_quality_12": [
+    "Factor relative volatility",
+    "Trailing 12-week sample standard deviation of the weekly value versus quality return spread.",
+    "Volatility of relative performance"
+  ],
+  "corr_value_quality_12": [
+    "Factor relative performance",
+    "Trailing 12-week Pearson correlation of the weekly value and quality returns.",
+    "Co-movement between factors"
+  ],
+  "volratio_value_quality_12": [
+    "Factor relative volatility",
+    "Trailing 12-week sample standard deviation of value returns divided by that of quality returns.",
+    "Relative factor risk"
+  ],
+  "mom1m_value_vs_quality": [
+    "Factor relative performance",
+    "Compounded value return over the trailing 4 weeks minus the compounded quality return over the same weeks.",
+    "Recent relative factor performance"
+  ],
+  "mom3m_value_vs_quality": [
+    "Factor relative performance",
+    "Compounded value return over the trailing 12 weeks minus the compounded quality return over the same weeks.",
+    "Recent relative factor performance"
+  ]
+}

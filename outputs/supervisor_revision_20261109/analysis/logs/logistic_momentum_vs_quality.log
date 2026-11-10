@@ -1,0 +1,26 @@
+Momentum_vs_Quality Logistic tuning 0: 5/18, best=0.5667
+Momentum_vs_Quality Logistic tuning 0: 10/18, best=0.5687
+Momentum_vs_Quality Logistic tuning 0: 15/18, best=0.5687
+Momentum_vs_Quality Logistic tuning 0: 18/18, best=0.5687
+Momentum_vs_Quality Logistic walk-forward 1/156 elapsed=1.9 minutes
+Momentum_vs_Quality Logistic walk-forward 14/156 elapsed=1.9 minutes
+Momentum_vs_Quality Logistic walk-forward 27/156 elapsed=1.9 minutes
+Momentum_vs_Quality Logistic walk-forward 40/156 elapsed=1.9 minutes
+Momentum_vs_Quality Logistic tuning 52: 5/18, best=0.5780
+Momentum_vs_Quality Logistic tuning 52: 10/18, best=0.5780
+Momentum_vs_Quality Logistic tuning 52: 15/18, best=0.5780
+Momentum_vs_Quality Logistic tuning 52: 18/18, best=0.5780
+Momentum_vs_Quality Logistic walk-forward 53/156 elapsed=6.9 minutes
+Momentum_vs_Quality Logistic walk-forward 66/156 elapsed=7.0 minutes
+Momentum_vs_Quality Logistic walk-forward 79/156 elapsed=7.1 minutes
+Momentum_vs_Quality Logistic walk-forward 92/156 elapsed=7.1 minutes
+Momentum_vs_Quality Logistic tuning 104: 5/18, best=0.5314
+Momentum_vs_Quality Logistic tuning 104: 10/18, best=0.5367
+Momentum_vs_Quality Logistic tuning 104: 15/18, best=0.5367
+Momentum_vs_Quality Logistic tuning 104: 18/18, best=0.5367
+Momentum_vs_Quality Logistic walk-forward 105/156 elapsed=11.6 minutes
+Momentum_vs_Quality Logistic walk-forward 118/156 elapsed=11.6 minutes
+Momentum_vs_Quality Logistic walk-forward 131/156 elapsed=11.7 minutes
+Momentum_vs_Quality Logistic walk-forward 144/156 elapsed=11.7 minutes
+Momentum_vs_Quality Logistic walk-forward 156/156 elapsed=11.8 minutes
+DONE {"model": "Logistic", "factor_pair": "Momentum_vs_Quality", "n_test": 156, "accuracy": 0.5448717948717948, "roc_auc": 0.5531068765534383, "log_loss": 0.725216380268974, "tn": 35, "fp": 36, "fn": 35, "tp": 50, "elapsed_minutes": 11.788509420553844}

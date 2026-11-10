@@ -1,0 +1,35 @@
+[
+  {
+    "from_step": 0,
+    "n_train": 606,
+    "train_end": "2021-11-01",
+    "mean_auc": 0.5511957546540489,
+    "learning_rate": 0.01,
+    "max_depth": 2,
+    "min_child_weight": 20,
+    "reg_lambda": 1,
+    "subsample": 0.8
+  },
+  {
+    "from_step": 52,
+    "n_train": 658,
+    "train_end": "2022-10-31",
+    "mean_auc": 0.6037444880092505,
+    "learning_rate": 0.01,
+    "max_depth": 2,
+    "min_child_weight": 20,
+    "reg_lambda": 100,
+    "subsample": 0.8
+  },
+  {
+    "from_step": 104,
+    "n_train": 710,
+    "train_end": "2023-10-30",
+    "mean_auc": 0.6098135221199783,
+    "learning_rate": 0.01,
+    "max_depth": 2,
+    "min_child_weight": 20,
+    "reg_lambda": 1,
+    "subsample": 0.6
+  }
+]

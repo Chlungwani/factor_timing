@@ -1,0 +1,36 @@
+{
+  "python": "3.13.9 | packaged by Anaconda, Inc. | (main, Oct 21 2025, 19:09:58) [MSC v.1929 64 bit (AMD64)]",
+  "packages": {
+    "numpy": "2.3.5",
+    "pandas": "2.3.3",
+    "scipy": "1.16.3",
+    "sklearn": "1.7.2",
+    "pygam": "0.12.0",
+    "xgboost": "3.2.0",
+    "shap": "0.50.0",
+    "matplotlib": "3.10.6"
+  },
+  "input_sha256": {
+    "featureset.csv": "f393c5ef1b40f76aedfe51f6e90bed724341ab0e846185ab3bc90a7acc0f7601",
+    "factor_returns.csv": "a7ac0245bb92177ab0f46a515b161d9383ff764684f164e44e0a6d8ac5531a79",
+    "factor_relative_features.csv": "95247af8cfbeaa43c055ccb6a8af17b41046248bdd7aec19202353da15e6c7d6",
+    "labeled_relative_factor_returns.csv": "0721c571db43984128b08a9d2d7193b546c119910b5ae3bce555c8e57ae437a7"
+  },
+  "bootstrap": {
+    "resamples": 10000,
+    "block_length": 12,
+    "sensitivity_blocks": [
+      6,
+      24
+    ],
+    "seed": 0
+  },
+  "verification": "All 9 metric rows independently reproduced from 156 saved predictions; targets match the supplied label file; class decisions match p>=0.5.",
+  "source_thesis_sha256": "c4dd86ff39fb6ef9b984f1bb78b1f0a322c695d84d0642e734256090c4a56a1e",
+  "input_reconstruction": "47-feature lagged matrix independently reconstructed from the archived raw inputs; all dates, names and numerical values agree.",
+  "analysis_code_sha256": {
+    "corrected_pipeline.py": "1d5c9bb4bc5cd557fd202c2a699401c3148e2888d00d3017f14eddaa12c80f81",
+    "finalise_analysis.py": "7ad58e1975a291e7b987a22f86562b2d38a2dca306c1080978706542168b3858",
+    "selection_diagnostics.py": "8b36c887f0a6d43ed7fb30115a1f837eda51060749762cbdaf38cc0a40a7da97"
+  }
+}

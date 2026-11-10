@@ -1,0 +1,13 @@
+{
+  "model": "GAM",
+  "factor_pair": "Momentum_vs_Value",
+  "n_test": 156,
+  "accuracy": 0.532051282051282,
+  "roc_auc": 0.5193040596520297,
+  "log_loss": 0.9213698662716476,
+  "tn": 21,
+  "fp": 50,
+  "fn": 23,
+  "tp": 62,
+  "elapsed_minutes": 70.08055613040924
+}

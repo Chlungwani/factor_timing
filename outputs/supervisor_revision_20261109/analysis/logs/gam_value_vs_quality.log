@@ -1,0 +1,39 @@
+did not converge
+Value_vs_Quality GAM tuning 0: 5/20, best=0.5106
+did not converge
+Value_vs_Quality GAM tuning 0: 10/20, best=0.5106
+Value_vs_Quality GAM tuning 0: 15/20, best=0.5106
+Value_vs_Quality GAM tuning 0: 20/20, best=0.5106
+Value_vs_Quality GAM walk-forward 1/156 elapsed=14.8 minutes
+Value_vs_Quality GAM walk-forward 14/156 elapsed=15.2 minutes
+Value_vs_Quality GAM walk-forward 27/156 elapsed=15.6 minutes
+Value_vs_Quality GAM walk-forward 40/156 elapsed=15.9 minutes
+did not converge
+Value_vs_Quality GAM tuning 52: 5/20, best=0.5365
+did not converge
+did not converge
+Value_vs_Quality GAM tuning 52: 10/20, best=0.5365
+did not converge
+Value_vs_Quality GAM tuning 52: 15/20, best=0.5365
+did not converge
+did not converge
+Value_vs_Quality GAM tuning 52: 20/20, best=0.5365
+Value_vs_Quality GAM walk-forward 53/156 elapsed=44.1 minutes
+Value_vs_Quality GAM walk-forward 66/156 elapsed=44.3 minutes
+Value_vs_Quality GAM walk-forward 79/156 elapsed=44.6 minutes
+Value_vs_Quality GAM walk-forward 92/156 elapsed=44.8 minutes
+did not converge
+Value_vs_Quality GAM tuning 104: 5/20, best=0.5427
+did not converge
+Value_vs_Quality GAM tuning 104: 10/20, best=0.5427
+did not converge
+Value_vs_Quality GAM tuning 104: 15/20, best=0.5427
+did not converge
+did not converge
+Value_vs_Quality GAM tuning 104: 20/20, best=0.5427
+Value_vs_Quality GAM walk-forward 105/156 elapsed=67.3 minutes
+Value_vs_Quality GAM walk-forward 118/156 elapsed=67.5 minutes
+Value_vs_Quality GAM walk-forward 131/156 elapsed=67.8 minutes
+Value_vs_Quality GAM walk-forward 144/156 elapsed=68.0 minutes
+Value_vs_Quality GAM walk-forward 156/156 elapsed=68.2 minutes
+DONE {"model": "GAM", "factor_pair": "Value_vs_Quality", "n_test": 156, "accuracy": 0.5512820512820513, "roc_auc": 0.5602498767055728, "log_loss": 0.9629903439865086, "tn": 67, "fp": 12, "fn": 58, "tp": 19, "elapsed_minutes": 68.21974957386652}

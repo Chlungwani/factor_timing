@@ -1,0 +1,37 @@
+did not converge
+Momentum_vs_Value GAM tuning 0: 5/20, best=0.5252
+did not converge
+Momentum_vs_Value GAM tuning 0: 10/20, best=0.5253
+did not converge
+Momentum_vs_Value GAM tuning 0: 15/20, best=0.5253
+Momentum_vs_Value GAM tuning 0: 20/20, best=0.5555
+Momentum_vs_Value GAM walk-forward 1/156 elapsed=21.7 minutes
+Momentum_vs_Value GAM walk-forward 14/156 elapsed=22.3 minutes
+Momentum_vs_Value GAM walk-forward 27/156 elapsed=23.1 minutes
+Momentum_vs_Value GAM walk-forward 40/156 elapsed=23.9 minutes
+did not converge
+Momentum_vs_Value GAM tuning 52: 5/20, best=0.5494
+did not converge
+Momentum_vs_Value GAM tuning 52: 10/20, best=0.5494
+did not converge
+Momentum_vs_Value GAM tuning 52: 15/20, best=0.5494
+Momentum_vs_Value GAM tuning 52: 20/20, best=0.5879
+Momentum_vs_Value GAM walk-forward 53/156 elapsed=42.6 minutes
+Momentum_vs_Value GAM walk-forward 66/156 elapsed=43.1 minutes
+Momentum_vs_Value GAM walk-forward 79/156 elapsed=43.8 minutes
+Momentum_vs_Value GAM walk-forward 92/156 elapsed=44.3 minutes
+did not converge
+Momentum_vs_Value GAM tuning 104: 5/20, best=0.5324
+did not converge
+Momentum_vs_Value GAM tuning 104: 10/20, best=0.5328
+did not converge
+Momentum_vs_Value GAM tuning 104: 15/20, best=0.5328
+did not converge
+did not converge
+Momentum_vs_Value GAM tuning 104: 20/20, best=0.5328
+Momentum_vs_Value GAM walk-forward 105/156 elapsed=68.9 minutes
+Momentum_vs_Value GAM walk-forward 118/156 elapsed=69.2 minutes
+Momentum_vs_Value GAM walk-forward 131/156 elapsed=69.5 minutes
+Momentum_vs_Value GAM walk-forward 144/156 elapsed=69.8 minutes
+Momentum_vs_Value GAM walk-forward 156/156 elapsed=70.1 minutes
+DONE {"model": "GAM", "factor_pair": "Momentum_vs_Value", "n_test": 156, "accuracy": 0.532051282051282, "roc_auc": 0.5193040596520297, "log_loss": 0.9213698662716476, "tn": 21, "fp": 50, "fn": 23, "tp": 62, "elapsed_minutes": 70.08055613040924}
