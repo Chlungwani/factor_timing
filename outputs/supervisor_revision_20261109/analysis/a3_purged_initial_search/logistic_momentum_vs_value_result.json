@@ -1,0 +1,25 @@
+{
+  "model": "Logistic",
+  "pair": "Momentum_vs_Value",
+  "n_obs": 746,
+  "first": "2007-07-23",
+  "last": "2021-11-01",
+  "best_params": {
+    "alpha": 1.0,
+    "lambda_reg": 0.01
+  },
+  "old_best_params": {
+    "alpha": 1.0,
+    "lambda_reg": 0.01
+  },
+  "unchanged": true,
+  "mean_auc": 0.5344334269991531,
+  "mean_path_auc": 0.507392414136095,
+  "path_aucs": [
+    0.5357863787958574,
+    0.5084254870984729,
+    0.4904774442689135,
+    0.49488034638113626
+  ],
+  "minutes": 5.912079083919525
+}

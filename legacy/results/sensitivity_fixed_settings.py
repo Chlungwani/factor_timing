@@ -12,7 +12,7 @@ Outputs (results/model_outputs/sensitivity/)
   <model>_<pair>_fixed.csv        one row per setting: the setting, accuracy, ROC-AUC, log-loss, or the failure
   <model>_<pair>_fixed_probs.csv  the 156 predicted probabilities of each setting (one column per setting)
 
-Usage: python sensitivity_fixed_settings.py [workers] [model ...]
+Usage: python sensitivity_fixed_settings.py [workers] [model ...] [pair ...]   (default: every model and pair)
        python sensitivity_fixed_settings.py time      (times one setting per model)
 """
 import os
@@ -65,12 +65,9 @@ def notebook(model):
 
 
 def load_data(pair):
-    """As load_data in the notebooks (labels joined to the lagged features, last unlabelled weeks dropped)."""
-    data_dir = LEGACY / "data_input"
-    labels = pd.read_csv(data_dir / "labeled_relative_factor_returns.csv", parse_dates=["Date"]).set_index("Date")
-    x = pd.read_csv(data_dir / "lagged_data.csv", parse_dates=["Date"]).set_index("Date")
-    data = pd.concat([x, labels[[f"{pair}_trend"]]], axis=1, join="inner")
-    return data.dropna(subset=[f"{pair}_trend"]).ffill().bfill()
+    """The notebooks' load_data (labels joined to the lagged features, last unlabelled weeks dropped, the weeks
+    before a series starts flagged)."""
+    return notebook("logistic")["load_data"](pair)
 
 
 def grid(model, pair):
@@ -86,7 +83,7 @@ def run(model, pair, setting):
     data = load_data(pair)
     X = data.iloc[:, :-1].values
     y = data.iloc[:, -1].values
-    X = np.nan_to_num(X, nan=0.0 if model == "gam" else np.nan, posinf=1e10, neginf=-1e10)
+    X = np.nan_to_num(X, nan=np.nan, posinf=1e10, neginf=-1e10)     # NaN: filled per training window
     params = {**setting, **FIXED.get(model, {})}
     n = ns["FINAL_TEST_POINTS"]
     t0 = time.time()
@@ -125,12 +122,12 @@ def summarise(model, pair, results):
         pd.DataFrame(probs, index=dates).rename_axis("Date").to_csv(OUT / f"{model}_{pair.lower()}_fixed_probs.csv")
 
 
-def main(workers, models):
-    jobs = [(m, p, s) for m in models for p in PAIRS for s in grid(m, p)]
+def main(workers, models, pairs=PAIRS):
+    jobs = [(m, p, s) for m in models for p in pairs for s in grid(m, p)]
     order = {"gam": 0, "xgboost": 1, "logistic": 2}                       # longest first
     jobs.sort(key=lambda j: order[j[0]])
-    done = {(m, p): {} for m in models for p in PAIRS}
-    expected = {(m, p): grid(m, p) for m in models for p in PAIRS}
+    done = {(m, p): {} for m in models for p in pairs}
+    expected = {(m, p): grid(m, p) for m in models for p in pairs}
     t0 = time.time()
     with ProcessPoolExecutor(max_workers=workers) as pool:
         futures = [pool.submit(run, *job) for job in jobs]
@@ -155,4 +152,5 @@ if __name__ == "__main__":
             print(model, setting, f"{secs:.0f}s", error or "")
     else:
         workers = int(sys.argv[1]) if len(sys.argv) > 1 else 8
-        main(workers, sys.argv[2:] or list(NOTEBOOKS))
+        args = sys.argv[2:]
+        main(workers, [a for a in args if a in NOTEBOOKS] or list(NOTEBOOKS), [a for a in args if a in PAIRS] or PAIRS)

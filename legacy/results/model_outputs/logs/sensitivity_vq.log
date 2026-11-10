@@ -1,0 +1,26 @@
+22:55:54  10/234  last xgboost Value_vs_Quality 92s
+23:00:30  20/234  last xgboost Value_vs_Quality 82s
+23:08:08  30/234  last xgboost Value_vs_Quality 186s
+23:17:31  40/234  last xgboost Value_vs_Quality 106s
+23:26:50  50/234  last xgboost Value_vs_Quality 275s
+23:40:42  60/234  last xgboost Value_vs_Quality 241s
+23:48:41  70/234  last xgboost Value_vs_Quality 126s
+23:53:35  80/234  last xgboost Value_vs_Quality 88s
+23:57:39  90/234  last xgboost Value_vs_Quality 65s
+00:03:26  100/234  last xgboost Value_vs_Quality 144s
+00:10:21  110/234  last xgboost Value_vs_Quality 122s
+00:15:08  120/234  last xgboost Value_vs_Quality 100s
+00:27:59  130/234  last xgboost Value_vs_Quality 142s
+00:34:54  140/234  last xgboost Value_vs_Quality 91s
+00:39:11  150/234  last xgboost Value_vs_Quality 76s
+00:42:51  160/234  last xgboost Value_vs_Quality 77s
+00:46:56  170/234  last xgboost Value_vs_Quality 106s
+00:52:54  180/234  last xgboost Value_vs_Quality 97s
+00:58:07  190/234  last xgboost Value_vs_Quality 87s
+01:06:35  200/234  last xgboost Value_vs_Quality 99s
+01:13:21  210/234  last xgboost Value_vs_Quality 71s
+01:16:21  wrote xgboost Value_vs_Quality
+01:16:59  220/234  last logistic Value_vs_Quality 3s
+01:21:57  230/234  last logistic Value_vs_Quality 8s
+01:31:10  wrote logistic Value_vs_Quality
+finished in 162.1 min

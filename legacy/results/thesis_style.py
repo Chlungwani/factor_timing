@@ -38,6 +38,7 @@ FEATURE_GROUP_COLOURS = {
     "Macroeconomic": PURPLE,
     "Factor-specific performance": GOLD,
     "Factor-specific volatility": GREEN,
+    "Missing-value indicator": INK_2,
 }
 
 RC = {

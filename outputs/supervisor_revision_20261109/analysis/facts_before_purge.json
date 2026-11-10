@@ -1,0 +1,909 @@
+{
+ "Momentum_vs_Value|Logistic|accuracy": 0.5,
+ "Momentum_vs_Value|Logistic|roc_auc": 0.48914664457332224,
+ "Momentum_vs_Value|Logistic|log_loss": 1.1400879732299778,
+ "Momentum_vs_Value|Logistic|confusion": [
+  24,
+  47,
+  31,
+  54
+ ],
+ "Momentum_vs_Value|Logistic|pred_pos_share": 0.6474358974358975,
+ "Momentum_vs_Value|Logistic|confidently_wrong": 17,
+ "Momentum_vs_Value|Logistic|period1|prob_range": [
+  0.0214727307413313,
+  0.964156026731352
+ ],
+ "Momentum_vs_Value|Logistic|period1|pred_pos_share": 0.4230769230769231,
+ "Momentum_vs_Value|Logistic|period1|accuracy": 0.5576923076923077,
+ "Momentum_vs_Value|Logistic|period1|roc_auc": 0.4715821812596006,
+ "Momentum_vs_Value|Logistic|period2|prob_range": [
+  0.1018697001590578,
+  0.9999374678643168
+ ],
+ "Momentum_vs_Value|Logistic|period2|pred_pos_share": 0.75,
+ "Momentum_vs_Value|Logistic|period2|accuracy": 0.5192307692307693,
+ "Momentum_vs_Value|Logistic|period2|roc_auc": 0.39285714285714285,
+ "Momentum_vs_Value|Logistic|period3|prob_range": [
+  0.2873720681497548,
+  0.9349604646655656
+ ],
+ "Momentum_vs_Value|Logistic|period3|pred_pos_share": 0.7692307692307693,
+ "Momentum_vs_Value|Logistic|period3|accuracy": 0.4230769230769231,
+ "Momentum_vs_Value|Logistic|period3|roc_auc": 0.45857988165680474,
+ "Momentum_vs_Value|Logistic|shap_top10": [
+  "relvol_value_vs_quality_12",
+  "relvol_momentum_vs_value_12",
+  "ZAR18M.Curncy_QS",
+  "SA_RB_Curvature",
+  "USDZAR_EntDyn",
+  "RandPPP_Factor_Inst_TS_ST",
+  "corr_value_quality_12",
+  "GlobalPropertyVol12",
+  "relvol_momentum_vs_quality_12",
+  "SA_NB_Slope"
+ ],
+ "Momentum_vs_Value|Logistic|shap_top10_sum": 9.06680278466833,
+ "Momentum_vs_Value|Logistic|shap_relvol_ranks": [
+  1,
+  2,
+  9
+ ],
+ "Momentum_vs_Value|Logistic|schedule": [
+  {
+   "from_step": 0,
+   "n_train": 758,
+   "alpha": 1.0,
+   "lambda_reg": 0.01
+  },
+  {
+   "from_step": 52,
+   "n_train": 798,
+   "alpha": 0.0,
+   "lambda_reg": 0.01
+  },
+  {
+   "from_step": 104,
+   "n_train": 850,
+   "alpha": 1.0,
+   "lambda_reg": 0.01
+  }
+ ],
+ "Momentum_vs_Value|Logistic|cpcv_mean_auc": 0.5384403290711394,
+ "Momentum_vs_Value|Logistic|cpcv_path_aucs": [
+  0.5415071778798192,
+  0.5325781642457389,
+  0.47170238507963236,
+  0.49628193608184695
+ ],
+ "Momentum_vs_Value|Logistic|cpcv_mean_path_auc": 0.5105174158217594,
+ "Momentum_vs_Value|GAM|accuracy": 0.5064102564102564,
+ "Momentum_vs_Value|GAM|roc_auc": 0.5280861640430821,
+ "Momentum_vs_Value|GAM|log_loss": 1.5452796538780633,
+ "Momentum_vs_Value|GAM|confusion": [
+  28,
+  43,
+  34,
+  51
+ ],
+ "Momentum_vs_Value|GAM|pred_pos_share": 0.6025641025641025,
+ "Momentum_vs_Value|GAM|confidently_wrong": 22,
+ "Momentum_vs_Value|GAM|period1|prob_range": [
+  0.0002062547371587,
+  0.9307761096528884
+ ],
+ "Momentum_vs_Value|GAM|period1|pred_pos_share": 0.21153846153846154,
+ "Momentum_vs_Value|GAM|period1|accuracy": 0.46153846153846156,
+ "Momentum_vs_Value|GAM|period1|roc_auc": 0.49923195084485406,
+ "Momentum_vs_Value|GAM|period2|prob_range": [
+  0.0365885658763096,
+  0.9999999995020046
+ ],
+ "Momentum_vs_Value|GAM|period2|pred_pos_share": 0.6538461538461539,
+ "Momentum_vs_Value|GAM|period2|accuracy": 0.5769230769230769,
+ "Momentum_vs_Value|GAM|period2|roc_auc": 0.48120300751879697,
+ "Momentum_vs_Value|GAM|period3|prob_range": [
+  0.2920144693517886,
+  0.9945210291824726
+ ],
+ "Momentum_vs_Value|GAM|period3|pred_pos_share": 0.9423076923076923,
+ "Momentum_vs_Value|GAM|period3|accuracy": 0.4807692307692308,
+ "Momentum_vs_Value|GAM|period3|roc_auc": 0.37869822485207105,
+ "Momentum_vs_Value|GAM|shap_top10": [
+  "relvol_momentum_vs_quality_12",
+  "GlobalPropertyVol12",
+  "ZAR18M.Curncy_QS",
+  "relvol_momentum_vs_value_12",
+  "USDZAR_EntDyn",
+  "RandPPP_Factor_Inst_TS_ST",
+  "SA_CDS_Slope",
+  "SA_RB_Curvature",
+  "MXWD_Fundamental_PC1",
+  "SA_NB_Slope"
+ ],
+ "Momentum_vs_Value|GAM|shap_top10_sum": 10.463981215262363,
+ "Momentum_vs_Value|GAM|shap_relvol_ranks": [
+  1,
+  4
+ ],
+ "Momentum_vs_Value|GAM|schedule": [
+  {
+   "from_step": 0,
+   "n_train": 758,
+   "lam": 1,
+   "n_splines": 10
+  },
+  {
+   "from_step": 52,
+   "n_train": 798,
+   "lam": 1,
+   "n_splines": 10
+  },
+  {
+   "from_step": 104,
+   "n_train": 850,
+   "lam": 1,
+   "n_splines": 10
+  }
+ ],
+ "Momentum_vs_Value|GAM|cpcv_mean_auc": 0.5481281677592451,
+ "Momentum_vs_Value|GAM|cpcv_path_aucs": [
+  0.4860015424128148,
+  0.5206987554568159,
+  0.5555516248399216,
+  0.555770958772296
+ ],
+ "Momentum_vs_Value|GAM|cpcv_mean_path_auc": 0.5295057203704621,
+ "Momentum_vs_Value|XGBoost|accuracy": 0.6282051282051282,
+ "Momentum_vs_Value|XGBoost|roc_auc": 0.6248550124275063,
+ "Momentum_vs_Value|XGBoost|log_loss": 0.7150524800036825,
+ "Momentum_vs_Value|XGBoost|confusion": [
+  38,
+  33,
+  25,
+  60
+ ],
+ "Momentum_vs_Value|XGBoost|pred_pos_share": 0.5961538461538461,
+ "Momentum_vs_Value|XGBoost|confidently_wrong": 3,
+ "Momentum_vs_Value|XGBoost|period1|prob_range": [
+  0.2079480588436126,
+  0.5613701343536377
+ ],
+ "Momentum_vs_Value|XGBoost|period1|pred_pos_share": 0.019230769230769232,
+ "Momentum_vs_Value|XGBoost|period1|accuracy": 0.5769230769230769,
+ "Momentum_vs_Value|XGBoost|period1|roc_auc": 0.6006144393241167,
+ "Momentum_vs_Value|XGBoost|period2|prob_range": [
+  0.4998529851436615,
+  0.5950127243995667
+ ],
+ "Momentum_vs_Value|XGBoost|period2|pred_pos_share": 0.9807692307692307,
+ "Momentum_vs_Value|XGBoost|period2|accuracy": 0.7115384615384616,
+ "Momentum_vs_Value|XGBoost|period2|roc_auc": 0.5714285714285715,
+ "Momentum_vs_Value|XGBoost|period3|prob_range": [
+  0.1317330151796341,
+  0.9561472535133362
+ ],
+ "Momentum_vs_Value|XGBoost|period3|pred_pos_share": 0.7884615384615384,
+ "Momentum_vs_Value|XGBoost|period3|accuracy": 0.5961538461538461,
+ "Momentum_vs_Value|XGBoost|period3|roc_auc": 0.5547337278106509,
+ "Momentum_vs_Value|XGBoost|shap_top10": [
+  "relvol_momentum_vs_value_12",
+  "corr_momentum_quality_12",
+  "SA_RB_Curvature",
+  "volratio_value_quality_12",
+  "GlobalBondVol6",
+  "GenComIndexPC1_QS",
+  "TOP40.Index.Price.to.Book.Ratio_Diff",
+  "VolTermStructPC1",
+  "volratio_momentum_value_12",
+  "relvol_momentum_vs_quality_12"
+ ],
+ "Momentum_vs_Value|XGBoost|shap_top10_sum": 1.065403829,
+ "Momentum_vs_Value|XGBoost|shap_relvol_ranks": [
+  1,
+  4,
+  9,
+  10
+ ],
+ "Momentum_vs_Value|XGBoost|schedule": [
+  {
+   "from_step": 0,
+   "n_train": 758,
+   "learning_rate": 0.01,
+   "max_depth": 3,
+   "min_child_weight": 10,
+   "reg_lambda": 10,
+   "subsample": 0.6
+  },
+  {
+   "from_step": 52,
+   "n_train": 798,
+   "learning_rate": 0.01,
+   "max_depth": 3,
+   "min_child_weight": 5,
+   "reg_lambda": 1000,
+   "subsample": 0.8
+  },
+  {
+   "from_step": 104,
+   "n_train": 850,
+   "learning_rate": 0.1,
+   "max_depth": 2,
+   "min_child_weight": 5,
+   "reg_lambda": 1,
+   "subsample": 0.6
+  }
+ ],
+ "Momentum_vs_Value|XGBoost|cpcv_mean_auc": 0.5141797511411672,
+ "Momentum_vs_Value|XGBoost|cpcv_path_aucs": [
+  0.4905509526875482,
+  0.4526557094037655,
+  0.4960555268613315,
+  0.4481416755697376
+ ],
+ "Momentum_vs_Value|XGBoost|cpcv_mean_path_auc": 0.4718509661305957,
+ "Momentum_vs_Value|class_counts": [
+  71,
+  85
+ ],
+ "Momentum_vs_Value|majority": 0.5448717948717948,
+ "Momentum_vs_Value|Logistic|roc_lead_fpr": [
+  [
+   0.06,
+   0.12
+  ],
+  [
+   0.16,
+   0.18
+  ],
+  [
+   0.2,
+   0.25
+  ]
+ ],
+ "Momentum_vs_Value|GAM|roc_lead_fpr": [
+  [
+   0.79,
+   0.8
+  ]
+ ],
+ "Momentum_vs_Value|XGBoost|roc_lead_fpr": [
+  [
+   0.0,
+   0.05
+  ],
+  [
+   0.26,
+   0.78
+  ],
+  [
+   0.82,
+   0.95
+  ]
+ ],
+ "Momentum_vs_Quality|Logistic|accuracy": 0.5769230769230769,
+ "Momentum_vs_Quality|Logistic|roc_auc": 0.5696768848384424,
+ "Momentum_vs_Quality|Logistic|log_loss": 0.7382170419921493,
+ "Momentum_vs_Quality|Logistic|confusion": [
+  35,
+  36,
+  30,
+  55
+ ],
+ "Momentum_vs_Quality|Logistic|pred_pos_share": 0.5833333333333334,
+ "Momentum_vs_Quality|Logistic|confidently_wrong": 1,
+ "Momentum_vs_Quality|Logistic|period1|prob_range": [
+  0.2118968539632473,
+  0.532037122750951
+ ],
+ "Momentum_vs_Quality|Logistic|period1|pred_pos_share": 0.038461538461538464,
+ "Momentum_vs_Quality|Logistic|period1|accuracy": 0.5384615384615384,
+ "Momentum_vs_Quality|Logistic|period1|roc_auc": 0.3482142857142857,
+ "Momentum_vs_Quality|Logistic|period2|prob_range": [
+  0.2029996387726577,
+  0.9292385643483628
+ ],
+ "Momentum_vs_Quality|Logistic|period2|pred_pos_share": 0.8269230769230769,
+ "Momentum_vs_Quality|Logistic|period2|accuracy": 0.6346153846153846,
+ "Momentum_vs_Quality|Logistic|period2|roc_auc": 0.38345864661654133,
+ "Momentum_vs_Quality|Logistic|period3|prob_range": [
+  0.3162840234657911,
+  0.8782116184404958
+ ],
+ "Momentum_vs_Quality|Logistic|period3|pred_pos_share": 0.8846153846153846,
+ "Momentum_vs_Quality|Logistic|period3|accuracy": 0.5576923076923077,
+ "Momentum_vs_Quality|Logistic|period3|roc_auc": 0.8095952023988007,
+ "Momentum_vs_Quality|Logistic|shap_top10": [
+  "TOP40.Index.Price.to.Ebitda_Diff",
+  "SA_RB_Curvature",
+  "GlobalEquity_EntDyn",
+  "GenComIndexPC1_QS",
+  "USDZARV1M.Curncy_QS",
+  "volratio_momentum_quality_12",
+  "MichgnConcIndx",
+  "MXWD.Index.PE.Ratio_QS",
+  "corr_momentum_value_12",
+  "corr_value_quality_12"
+ ],
+ "Momentum_vs_Quality|Logistic|shap_top10_sum": 1.5263582501274084,
+ "Momentum_vs_Quality|Logistic|shap_relvol_ranks": [
+  6
+ ],
+ "Momentum_vs_Quality|Logistic|schedule": [
+  {
+   "from_step": 0,
+   "n_train": 758,
+   "alpha": 1.0,
+   "lambda_reg": 10.0
+  },
+  {
+   "from_step": 52,
+   "n_train": 798,
+   "alpha": 0.5,
+   "lambda_reg": 10.0
+  },
+  {
+   "from_step": 104,
+   "n_train": 850,
+   "alpha": 0.0,
+   "lambda_reg": 10.0
+  }
+ ],
+ "Momentum_vs_Quality|Logistic|cpcv_mean_auc": 0.5461744201204256,
+ "Momentum_vs_Quality|Logistic|cpcv_path_aucs": [
+  0.4907634192843524,
+  0.5456830499639391,
+  0.4874429631322255,
+  0.5201833748687884
+ ],
+ "Momentum_vs_Quality|Logistic|cpcv_mean_path_auc": 0.5110182018123264,
+ "Momentum_vs_Quality|GAM|accuracy": 0.5641025641025641,
+ "Momentum_vs_Quality|GAM|roc_auc": 0.523612261806131,
+ "Momentum_vs_Quality|GAM|log_loss": 0.9593471036288446,
+ "Momentum_vs_Quality|GAM|confusion": [
+  27,
+  44,
+  24,
+  61
+ ],
+ "Momentum_vs_Quality|GAM|pred_pos_share": 0.6730769230769231,
+ "Momentum_vs_Quality|GAM|confidently_wrong": 8,
+ "Momentum_vs_Quality|GAM|period1|prob_range": [
+  0.0510267658633837,
+  0.7792105311573763
+ ],
+ "Momentum_vs_Quality|GAM|period1|pred_pos_share": 0.28846153846153844,
+ "Momentum_vs_Quality|GAM|period1|accuracy": 0.5192307692307693,
+ "Momentum_vs_Quality|GAM|period1|roc_auc": 0.3973214285714286,
+ "Momentum_vs_Quality|GAM|period2|prob_range": [
+  0.0650300628901337,
+  0.9999997929946396
+ ],
+ "Momentum_vs_Quality|GAM|period2|pred_pos_share": 0.8269230769230769,
+ "Momentum_vs_Quality|GAM|period2|accuracy": 0.6346153846153846,
+ "Momentum_vs_Quality|GAM|period2|roc_auc": 0.37593984962406013,
+ "Momentum_vs_Quality|GAM|period3|prob_range": [
+  0.2295531737472897,
+  0.93396191045185
+ ],
+ "Momentum_vs_Quality|GAM|period3|pred_pos_share": 0.9038461538461539,
+ "Momentum_vs_Quality|GAM|period3|accuracy": 0.5384615384615384,
+ "Momentum_vs_Quality|GAM|period3|roc_auc": 0.7001499250374812,
+ "Momentum_vs_Quality|GAM|shap_top10": [
+  "corr_value_quality_12",
+  "relvol_value_vs_quality_12",
+  "relvol_momentum_vs_value_12",
+  "volratio_momentum_value_12",
+  "SA_RB_Curvature",
+  "volratio_value_quality_12",
+  "TOP40.Index.Price.to.Ebitda_Diff",
+  "USDZARV1M.Curncy_QS",
+  "MXWD.Index.PE.Ratio_QS",
+  "volratio_momentum_quality_12"
+ ],
+ "Momentum_vs_Quality|GAM|shap_top10_sum": 8.121917374326559,
+ "Momentum_vs_Quality|GAM|shap_relvol_ranks": [
+  2,
+  3,
+  4,
+  6,
+  10
+ ],
+ "Momentum_vs_Quality|GAM|schedule": [
+  {
+   "from_step": 0,
+   "n_train": 758,
+   "lam": 1000,
+   "n_splines": 5
+  },
+  {
+   "from_step": 52,
+   "n_train": 798,
+   "lam": 1000,
+   "n_splines": 4
+  },
+  {
+   "from_step": 104,
+   "n_train": 850,
+   "lam": 10000,
+   "n_splines": 10
+  }
+ ],
+ "Momentum_vs_Quality|GAM|cpcv_mean_auc": 0.5268916714777363,
+ "Momentum_vs_Quality|GAM|cpcv_path_aucs": [
+  0.4550024635642419,
+  0.5100506280303626,
+  0.4773816239529852,
+  0.6116851493491191
+ ],
+ "Momentum_vs_Quality|GAM|cpcv_mean_path_auc": 0.5135299662241772,
+ "Momentum_vs_Quality|XGBoost|accuracy": 0.6153846153846154,
+ "Momentum_vs_Quality|XGBoost|roc_auc": 0.5890637945318973,
+ "Momentum_vs_Quality|XGBoost|log_loss": 0.6777452718236605,
+ "Momentum_vs_Quality|XGBoost|confusion": [
+  14,
+  57,
+  3,
+  82
+ ],
+ "Momentum_vs_Quality|XGBoost|pred_pos_share": 0.8910256410256411,
+ "Momentum_vs_Quality|XGBoost|confidently_wrong": 2,
+ "Momentum_vs_Quality|XGBoost|period1|prob_range": [
+  0.536769688129425,
+  0.5676755309104919
+ ],
+ "Momentum_vs_Quality|XGBoost|period1|pred_pos_share": 1.0,
+ "Momentum_vs_Quality|XGBoost|period1|accuracy": 0.46153846153846156,
+ "Momentum_vs_Quality|XGBoost|period1|roc_auc": 0.7455357142857142,
+ "Momentum_vs_Quality|XGBoost|period2|prob_range": [
+  0.5322254300117493,
+  0.5972639322280884
+ ],
+ "Momentum_vs_Quality|XGBoost|period2|pred_pos_share": 1.0,
+ "Momentum_vs_Quality|XGBoost|period2|accuracy": 0.7307692307692307,
+ "Momentum_vs_Quality|XGBoost|period2|roc_auc": 0.3327067669172933,
+ "Momentum_vs_Quality|XGBoost|period3|prob_range": [
+  0.0261307787150144,
+  0.9767327904701232
+ ],
+ "Momentum_vs_Quality|XGBoost|period3|pred_pos_share": 0.6730769230769231,
+ "Momentum_vs_Quality|XGBoost|period3|accuracy": 0.6538461538461539,
+ "Momentum_vs_Quality|XGBoost|period3|roc_auc": 0.7481259370314843,
+ "Momentum_vs_Quality|XGBoost|shap_top10": [
+  "TOP40.Index.Price.to.Ebitda_Diff",
+  "SA_RB_Curvature",
+  "GenComIndexPC1_QS",
+  "SA_CDS_Slope",
+  "RandPPP_Factor_Inst_TS_ST",
+  "mom3m_momentum_vs_value",
+  "GLD_RollKurt",
+  "US_RB_Curvature",
+  "MichgnConcIndx",
+  "volratio_momentum_value_12"
+ ],
+ "Momentum_vs_Quality|XGBoost|shap_top10_sum": 0.1639363208,
+ "Momentum_vs_Quality|XGBoost|shap_relvol_ranks": [
+  10
+ ],
+ "Momentum_vs_Quality|XGBoost|schedule": [
+  {
+   "from_step": 0,
+   "n_train": 758,
+   "learning_rate": 0.01,
+   "max_depth": 3,
+   "min_child_weight": 10,
+   "reg_lambda": 1000,
+   "subsample": 0.8
+  },
+  {
+   "from_step": 52,
+   "n_train": 798,
+   "learning_rate": 0.01,
+   "max_depth": 4,
+   "min_child_weight": 10,
+   "reg_lambda": 1000,
+   "subsample": 0.8
+  },
+  {
+   "from_step": 104,
+   "n_train": 850,
+   "learning_rate": 0.1,
+   "max_depth": 4,
+   "min_child_weight": 10,
+   "reg_lambda": 1,
+   "subsample": 0.6
+  }
+ ],
+ "Momentum_vs_Quality|XGBoost|cpcv_mean_auc": 0.4938623785114068,
+ "Momentum_vs_Quality|XGBoost|cpcv_path_aucs": [
+  0.4722616947893831,
+  0.4405495533450917,
+  0.41257203247620344,
+  0.41701715926050226
+ ],
+ "Momentum_vs_Quality|XGBoost|cpcv_mean_path_auc": 0.4356001099677951,
+ "Momentum_vs_Quality|class_counts": [
+  71,
+  85
+ ],
+ "Momentum_vs_Quality|majority": 0.5448717948717948,
+ "Momentum_vs_Quality|Logistic|roc_lead_fpr": [
+  [
+   0.05,
+   0.11
+  ],
+  [
+   0.13,
+   0.54
+  ]
+ ],
+ "Momentum_vs_Quality|GAM|roc_lead_fpr": [],
+ "Momentum_vs_Quality|XGBoost|roc_lead_fpr": [
+  [
+   0.0,
+   0.02
+  ],
+  [
+   0.55,
+   0.99
+  ]
+ ],
+ "Value_vs_Quality|Logistic|accuracy": 0.5384615384615384,
+ "Value_vs_Quality|Logistic|roc_auc": 0.5980601676804208,
+ "Value_vs_Quality|Logistic|log_loss": 0.6858898907632273,
+ "Value_vs_Quality|Logistic|confusion": [
+  55,
+  24,
+  48,
+  29
+ ],
+ "Value_vs_Quality|Logistic|pred_pos_share": 0.33974358974358976,
+ "Value_vs_Quality|Logistic|confidently_wrong": 0,
+ "Value_vs_Quality|Logistic|period1|prob_range": [
+  0.1438419236759777,
+  0.7654011493205948
+ ],
+ "Value_vs_Quality|Logistic|period1|pred_pos_share": 0.5576923076923077,
+ "Value_vs_Quality|Logistic|period1|accuracy": 0.75,
+ "Value_vs_Quality|Logistic|period1|roc_auc": 0.787878787878788,
+ "Value_vs_Quality|Logistic|period2|prob_range": [
+  0.0994184547305756,
+  0.6700755055011828
+ ],
+ "Value_vs_Quality|Logistic|period2|pred_pos_share": 0.34615384615384615,
+ "Value_vs_Quality|Logistic|period2|accuracy": 0.40384615384615385,
+ "Value_vs_Quality|Logistic|period2|roc_auc": 0.442962962962963,
+ "Value_vs_Quality|Logistic|period3|prob_range": [
+  0.2310293080572433,
+  0.6128184505944773
+ ],
+ "Value_vs_Quality|Logistic|period3|pred_pos_share": 0.11538461538461539,
+ "Value_vs_Quality|Logistic|period3|accuracy": 0.46153846153846156,
+ "Value_vs_Quality|Logistic|period3|roc_auc": 0.4666666666666667,
+ "Value_vs_Quality|Logistic|shap_top10": [
+  "USDZAR_EntDyn",
+  "mom3m_value_vs_quality",
+  "GlobalPropertyVol12",
+  "volratio_value_quality_12",
+  "mom3m_momentum_vs_quality",
+  "TOP40.Index.Price.to.Ebitda_Diff",
+  "GlobalBondVol6",
+  "US_RB_Curvature",
+  "GLD_RollSkew",
+  "volratio_momentum_quality_12"
+ ],
+ "Value_vs_Quality|Logistic|shap_top10_sum": 1.880198581386795,
+ "Value_vs_Quality|Logistic|shap_relvol_ranks": [
+  4,
+  10
+ ],
+ "Value_vs_Quality|Logistic|schedule": [
+  {
+   "from_step": 0,
+   "n_train": 758,
+   "alpha": 1.0,
+   "lambda_reg": 10.0
+  },
+  {
+   "from_step": 52,
+   "n_train": 798,
+   "alpha": 1.0,
+   "lambda_reg": 10.0
+  },
+  {
+   "from_step": 104,
+   "n_train": 850,
+   "alpha": 1.0,
+   "lambda_reg": 10.0
+  }
+ ],
+ "Value_vs_Quality|Logistic|cpcv_mean_auc": 0.5447885786721789,
+ "Value_vs_Quality|Logistic|cpcv_path_aucs": [
+  0.5102187238785177,
+  0.4747004736695458,
+  0.5023404848147117,
+  0.43657704095848426
+ ],
+ "Value_vs_Quality|Logistic|cpcv_mean_path_auc": 0.4809591808303148,
+ "Value_vs_Quality|GAM|accuracy": 0.4935897435897436,
+ "Value_vs_Quality|GAM|roc_auc": 0.4948216340621404,
+ "Value_vs_Quality|GAM|log_loss": 1.1475481333220257,
+ "Value_vs_Quality|GAM|confusion": [
+  46,
+  33,
+  46,
+  31
+ ],
+ "Value_vs_Quality|GAM|pred_pos_share": 0.41025641025641024,
+ "Value_vs_Quality|GAM|confidently_wrong": 12,
+ "Value_vs_Quality|GAM|period1|prob_range": [
+  0.0394035214246686,
+  0.9701173465550648
+ ],
+ "Value_vs_Quality|GAM|period1|pred_pos_share": 0.5384615384615384,
+ "Value_vs_Quality|GAM|period1|accuracy": 0.46153846153846156,
+ "Value_vs_Quality|GAM|period1|roc_auc": 0.5212121212121212,
+ "Value_vs_Quality|GAM|period2|prob_range": [
+  1.3979948826232326e-07,
+  0.8683960200406724
+ ],
+ "Value_vs_Quality|GAM|period2|pred_pos_share": 0.3269230769230769,
+ "Value_vs_Quality|GAM|period2|accuracy": 0.4230769230769231,
+ "Value_vs_Quality|GAM|period2|roc_auc": 0.4266666666666667,
+ "Value_vs_Quality|GAM|period3|prob_range": [
+  0.121187772871983,
+  0.7119075138786651
+ ],
+ "Value_vs_Quality|GAM|period3|pred_pos_share": 0.36538461538461536,
+ "Value_vs_Quality|GAM|period3|accuracy": 0.5961538461538461,
+ "Value_vs_Quality|GAM|period3|roc_auc": 0.5545454545454545,
+ "Value_vs_Quality|GAM|shap_top10": [
+  "GlobalPropertyVol12",
+  "USDZAR_EntDyn",
+  "volratio_value_quality_12",
+  "volratio_momentum_value_12",
+  "SA_RB_Curvature",
+  "RandPPP_Factor_Inst_TS_ST",
+  "relvol_value_vs_quality_12",
+  "volratio_momentum_quality_12",
+  "JALSH_Fundamental_PC1",
+  "TOP40.Index.Price.to.Book.Ratio_Diff"
+ ],
+ "Value_vs_Quality|GAM|shap_top10_sum": 11.876284391860505,
+ "Value_vs_Quality|GAM|shap_relvol_ranks": [
+  3,
+  4,
+  7,
+  8
+ ],
+ "Value_vs_Quality|GAM|schedule": [
+  {
+   "from_step": 0,
+   "n_train": 758,
+   "lam": 1,
+   "n_splines": 10
+  },
+  {
+   "from_step": 52,
+   "n_train": 798,
+   "lam": 1000,
+   "n_splines": 4
+  },
+  {
+   "from_step": 104,
+   "n_train": 850,
+   "lam": 10000,
+   "n_splines": 7
+  }
+ ],
+ "Value_vs_Quality|GAM|cpcv_mean_auc": 0.5220229190434583,
+ "Value_vs_Quality|GAM|cpcv_path_aucs": [
+  0.46013513513513515,
+  0.4941209250487601,
+  0.5180691000278629,
+  0.4811716355530789
+ ],
+ "Value_vs_Quality|GAM|cpcv_mean_path_auc": 0.4883741989412092,
+ "Value_vs_Quality|XGBoost|accuracy": 0.6025641025641025,
+ "Value_vs_Quality|XGBoost|roc_auc": 0.6638171954627651,
+ "Value_vs_Quality|XGBoost|log_loss": 0.6698919472408178,
+ "Value_vs_Quality|XGBoost|confusion": [
+  49,
+  30,
+  32,
+  45
+ ],
+ "Value_vs_Quality|XGBoost|pred_pos_share": 0.4807692307692308,
+ "Value_vs_Quality|XGBoost|confidently_wrong": 1,
+ "Value_vs_Quality|XGBoost|period1|prob_range": [
+  0.2465505450963974,
+  0.7876684665679932
+ ],
+ "Value_vs_Quality|XGBoost|period1|pred_pos_share": 0.75,
+ "Value_vs_Quality|XGBoost|period1|accuracy": 0.6730769230769231,
+ "Value_vs_Quality|XGBoost|period1|roc_auc": 0.7772727272727273,
+ "Value_vs_Quality|XGBoost|period2|prob_range": [
+  0.2541835606098175,
+  0.7095127701759338
+ ],
+ "Value_vs_Quality|XGBoost|period2|pred_pos_share": 0.28846153846153844,
+ "Value_vs_Quality|XGBoost|period2|accuracy": 0.5769230769230769,
+ "Value_vs_Quality|XGBoost|period2|roc_auc": 0.6325925925925926,
+ "Value_vs_Quality|XGBoost|period3|prob_range": [
+  0.0131796076893806,
+  0.9170162677764891
+ ],
+ "Value_vs_Quality|XGBoost|period3|pred_pos_share": 0.40384615384615385,
+ "Value_vs_Quality|XGBoost|period3|accuracy": 0.5576923076923077,
+ "Value_vs_Quality|XGBoost|period3|roc_auc": 0.6287878787878788,
+ "Value_vs_Quality|XGBoost|shap_top10": [
+  "mom3m_value_vs_quality",
+  "GLD_RollSD",
+  "volratio_value_quality_12",
+  "mom3m_momentum_vs_quality",
+  "US_RB_Curvature",
+  "volratio_momentum_quality_12",
+  "SA_RB_Curvature",
+  "MXWD_Fundamental_PC1",
+  "TOP40.Index.Price.to.Book.Ratio_Diff",
+  "relvol_momentum_vs_quality_12"
+ ],
+ "Value_vs_Quality|XGBoost|shap_top10_sum": 1.3242034999999999,
+ "Value_vs_Quality|XGBoost|shap_relvol_ranks": [
+  3,
+  6,
+  10
+ ],
+ "Value_vs_Quality|XGBoost|schedule": [
+  {
+   "from_step": 0,
+   "n_train": 758,
+   "learning_rate": 0.01,
+   "max_depth": 2,
+   "min_child_weight": 20,
+   "reg_lambda": 1,
+   "subsample": 0.8
+  },
+  {
+   "from_step": 52,
+   "n_train": 798,
+   "learning_rate": 0.03,
+   "max_depth": 2,
+   "min_child_weight": 20,
+   "reg_lambda": 100,
+   "subsample": 0.8
+  },
+  {
+   "from_step": 104,
+   "n_train": 850,
+   "learning_rate": 0.1,
+   "max_depth": 2,
+   "min_child_weight": 5,
+   "reg_lambda": 1,
+   "subsample": 0.8
+  }
+ ],
+ "Value_vs_Quality|XGBoost|cpcv_mean_auc": 0.5565252754036021,
+ "Value_vs_Quality|XGBoost|cpcv_path_aucs": [
+  0.5067288938422959,
+  0.4712559208693229,
+  0.5444552800222904,
+  0.4980078016160491
+ ],
+ "Value_vs_Quality|XGBoost|cpcv_mean_path_auc": 0.5051119740874895,
+ "Value_vs_Quality|class_counts": [
+  79,
+  77
+ ],
+ "Value_vs_Quality|majority": 0.5064102564102564,
+ "Value_vs_Quality|Logistic|roc_lead_fpr": [
+  [
+   0.02,
+   0.02
+  ],
+  [
+   0.06,
+   0.07
+  ],
+  [
+   0.79,
+   0.82
+  ],
+  [
+   0.84,
+   0.96
+  ]
+ ],
+ "Value_vs_Quality|GAM|roc_lead_fpr": [],
+ "Value_vs_Quality|XGBoost|roc_lead_fpr": [
+  [
+   0.0,
+   0.01
+  ],
+  [
+   0.08,
+   0.78
+  ]
+ ],
+ "Momentum_vs_Value|Logistic|auc_ci": [
+  0.3347479808272947,
+  0.6407849556916776
+ ],
+ "Momentum_vs_Value|GAM|auc_ci": [
+  0.4081831981536605,
+  0.6541851632107529
+ ],
+ "Momentum_vs_Value|XGBoost|auc_ci": [
+  0.4383202163441134,
+  0.7970180844698949
+ ],
+ "Momentum_vs_Quality|Logistic|auc_ci": [
+  0.37530444239305,
+  0.7476609677023969
+ ],
+ "Momentum_vs_Quality|GAM|auc_ci": [
+  0.3364737103174603,
+  0.7136546947853536
+ ],
+ "Momentum_vs_Quality|XGBoost|auc_ci": [
+  0.4494458521021021,
+  0.718955981382452
+ ],
+ "Value_vs_Quality|Logistic|auc_ci": [
+  0.4544366776315789,
+  0.7369824409735074
+ ],
+ "Value_vs_Quality|GAM|auc_ci": [
+  0.3867527319620796,
+  0.6045445873850901
+ ],
+ "Value_vs_Quality|XGBoost|auc_ci": [
+  0.5689144736842106,
+  0.7570560384562764
+ ],
+ "Momentum_vs_Value|XGBoost - Logistic|auc_diff_ci": [
+  0.135708367854184,
+  -0.0701062610229277,
+  0.3541148377085875
+ ],
+ "Momentum_vs_Value|XGBoost - GAM|auc_diff_ci": [
+  0.0967688483844242,
+  -0.0493288495802222,
+  0.2552753227847444
+ ],
+ "Momentum_vs_Value|GAM - Logistic|auc_diff_ci": [
+  0.0389395194697598,
+  -0.1237374707132771,
+  0.190138986909185
+ ],
+ "Momentum_vs_Quality|XGBoost - Logistic|auc_diff_ci": [
+  0.0193869096934549,
+  -0.1836134803097616,
+  0.2455686841788811
+ ],
+ "Momentum_vs_Quality|XGBoost - GAM|auc_diff_ci": [
+  0.0654515327257663,
+  -0.1666673947230473,
+  0.2942205001409066
+ ],
+ "Momentum_vs_Quality|GAM - Logistic|auc_diff_ci": [
+  -0.0460646230323114,
+  -0.1358795831025135,
+  0.0375589760362723
+ ],
+ "Value_vs_Quality|XGBoost - Logistic|auc_diff_ci": [
+  0.0657570277823442,
+  -0.036721422880907,
+  0.1772463377686157
+ ],
+ "Value_vs_Quality|XGBoost - GAM|auc_diff_ci": [
+  0.1689955614006246,
+  0.0405958762244828,
+  0.2934490181256056
+ ],
+ "Value_vs_Quality|GAM - Logistic|auc_diff_ci": [
+  -0.1032385336182803,
+  -0.2170517931138597,
+  0.0162682913266065
+ ]
+}

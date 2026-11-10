@@ -1,0 +1,31 @@
+{
+  "model": "XGBoost",
+  "pair": "Momentum_vs_Value",
+  "n_obs": 746,
+  "first": "2007-07-23",
+  "last": "2021-11-01",
+  "best_params": {
+    "learning_rate": 0.01,
+    "max_depth": 2,
+    "min_child_weight": 20,
+    "reg_lambda": 1000,
+    "subsample": 0.6
+  },
+  "old_best_params": {
+    "learning_rate": 0.01,
+    "max_depth": 3,
+    "min_child_weight": 10,
+    "reg_lambda": 10,
+    "subsample": 0.6
+  },
+  "unchanged": false,
+  "mean_auc": 0.5191866104961632,
+  "mean_path_auc": 0.4526203484289977,
+  "path_aucs": [
+    0.4360079866596454,
+    0.4187949798139372,
+    0.5227641741267334,
+    0.43291425311567494
+  ],
+  "minutes": 33.99172759453456
+}

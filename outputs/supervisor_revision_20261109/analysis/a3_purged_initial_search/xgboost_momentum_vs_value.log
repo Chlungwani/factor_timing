@@ -1,0 +1,16 @@
+Testing 216 parameter combinations...
+New best params: {'learning_rate': 0.01, 'max_depth': 2, 'min_child_weight': 5, 'reg_lambda': 1, 'subsample': 0.6} (AUC: 0.493)
+New best params: {'learning_rate': 0.01, 'max_depth': 2, 'min_child_weight': 5, 'reg_lambda': 10, 'subsample': 0.6} (AUC: 0.496)
+New best params: {'learning_rate': 0.01, 'max_depth': 2, 'min_child_weight': 5, 'reg_lambda': 100, 'subsample': 0.6} (AUC: 0.498)
+New best params: {'learning_rate': 0.01, 'max_depth': 2, 'min_child_weight': 5, 'reg_lambda': 1000, 'subsample': 0.6} (AUC: 0.500)
+New best params: {'learning_rate': 0.01, 'max_depth': 2, 'min_child_weight': 10, 'reg_lambda': 1, 'subsample': 0.6} (AUC: 0.506)
+New best params: {'learning_rate': 0.01, 'max_depth': 2, 'min_child_weight': 10, 'reg_lambda': 10, 'subsample': 0.6} (AUC: 0.512)
+New best params: {'learning_rate': 0.01, 'max_depth': 2, 'min_child_weight': 20, 'reg_lambda': 100, 'subsample': 0.6} (AUC: 0.513)
+New best params: {'learning_rate': 0.01, 'max_depth': 2, 'min_child_weight': 20, 'reg_lambda': 1000, 'subsample': 0.6} (AUC: 0.519)
+
+=== Top 5 Parameter Combinations ===
+Score: 0.519 | Params: {'learning_rate': 0.01, 'max_depth': 3, 'min_child_weight': 20, 'reg_lambda': 1000, 'subsample': 0.6}
+Score: 0.519 | Params: {'learning_rate': 0.01, 'max_depth': 2, 'min_child_weight': 20, 'reg_lambda': 1000, 'subsample': 0.6}
+Score: 0.519 | Params: {'learning_rate': 0.01, 'max_depth': 4, 'min_child_weight': 20, 'reg_lambda': 1000, 'subsample': 0.6}
+Score: 0.517 | Params: {'learning_rate': 0.03, 'max_depth': 4, 'min_child_weight': 20, 'reg_lambda': 1000, 'subsample': 0.6}
+Score: 0.517 | Params: {'learning_rate': 0.03, 'max_depth': 3, 'min_child_weight': 20, 'reg_lambda': 1000, 'subsample': 0.6}

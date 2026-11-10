@@ -5,7 +5,7 @@ Figures 3-5  trend-scanning labels on the cumulative relative return of each
              labels are left unshaded rather than forward-filled). Saved as one
              figure per pair and as a combined figure_trend_scanning_labels.png.
 Figure 6     Ward dendrogram of the mutual-information distances, cut at
-             height 2 (rebuilt with appendix_b_feature_selection.py's pipeline).
+             height 2 (the selection of appendix_b_feature_selection.py).
 Figure 7     CPCV as implemented: the ten combinations, the purge and embargo,
              the four back-test paths and the selection rule.
 Figure 8     expanding-window walk-forward design with the 12-week purge and the
@@ -106,12 +106,9 @@ def figure_dendrogram():
     """Ward dendrogram of the MI distances; links below the cut are coloured by cluster."""
     from scipy.cluster.hierarchy import dendrogram, set_link_color_palette
 
-    from appendix_b_feature_selection import CUT_HEIGHT, cluster, nmi_matrix, screened_features
+    from appendix_b_feature_selection import CUT_HEIGHT, selection
 
-    _, _, data = screened_features()
-    X = data.iloc[:, :-1]                     # as in the notebook (see appendix_b_feature_selection.py)
-    D = 1 - nmi_matrix(data).loc[X.columns, X.columns]
-    Z, _, reps = cluster(D, height=CUT_HEIGHT)
+    _, D, Z, _, reps = selection()            # the weeks before the evaluation block only
 
     set_link_color_palette([style.BLUE, style.ORANGE, style.GREEN, style.PURPLE, style.PINK, style.GOLD])
     fig, ax = plt.subplots(figsize=(style.TEXT_WIDTH, 3.0))

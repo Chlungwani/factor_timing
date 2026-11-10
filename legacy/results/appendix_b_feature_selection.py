@@ -1,10 +1,18 @@
-"""Appendix B analysis: mutual-information feature selection, reported and stress-tested.
+"""Feature selection by mutual-information clustering (Section 3.6), reported and stress-tested (Appendix B).
 
-Reproduces the clustering in feature_importance/feature_selection.ipynb exactly
-(including its omission of the last feature column), then writes:
+Every step uses only the weeks before the evaluation block, which starts on 31 January 2022:
+  - candidates with more than 30% of these weeks missing are removed (the missing-value screen);
+  - the rest are forward-filled, and the weeks before the last of them begins are dropped;
+  - features that do not vary over the remaining weeks are removed: their entropy is zero, so their
+    normalised MI with every other feature is set to zero and they would form a cluster of their own;
+  - the features are clustered on 1 - NMI (20 quantile bins) with Ward linkage, the tree is cut at height 2,
+    and each cluster keeps the member with the lowest mean distance to the others.
+
+Writes data_input/representatives.csv, the selection that model_training/data_preprocessing.ipynb reads, and
 
   appendix_b/b1_clusters.csv           cluster membership and representatives
-  appendix_b/b2_screening.csv          features removed by the 30% missing-value screen
+  appendix_b/b2_screening.csv          features removed by the missing-value screen
+  appendix_b/b2_constant.csv           features removed because they do not vary
   appendix_b/b3_cut_heights.csv        clusters and silhouette by cut height
   appendix_b/b3_silhouette.csv         silhouette score for 5-100 clusters
   appendix_b/b4_stability.csv          representative overlap under alternative choices
@@ -32,19 +40,23 @@ RESULTS = Path(__file__).resolve().parent
 DATA = RESULTS.parent / "data_input"
 OUT = RESULTS / "appendix_b"
 EVALUATION_START = "2022-01-31"
-CUT_HEIGHT, N_BINS = 2, 20
+CUT_HEIGHT, N_BINS, MAX_MISSING = 2, 20, 0.30
 
 plt.rcParams.update({k: v for k, v in RC.items() if not k.startswith(("axes.title", "legend."))})
 
 
 # ----------------------------------------------------------------- pipeline --
 
-def screened_features():
+def screened_features(end=EVALUATION_START):
+    """The candidate file up to `end` (None: all weeks), the screen's removals and the features to cluster."""
     raw = pd.read_csv(DATA / "featureset.csv", parse_dates=["Date"], na_values=["NA"]).set_index("Date")
+    if end is not None:
+        raw = raw[raw.index < end]
     missing = raw.isnull().mean()
-    removed = missing[missing > 0.30].sort_values(ascending=False)
+    removed = missing[missing > MAX_MISSING].sort_values(ascending=False)
     data = raw.drop(columns=removed.index).ffill().dropna()
-    return raw, removed, data
+    constant = data.columns[data.nunique() == 1]      # std alone misses floating-point noise
+    return raw, removed, constant, data.drop(columns=constant)
 
 
 def bins_for(X, n_bins):
@@ -65,12 +77,19 @@ def nmi_matrix(X, n_bins=N_BINS):
 
 
 def cluster(D, height=None, k=None):
-    Z = linkage(D, method="ward")            # rows of the square matrix, as in the notebook
+    Z = linkage(D, method="ward")            # rows of the square matrix: each feature's distance profile
     labels = fcluster(Z, t=height, criterion="distance") if k is None else fcluster(Z, t=k, criterion="maxclust")
     labels = pd.Series(labels, index=D.index)
     reps = {c: D.loc[f, f].mean(axis=1).idxmin()
             for c in sorted(labels.unique()) for f in [labels[labels == c].index]}
     return Z, labels, reps
+
+
+def selection():
+    """The selection used by the models: the clustered features, their distances, linkage, clusters and representatives."""
+    *_, X = screened_features()
+    D = 1 - nmi_matrix(X)
+    return (X, D, *cluster(D, height=CUT_HEIGHT))
 
 
 def compare(base_labels, base_reps, labels, reps):
@@ -86,27 +105,30 @@ def compare(base_labels, base_reps, labels, reps):
 
 def main():
     OUT.mkdir(exist_ok=True)
-    raw, removed, data = screened_features()
-    X = data.iloc[:, :-1]                     # notebook behaviour: last column treated as a target
-    omitted = data.columns[-1]
-    summary = {"candidates": raw.shape[1], "removed_missing": len(removed), "screened": data.shape[1],
-               "clustered": X.shape[1], "omitted_feature": omitted, "mi_weeks": len(X),
-               "mi_start": str(X.index.min().date()), "mi_end": str(X.index.max().date())}
+    raw, removed, constant, X = screened_features()
+    summary = {"candidates": raw.shape[1], "selection_weeks": len(raw), "selection_start": str(raw.index.min().date()),
+               "selection_end": str(raw.index.max().date()), "removed_missing": len(removed),
+               "screened": raw.shape[1] - len(removed), "removed_constant": len(constant), "clustered": X.shape[1],
+               "mi_weeks": len(X), "mi_start": str(X.index.min().date()), "mi_end": str(X.index.max().date())}
 
     # B.2 screening
     pd.DataFrame({"feature": removed.index, "missing_share": removed.round(3).values,
                   "first_available": [raw[c].first_valid_index().date() for c in removed.index]}
                  ).to_csv(OUT / "b2_screening.csv", index=False)
+    pd.DataFrame({"feature": constant}).to_csv(OUT / "b2_constant.csv", index=False)
 
-    # baseline (reproduces the saved selection)
-    nmi_full = nmi_matrix(data)
-    D = 1 - nmi_full.loc[X.columns, X.columns]
+    # the selection
+    nmi = nmi_matrix(X)
+    D = 1 - nmi
     Z, labels, reps = cluster(D, height=CUT_HEIGHT)
-    saved = pd.read_csv(DATA / "representatives.csv")["Representative"]
-    assert set(reps.values()) == set(saved), "baseline does not reproduce representatives.csv"
     summary["baseline_clusters"] = len(reps)
     off = D.values[np.triu_indices(len(D), 1)]
     summary["median_distance"] = round(float(np.median(off)), 3)
+    pd.DataFrame([{"Cluster": c, "Representative": rep,
+                   "Mean_Distance": D.loc[m, m].mean(axis=1)[rep], "Max_Distance": D.loc[rep, m].max(),
+                   "Cluster_Size": len(m)}
+                  for c, rep in reps.items() for m in [labels[labels == c].index]]
+                 ).to_csv(DATA / "representatives.csv")
 
     # B.1 clusters
     rows = []
@@ -119,7 +141,7 @@ def main():
                      "within_mean_distance": round(float(D.loc[members, members].values[
                          np.triu_indices(len(members), 1)].mean()), 3),
                      "other_members": "; ".join(others)})
-    b1 = pd.DataFrame(rows).sort_values("size", ascending=False)
+    b1 = pd.DataFrame(rows).sort_values("size", ascending=False, kind="stable")
     b1.to_csv(OUT / "b1_clusters.csv", index=False)
     summary["cluster_size_min"], summary["cluster_size_max"] = int(b1["size"].min()), int(b1["size"].max())
     summary["cluster_size_median"] = float(b1["size"].median())
@@ -134,15 +156,17 @@ def main():
         cut_rows.append({"cut_height": h, "clusters": len(set(lab)),
                          "silhouette": round(silhouette_score(D, lab, metric="precomputed"), 3)})
     pd.DataFrame(cut_rows).to_csv(OUT / "b3_cut_heights.csv", index=False)
-    summary["silhouette_at_32"] = round(sil[32], 3)
+    n_rep = len(reps)
+    summary["silhouette_at_baseline"] = round(sil[n_rep], 3)
     summary["silhouette_max"] = round(max(sil.values()), 3)
     summary["silhouette_argmax"] = max(sil, key=sil.get)
 
     fig, ax = plt.subplots(figsize=(6.3, 2.6))
     ax.plot(list(sil), list(sil.values()), color=BLUE, linewidth=1.6)
-    ax.scatter([32], [sil[32]], color=ORANGE, s=28, zorder=3)
-    ax.annotate(f"32 clusters (cut height 2): {sil[32]:.3f}", (32, sil[32]), xytext=(38, sil[32] - 0.03),
-                fontsize=8, color=INK, arrowprops=dict(arrowstyle="-", color=INK_2, linewidth=0.6))
+    ax.scatter([n_rep], [sil[n_rep]], color=ORANGE, s=28, zorder=3)
+    ax.annotate(f"{n_rep} clusters (cut height {CUT_HEIGHT}): {sil[n_rep]:.3f}", (n_rep, sil[n_rep]),
+                xytext=(n_rep + 6, sil[n_rep] - 0.03), fontsize=8, color=INK,
+                arrowprops=dict(arrowstyle="-", color=INK_2, linewidth=0.6))
     ax.axhline(0, color=INK_2, linewidth=0.6)
     ax.set_xlabel("Number of clusters")
     ax.set_ylabel("Mean silhouette score")
@@ -153,18 +177,19 @@ def main():
 
     # B.4 stability
     variants = {}
-    _, lab_v, rep_v = cluster(1 - nmi_full, height=CUT_HEIGHT)
-    variants["All 344 screened features (omission corrected)"] = (lab_v, rep_v, 1 - nmi_full)
     for nb in (10, 30):
         Dv = 1 - nmi_matrix(X, n_bins=nb)
         variants[f"{nb} quantile bins instead of 20"] = (*cluster(Dv, height=CUT_HEIGHT)[1:], Dv)
-    pre = X[X.index < EVALUATION_START]
-    summary["pre_eval_weeks"], summary["pre_eval_end"] = len(pre), str(pre.index.max().date())
-    Dp = 1 - nmi_matrix(pre)
-    variants[f"Pre-evaluation weeks only ({pre.index.min():%b %Y} to {pre.index.max():%b %Y})"] = (
-        *cluster(Dp, height=CUT_HEIGHT)[1:], Dp)
+    full_raw, full_removed, full_constant, Xf = screened_features(end=None)
+    Df = 1 - nmi_matrix(Xf)
+    variants[f"All weeks to {Xf.index.max():%B %Y}, including the evaluation block"] = (
+        *cluster(Df, height=CUT_HEIGHT)[1:], Df)
+    summary.update(full_weeks=len(Xf), full_start=str(Xf.index.min().date()), full_end=str(Xf.index.max().date()),
+                   full_removed_missing=len(full_removed), full_removed_constant=len(full_constant),
+                   full_clustered=Xf.shape[1])
+
     def substitutes(rep_k):
-        """Dropped baseline representatives replaced by a new representative from the same baseline cluster."""
+        """Dropped representatives replaced by a new representative from the same cluster of the selection."""
         new = set(rep_k.values()) - set(reps.values())
         dropped = set(reps.values()) - set(rep_k.values())
         return {d for d in dropped if any(labels.get(n) == labels[d] for n in new)}
@@ -172,30 +197,22 @@ def main():
     stab = []
     for name, (lab_v, rep_v, Dv) in variants.items():
         at_h = compare(labels, reps, lab_v, rep_v)
-        _, lab_k, rep_k = cluster(Dv, k=len(reps))
+        _, lab_k, rep_k = cluster(Dv, k=n_rep)
         at_k = compare(labels, reps, lab_k, rep_k)
         stab.append({"variant": name, "clusters_at_height_2": at_h["clusters"],
-                     "kept_at_32": at_k["representatives_kept"], "same_cluster_substitute_at_32": len(substitutes(rep_k)),
-                     "ari_at_32": at_k["ari"],
-                     "dropped_at_32": "; ".join(at_k["dropped"]), "added_at_32": "; ".join(at_k["added"])})
+                     "kept_at_k": at_k["representatives_kept"], "same_cluster_substitute_at_k": len(substitutes(rep_k)),
+                     "ari_at_k": at_k["ari"],
+                     "dropped_at_k": "; ".join(at_k["dropped"]), "added_at_k": "; ".join(at_k["added"])})
     pd.DataFrame(stab).to_csv(OUT / "b4_stability.csv", index=False)
     summary["baseline_within_cluster_median_distance"] = round(float(b1["within_mean_distance"].median()), 3)
 
     # B.5 mutual information vs correlation
-    constant = X.columns[X.nunique() == 1].tolist()   # std alone misses floating-point noise
-    summary["constant_features"] = constant
-    ppp = pd.read_csv(DATA / "lagged_data.csv", parse_dates=["Date"]).set_index("Date")["PPP.ZA.Index_QS"]
-    summary["ppp_values"] = sorted(ppp.unique().round(2).tolist())
-    summary["ppp_first_change"] = str(ppp[ppp != ppp.iloc[0]].index.min().date())
     r = X.corr().abs().fillna(0)
-    r.loc[constant, :] = 0                       # constant series: uncorrelated, as NMI treats them
-    r.loc[:, constant] = 0
     np.fill_diagonal(r.values, 1)
-    _, lab_c, rep_c = cluster(1 - r, k=len(reps))
+    _, lab_c, rep_c = cluster(1 - r, k=n_rep)
     corr_cmp = compare(labels, reps, lab_c, rep_c)
     summary["corr_kept"], summary["corr_ari"] = corr_cmp["representatives_kept"], corr_cmp["ari"]
     summary["corr_same_cluster_substitutes"] = len(substitutes(rep_c))
-    nmi = nmi_full.loc[X.columns, X.columns]
     iu = np.triu_indices(len(X.columns), 1)
     pairs = pd.DataFrame({"feature_a": X.columns[iu[0]], "feature_b": X.columns[iu[1]],
                           "nmi": nmi.values[iu].round(4), "abs_pearson": r.values[iu].round(4)})
@@ -234,9 +251,9 @@ def main():
     (OUT / "summary.json").write_text(json.dumps(summary, indent=2))
     print(json.dumps(summary, indent=2))
     print(pd.DataFrame(cut_rows).to_string(index=False))
-    print(pd.DataFrame(stab).drop(columns=["dropped_at_32", "added_at_32"]).to_string(index=False))
+    print(pd.DataFrame(stab).drop(columns=["dropped_at_k", "added_at_k"]).to_string(index=False))
     for s in stab:
-        print(s["variant"], "| dropped:", s["dropped_at_32"], "| added:", s["added_at_32"])
+        print(s["variant"], "| dropped:", s["dropped_at_k"], "| added:", s["added_at_k"])
     print("correlation clustering:", corr_cmp)
 
 

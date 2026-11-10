@@ -1,0 +1,7 @@
+{
+  "learning_rate": 0.01,
+  "max_depth": 2,
+  "min_child_weight": 20,
+  "reg_lambda": 1000,
+  "subsample": 0.6
+}

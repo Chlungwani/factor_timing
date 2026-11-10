@@ -1,68 +1,55 @@
 {
   "candidates": 359,
-  "removed_missing": 15,
-  "screened": 344,
-  "clustered": 343,
-  "omitted_feature": "LocalGlobalPEFwdSpreadQS",
-  "mi_weeks": 680,
-  "mi_start": "2012-03-26",
-  "mi_end": "2025-03-31",
-  "baseline_clusters": 32,
-  "median_distance": 0.853,
+  "selection_weeks": 778,
+  "selection_start": "2007-03-05",
+  "selection_end": "2022-01-24",
+  "removed_missing": 23,
+  "screened": 336,
+  "removed_constant": 10,
+  "clustered": 326,
+  "mi_weeks": 560,
+  "mi_start": "2011-05-09",
+  "mi_end": "2022-01-24",
+  "baseline_clusters": 29,
+  "median_distance": 0.824,
   "cluster_size_min": 2,
   "cluster_size_max": 48,
-  "cluster_size_median": 5.5,
-  "silhouette_at_32": 0.037,
-  "silhouette_max": 0.097,
+  "cluster_size_median": 6.0,
+  "silhouette_at_baseline": 0.052,
+  "silhouette_max": 0.111,
   "silhouette_argmax": 100,
-  "pre_eval_weeks": 514,
-  "pre_eval_end": "2022-01-24",
-  "baseline_within_cluster_median_distance": 0.606,
-  "constant_features": [
-    "SA_NB_Lambda",
-    "SA_NB_Lambda_QS",
-    "SA_RB_Lambda",
-    "SA_RB_Lambda_QS",
-    "US_NB_Lambda",
-    "US_NB_Lambda_QS",
-    "US_RB_Lambda",
-    "US_RB_Lambda_QS",
-    "SA_CDS_Lambda",
-    "SA_CDS_Lambda_QS"
-  ],
-  "ppp_values": [
-    0.48,
-    0.74,
-    1.0
-  ],
-  "ppp_first_change": "2023-01-30",
-  "corr_kept": 7,
-  "corr_ari": 0.148,
-  "corr_same_cluster_substitutes": 14,
-  "pairs": 58653,
-  "spearman_nmi_abs_r": 0.457,
-  "hi_mi_low_r_pairs": 14,
-  "hi_mi_low_r_median_autocorr": 0.97,
-  "hi_mi_low_r_median_nmi_levels": 0.42,
-  "hi_mi_low_r_median_nmi_changes": 0.042,
-  "strong_r_pairs": 287,
-  "strong_r_median_nmi": 0.375,
-  "strong_r_nmi_below_0_3": 74
+  "full_weeks": 680,
+  "full_start": "2012-03-26",
+  "full_end": "2025-03-31",
+  "full_removed_missing": 15,
+  "full_removed_constant": 10,
+  "full_clustered": 334,
+  "baseline_within_cluster_median_distance": 0.551,
+  "corr_kept": 6,
+  "corr_ari": 0.115,
+  "corr_same_cluster_substitutes": 12,
+  "pairs": 52975,
+  "spearman_nmi_abs_r": 0.353,
+  "hi_mi_low_r_pairs": 40,
+  "hi_mi_low_r_median_autocorr": 0.978,
+  "hi_mi_low_r_median_nmi_levels": 0.424,
+  "hi_mi_low_r_median_nmi_changes": 0.017,
+  "strong_r_pairs": 285,
+  "strong_r_median_nmi": 0.397,
+  "strong_r_nmi_below_0_3": 57
 }
  cut_height  clusters  silhouette
-        1.0       265       0.115
-        1.5        65       0.077
-        2.0        32       0.037
-        2.5        18       0.022
-        3.0        11      -0.011
-        4.0         8       0.023
-                                         variant  clusters_at_height_2  kept_at_32  same_cluster_substitute_at_32  ari_at_32
-  All 344 screened features (omission corrected)                    32          31                              0      0.914
-                  10 quantile bins instead of 20                    40          20                              8      0.385
-                  30 quantile bins instead of 20                    23          23                              7      0.592
-Pre-evaluation weeks only (Mar 2012 to Jan 2022)                    31          21                              9      0.527
-All 344 screened features (omission corrected) | dropped: VolTermStructPC2 | added: GlobalEquityGret3
-10 quantile bins instead of 20 | dropped: BCMPEBLS.Index; GlobalBondVol6; GlobalEquityTS; GlobalEquity_EntDyn; MXWD.Index.PE.Ratio_QS; MichgnConcIndx; PPP.ZA.Index_QS; SA_CDS_Slope; SA_RB_Curvature; USDZARV1Y.Curncy_QS; VolTermStructPC2; ZAR18M.Curncy_QS | added: GlobalEquityGret1; GlobalEquityVol3; LocalEquityTS; MXWD.Index.Price.to.Ebitda_QS; MXWD_PEvAgrgtPE_1FY; SA_NB_Lambda; SA_RB_Level; SA_RB_Slope; USDZARV18M.Curncy_QS; US_NB_Level; ZAR2Y.Curncy_QS; ZAR_FwdPts_PC1_TS
-30 quantile bins instead of 20 | dropped: GlobalEquityTS; GlobalPropertyVol12; JALSH.Index.Price.to.Sales.Ratio_Diff; MXWD.Index.PE.Ratio_QS; MichgnConcIndx; SA_RB_Curvature; TOP40.Index.Price.to.Book.Ratio_Diff; TOP40.Index.Price.to.Ebitda_Diff; VolTermStructPC2 | added: CONCCONF.Index; GenComIndexPC2; GlobalEquityVol12; JALSH.Index.Price.to.Book.Ratio_Diff; JALSH.Index.Price.to.Ebitda_Diff; LEI.TOTL.Index_QS; MXWD.Index.Price.to.Sales.Ratio_Diff; OEZAKLAF.Index_QS; USDEUR_Vol_QS_Level
-Pre-evaluation weeks only (Mar 2012 to Jan 2022) | dropped: GlobalBondVol6; GlobalEquityTS; GlobalEquity_EntDyn; GlobalPropertyVol12; JALSH.Index.Price.to.Sales.Ratio_Diff; JALSH_Fundamental_PC1; MXWD.Index.PE.Ratio_QS; MichgnConcIndx; TOP40.Index.Price.to.Ebitda_Diff; US_RB_Curvature; VolTermStructPC2 | added: CONCCONF.Index; GenComIndexPC2_QS; GlobalBondTS; GlobalBonds_EntDyn; GlobalPropertyVol1; JALSH.Index.Price.to.Ebitda_Diff; MXWD.Index.Price.to.Sales.Ratio_Diff; USDZARV4Y.Curncy_QS; US_NB_Curvature; US_NB_Level; US_RB_Slope
-correlation clustering: {'clusters': 32, 'representatives_kept': 7, 'ari': 0.148, 'dropped': ['BCMPEBLS.Index', 'GLD_FracDiff', 'GLD_LempZiev', 'GLD_RollKurt', 'GLD_RollSkew', 'GLD_StructBreak', 'GenComIndexPC1_QS', 'GlobalEquityTS', 'GlobalEquity_EntDyn', 'GlobalPropertyVol12', 'JALSH.Index.Price.to.Sales.Ratio_Diff', 'JALSH_Fundamental_PC1', 'MXWD_Fundamental_PC1', 'PPP.ZA.Index_QS', 'RandPPP_Factor_Inst_TS_ST', 'SA_CDS_Slope', 'SA_RB_Curvature', 'TOP40.Index.Price.to.Book.Ratio_Diff', 'TOP40.Index.Price.to.Ebitda_Diff', 'USDZARV1M.Curncy_QS', 'USDZARV1Y.Curncy_QS', 'USDZAR_EntDyn', 'US_RB_Curvature', 'VolTermStructPC2', 'ZAR18M.Curncy_QS'], 'added': ['GenComIndexPC1', 'GlobalEquityGret1', 'GlobalEquityGret12', 'GlobalEquityGret3', 'JALSH.Index.Price.to.Book.Ratio_Diff', 'JALSH.Index.Price.to.Ebitda_QS', 'LEI.TOTL.Index_QS', 'LocalBondsGret6', 'LocalEquityVol6', 'LocalPropertyGret6', 'LocalPropertySB', 'MXWD.Index.Price.to.Ebitda_Diff', 'MXWD_PEvAgrgtPE_1FY', 'SABreakEvenInflPC_2', 'SAFwdPts_QS_Level', 'SAFwdPtsl_Level', 'SA_NB_Curvature', 'SA_NB_Lambda', 'SA_RB_Level_QS', 'SA_RB_Slope_QS', 'USDZARV6M.Curncy_QS', 'USDZARVol6', 'US_RB_Level', 'US_RB_Slope', 'XAU.Curncy_Diff_QS']}
+        1.0       237       0.109
+        1.5        56       0.088
+        2.0        29       0.052
+        2.5        16       0.002
+        3.0        10      -0.027
+        4.0         7       0.016
+                                                variant  clusters_at_height_2  kept_at_k  same_cluster_substitute_at_k  ari_at_k
+                         10 quantile bins instead of 20                    42         18                             8     0.460
+                         30 quantile bins instead of 20                    19         18                            10     0.550
+All weeks to March 2025, including the evaluation block                    32         22                             6     0.578
+10 quantile bins instead of 20 | dropped: BCMPEBLS.Index; GlobalBondTS; GlobalEquityGret3; GlobalEquityTS; GlobalEquity_Ent; MXWD.Index.Price.to.Sales.Ratio_Diff; MXWD_PEvFwdPE; MichgnConcIndx; SA_CDS_Curvature; TOP40.Index.Price.to.Ebitda_Diff; US_RB_Curvature | added: AAII_Bull_TS; BICLB10Y.Index_QS; GlobalEquityGret1; GlobalPropertyVol12; InflGrowthSurpPC1_QS; JALSH.Index.Price.to.Ebitda_Diff; JALSH_Fundamental_PC1; MXWD.Index.Price.to.Book.Ratio_Diff; SA_CDS_Level; US_RB_Slope; ZAR_FwdPts_PC1_TS
+30 quantile bins instead of 20 | dropped: GenComIndexPC1_QS; GlobalBondTS; GlobalEquityGret3; GlobalEquityTS; GlobalEquity_Ent; MXWD.Index.Price.to.Sales.Ratio_Diff; MXWD_PEvFwdPE; MichgnConcIndx; SA_CDS_Curvature; TOP40.Index.Price.to.Ebitda_Diff; US_RB_Curvature | added: CONCCONF.Index_QS; GlobalEquityGret6; GlobalEquity_EntDyn; JALSH.Index.Price.to.Ebitda_Diff; LA1.Comdty_Diff_QS; MXWD.Index.Price.to.Book.Ratio_Diff; MichgnConcIndx_QuantileScale; SA_CDS_Slope; SA_RB_Level; US_NB_R2; US_RB_Slope
+All weeks to March 2025, including the evaluation block | dropped: GlobalBondTS; GlobalEquity_Ent; MXWD.Index.Price.to.Sales.Ratio_Diff; MXWD_PEvFwdPE; SA_CDS_Curvature; SA_RB_Curvature; TOP40.Index.Price.to.Ebitda_Diff | added: GlobalBondVol6; GlobalEquity_EntDyn; JALSH.Index.Price.to.Ebitda_Diff; JALSH_Fundamental_PC1; MXWD.Index.PE.Ratio_QS; PPP.ZA.Index_QS; SA_CDS_Slope
+correlation clustering: {'clusters': 29, 'representatives_kept': 6, 'ari': 0.115, 'dropped': ['BCMPEBLS.Index', 'GLD_FracDiff', 'GLD_RollKurt', 'GLD_RollSD', 'GLD_RollSkew', 'GLD_StructBreak', 'GlobalBondTS', 'GlobalEquityGret3', 'GlobalEquityTS', 'GlobalEquity_Ent', 'MXWD.Index.Price.to.Sales.Ratio_Diff', 'MXWD_PEvFwdPE', 'MichgnConcIndx', 'RandPPP_Factor_Inst_TS_ST', 'SA_CDS_Curvature', 'SA_RB_Curvature', 'TOP40.Index.Price.to.Ebitda_Diff', 'USDZARV1M.Curncy_QS', 'USDZARV1Y.Curncy_QS', 'USDZAR_EntDyn', 'US_RB_Curvature', 'VolTermStructPC1', 'ZAR18M.Curncy_QS'], 'added': ['DXY.Curncy_QS', 'GlobalBondGret6', 'GlobalEquityGret1', 'GlobalEquityVol1', 'LocalBondsVol3', 'LocalPropertyVol6', 'MXWD.Index.PE.Ratio_QS', 'SAFwdPts_QS_Level', 'SAFwdPtsl_Level', 'SA_NB_Curvature', 'SA_RB_Level_QS', 'SA_RB_Slope_QS', 'TOP40.Index.Forward.PE_Diff', 'USDZARGret6', 'USDZARV3M.Curncy_QS', 'USDZARV3Y.Curncy_QS', 'USDZARVol12', 'US_NB_Slope', 'US_NB_Slope_QS', 'US_RB_Slope_QS', 'US_RB_Slope_TS', 'VIX3M.Index', 'XAU.Curncy_Diff_QS']}

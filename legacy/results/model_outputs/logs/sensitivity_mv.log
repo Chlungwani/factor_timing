@@ -1,0 +1,26 @@
+22:55:01  10/234  last xgboost Momentum_vs_Value 88s
+22:59:15  20/234  last xgboost Momentum_vs_Value 82s
+23:06:45  30/234  last xgboost Momentum_vs_Value 177s
+23:15:38  40/234  last xgboost Momentum_vs_Value 103s
+23:24:17  50/234  last xgboost Momentum_vs_Value 250s
+23:37:05  60/234  last xgboost Momentum_vs_Value 228s
+23:46:17  70/234  last xgboost Momentum_vs_Value 99s
+23:50:39  80/234  last xgboost Momentum_vs_Value 85s
+23:54:49  90/234  last xgboost Momentum_vs_Value 63s
+00:00:44  100/234  last xgboost Momentum_vs_Value 138s
+00:07:20  110/234  last xgboost Momentum_vs_Value 129s
+00:11:59  120/234  last xgboost Momentum_vs_Value 97s
+00:24:29  130/234  last xgboost Momentum_vs_Value 165s
+00:31:11  140/234  last xgboost Momentum_vs_Value 92s
+00:35:37  150/234  last xgboost Momentum_vs_Value 79s
+00:39:28  160/234  last xgboost Momentum_vs_Value 72s
+00:43:18  170/234  last xgboost Momentum_vs_Value 106s
+00:49:02  180/234  last xgboost Momentum_vs_Value 95s
+00:54:13  190/234  last xgboost Momentum_vs_Value 84s
+01:02:18  200/234  last xgboost Momentum_vs_Value 100s
+01:09:14  210/234  last xgboost Momentum_vs_Value 74s
+01:12:30  wrote xgboost Momentum_vs_Value
+01:12:47  220/234  last logistic Momentum_vs_Value 4s
+01:17:28  230/234  last logistic Momentum_vs_Value 174s
+01:19:02  wrote logistic Momentum_vs_Value
+finished in 150.6 min

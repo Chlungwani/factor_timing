@@ -1,0 +1,29 @@
+{
+  "model": "GAM",
+  "pair": "Momentum_vs_Value",
+  "n_obs": 746,
+  "first": "2007-07-23",
+  "last": "2021-11-01",
+  "best_params": {
+    "fit_intercept": true,
+    "lam": 1000,
+    "max_iter": 1000,
+    "n_splines": 4
+  },
+  "old_best_params": {
+    "fit_intercept": true,
+    "lam": 1,
+    "max_iter": 1000,
+    "n_splines": 10
+  },
+  "unchanged": false,
+  "mean_auc": 0.5344195103365786,
+  "mean_path_auc": 0.5076776519805746,
+  "path_aucs": [
+    0.5362983441577438,
+    0.5086302732432274,
+    0.4903677374056521,
+    0.4954142531156749
+  ],
+  "minutes": 81.32325491507848
+}

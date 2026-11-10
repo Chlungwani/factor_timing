@@ -1,0 +1,108 @@
+[R] Source Manager: 29 uncited or duplicate sources removed, 48 corrected, 4 added (Fraser & Page 2000, Muller & Ward 2013, Künsch 1989, Politis & Romano 1992)
+[R] Citation fields: "Suppress title" set on every citation; 3 field codes moved from duplicate sources, 39 displayed citations refreshed (López de Prado, Tibshirani, Page et al. 2022, titles no longer needed to tell duplicates apart, Štrumbelj & Kononenko 2014, Fang et al. 2023, Feng et al. 2024, Piovezan et al. 2024)
+[P] Title page: subtitle moved above "by", so the full title comes before the name
+[T] Declaration: "intelligence-assisted"
+[A4/A9] Abstract reworded to the confidence intervals and the GAM tuning, with the results of the purged rerun (ROC-AUC range, the momentum-dominated pair, relative volatility in eight of nine fits); "generalised"
+[A10/T] Ch 1 opening: Mutooni & Muller (2007) no longer called recent; "Using three model classes" fragment made a sentence
+[A10/R] 1.1: Fraser & Page (2000) and Muller & Ward (2013) are now citation fields with sources; "(Page, McClelland, & Auret, 202)" is the 2022 Finance Research Letters paper (year fixed); citations no longer the subject of the sentence
+[T] 1.3: "the study has the following specific objectives"
+[T] 1.4: fragments ("Firstly, a sophisticated…") rewritten as a sentence
+[T] 1.4: typed "proposed by López de Prado" removed before the citation
+[T] 1.4: "validation"
+[T] 1.6: "benchmark"
+[T] 2.1.1: "stabilises"
+[T] 2.2.1: "encountered when"
+[T] 2.3: full stop at the end of the first paragraph
+[P] 2.3: cross-references to Sections 2.2.3 (market structure) and 2.2.4 (criticisms)
+[A10] 2.3: Page et al. (2024) no longer described twice (the style-rotation finding is the 2022 paper); two further JSE studies added (Mukoyi & Ogujiuba, 2023; Kapche Fotso, 2019); citations moved out of subject position
+[T] 2.3: "five ways" now lists five ("Fifth, …")
+[T] 3.1: "task for three pairs:"
+[T] 3.1: typed author name removed before the citation
+[T] 3.1: full stop; "walk-forward procedure, ensuring"; "inputs to"; "walk-forward" (a tab sat inside the word); "to address"
+[T] 3.2: repeated sentence deleted; "A 2024 review" no longer contradicts the 2025 citations
+[T] 3.3: "involving"
+[T] 3.3: full stop at the end of the section
+[A7] 3.4: 939 weeks from April 2007 (factor returns), not 944 from March
+[R] 3.4: typed citation "(…; López de Prado, 2018)" made a citation field
+[A1] 3.4: back-filling disclosed: which five features, how many weeks (19-140), over which dates (before April 2010), and that no evaluation week is affected
+[T] 3.5: typed author name removed before the citation
+[T] 3.5: typed author name removed before the citation
+[A7/T] 3.5: H = 11 weekly observations (the current week and the ten that follow)
+[A7] 3.5: label horizon stated as ten weeks ahead (not 12), with the reason the last ten weeks are unlabelled
+[A7] 3.5: deleted "applied on the rolling 12-week relative factor returns" (the code scans the cumulative series of Equation 2)
+[P/A7] 3.6: Sections 2.2.1 and 2.1.1 (were 2.1 and 2.2); Table 1 (was Table 2); 914 labelled weeks
+[T/R] 3.6: "how much"; one citation field instead of a typed citation plus a field that cited Guyon & Elisseeff twice
+[T] Figure 6 caption: "Hierarchical agglomerative clustering of the feature space"
+[A2] 3.6: "avoiding look-ahead bias" claim removed; overlap with the evaluation block stated, with the pre-evaluation re-estimation in Appendix B.4 as evidence that it changes little
+[A8/T] Table 1: BCMPEBLS is a euro-area bank lending survey, not energy prices; Evidence column in one citation style; note refers to Table B.6
+[T] 3.7.2: duplicated "the assumes" and repeated assumption sentence
+[P] 3.7.2: grid is in Table 3
+[P] 3.7.2: Equation (10) after the trend-scanning regression is numbered
+[T/P] 3.7.3: "basis functions"; Table 3
+[T] 3.7.3: "pyGAM library in Python"
+[T] 3.7.4: "characteristics"
+[T] 3.7.4: "where … is defined as"
+[T] 3.7.4: "framework described (Chen & Guestrin)" rephrased (citation stays in brackets, as elsewhere)
+[T] 3.8.1 heading: "Combinatorial purged cross-validation"
+[A5/T] 3.8.1: "back-test paths"; says that the paths play no role in selection and what they add
+[A3/T] 3.8.1: "removing"; the initial search is purged at the evaluation boundary (746 observations; models rerun with this purge)
+[T] 3.8.2: "therefore"
+[A7] 3.8.2: 746 to 901
+[T] 3.9: missing full stop; the two log-loss citations merged into one bracket before the full stop
+[A4] 3.9: block-bootstrap confidence intervals, paired model comparison and majority-class baseline defined (method from the saved bootstrap_auc_ci.py)
+[P] 3.10: Table 1
+[T] 4.1: "and assesses"
+[A3] 4.2: strongest ROC-AUC from the rerun with the purged initial search
+[A3/A4] Table 4 rebuilt from the rerun with 95% confidence intervals for accuracy and ROC-AUC and a majority-class column (analysis/a4_accuracy_ci.csv, metrics_summary.csv); old table kept as a tracked deletion
+[A4] 4.2: confidence intervals, paired comparison with logistic regression and majority-class baseline discussed
+[A5] 4.2: new paragraph on the CPCV evidence (Table C.3) not anticipating the out-of-sample ranking
+[A3/A4] 4.2.1: momentum versus value rewritten on the rerun: XGBoost ranks best, but its accuracy comes from predicting momentum; logistic regression and the GAM below the majority-class accuracy
+[A3] 4.2.1: Figure 9 range from the rerun
+[A3] 4.2.1: Figure 10 described from the rerun (XGBoost between 0.50 and 0.60 until January 2024; GAM and logistic regression coincide until January 2023)
+[A3] 4.2.2: momentum versus quality rewritten on the rerun (XGBoost now recognises both states)
+[A3] 4.2.2: Figure 11 crossing point from the rerun; full stop before Figure 12
+[A3/T] 4.2.2: Figure 12 described from the rerun (the fragment "Until January 2024." goes with the old text)
+[A3] 4.2.3: ROC-AUC, class counts and Figure 13 range from the rerun
+[T] 4.2.3: "supports"
+[P] Figure 13 caption: duplicated "Figure 13:" deleted
+[A9] 4.3: identical class counts of the two momentum pairs confirmed (labels differ in 34 weeks)
+[A3] Table 6: 25 cells updated from the rerun
+[A3] 4.3: confusion-matrix paragraphs rewritten on the rerun (the momentum-dominated XGBoost is now momentum versus value)
+[A9] 4.3: the high GAM and logistic log-losses diagnosed as overfitting from the selected settings
+[A9/T] 4.4: "Figures 15–17"; the abstract’s relative-volatility claim is now stated and checkable (verified in the SHAP outputs of the rerun)
+[A3/A9] 4.4.1: SHAP rankings from the rerun; the small XGBoost SHAP magnitudes (now momentum versus value) explained by η = 0.01, λ = 1000 and minimum child weight 20; colon and en dashes
+[A3] 4.4.2: SHAP rankings of momentum versus quality from the rerun
+[A3] 4.4.3: volatility-ratio rank from the rerun
+[A3] Figures 9-17 redrawn from the rerun (old pictures kept as tracked deletions)
+[A3/A4] 5.1 first finding: ranges from the rerun, reworded to the confidence intervals ("weak evidence, significant only for value versus quality")
+[A3/A4/A9] 5.1 second finding: XGBoost’s lead not significant; momentum versus quality sensitivity stated from Appendix C.5 (the 0.019 gap no longer holds); GAM result qualified by its tuning
+[A3] 5.1 third finding rewritten on the rerun: momentum versus value is now the weakest pair
+[A3] 5.1 fourth finding: SHAP rankings from the rerun
+[A3] 5.2: order of the momentum pairs from the rerun
+[A3] 5.2: third implication on the rerun (pairs swapped; two models beat a constant forecast)
+[P] 5.2: Section 2.2.4
+[A1/A2] 5.3: feature-selection limitation extended (evaluation-block overlap, back-filling)
+[A4/A5] 5.3: short-sample limitation updated (intervals, CPCV evidence)
+[A4] 5.4: tests now exist
+[P] Trend-scanning regression numbered as Equation (3), written with CR and a within-window index s; later equations renumbered (4)-(20)
+[P] Equation (16) (was 15): loss evaluated at σ(F^(m−1)(X_t) + f_m(X_t)), not a probability plus a tree output
+[P] Equation (18) (was 17) and its text: leaf weights renamed ω_j (w_t remains the observation weight)
+[P] Acronyms: BRICS, LEI, MAE, MSE, PR-AUC and RMSE removed (unused); FNN added; ARI and NMI kept for Appendix B; TS and EntDyn redefined to match the data (see Appendix A)
+[P] Figures 15-17 captions now SEQ fields (they will appear in the List of Figures); Table 2 caption colon
+[A8] Appendix A rebuilt from featureset.csv: definitions of all 50 modelling features (Table A.1), the naming convention (Table A.2) and the 359 candidates by family with counts (Table A.3); the old tables, which listed features not in the file (e.g. the SPX_* set) and the yield curves twice, are tracked deletions
+[A6] Table B.7 -> B.5
+[T] Table B.5 (was B.7): "SACWC_YoY"
+[A6] Table B.8 -> B.6
+[T] Table B.6: "proxies sovereign risk"
+[T] Table B.6: "Value, followed by momentum, proves"
+[A8] Table B.6: BCMPEBLS rationale corrected (euro-area bank lending survey)
+[T/R] Table B.6: 6 typed citations ("Gu et al.", "Cakici, et al.") replaced by citation fields
+[A3] Appendix C: initial tuning sample of 746 weeks to 1 November 2021
+[A3] C.1-C.4: split sizes, training range, baseline path ROC-AUCs and 123 cells of Tables C.1-C.3, C.5 and C.6 from the rerun
+[A3] C.4: the initial search is purged at the evaluation boundary
+[A3] C.2, C.3 (Table C.4) and C.5 (Table C.7, Figure C.1) from the Calibri copy brought up to the rerun (paths above the baseline, one GAM exclusion, selected results against the fixed settings)
+[A6] Appendix headings are Appendix A / B / C (unnumbered, so the contents no longer shows "Chapter 7"); B.3 (Figure B.1), B.4 (Table B.4), C.2 baseline paragraphs, C.3 (Table C.4) and C.5 (Table C.7, Figure C.1) inserted from Appendices_Revised_Calibri.docx; B tables renumbered B.1-B.6
+[A7/T] Footnote 2: counts from the current data (939, 928, 924, 914; 23 July 2007), with a full stop
+[T] Footnote 4: "which expresses no view"
+[R] Reference list: 29 uncited or duplicate entries deleted, 50 corrected (e.g. Mitchell "Not Sure ed.", López de Prado 1st ed. Cambridge, Pedersen L. H., Moskowitz T. J., Tibshirani, "Journal", "Statistical", "Logistic", "Lancaster", Štrumbelj & Kononenko 2014, missing volumes and issues), 5 added (Fraser & Page; Muller & Ward; Page et al. 2022; Künsch; Politis & Romano)
+[T] UK spelling: 19 words changed in the body (Generalized, Regularization, conceptualize, maximize, minimize, minimizing, optimization, penalized, realized, recognize, regularization, summarizes); titles in the references are left as published

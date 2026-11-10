@@ -1,0 +1,88 @@
+07:56:02  10/762  last gam Momentum_vs_Value 291s
+08:00:06  17/762  last gam Momentum_vs_Quality 31s  FAILED {'lam': 1.0, 'n_splines': 10}: OptimizationError: PIRLS optimization has diverged.
+Try increasing regularization, or specifying an initial value for self.coef_
+08:01:03  20/762  last gam Momentum_vs_Quality 153s
+08:03:58  30/762  last gam Momentum_vs_Value 387s
+08:04:01  wrote gam Momentum_vs_Value
+08:23:51  40/762  last gam Value_vs_Quality 1054s
+08:31:13  wrote gam Momentum_vs_Quality
+08:33:41  50/762  last gam Value_vs_Quality 512s
+08:43:47  60/762  last xgboost Momentum_vs_Value 98s
+19:10:51  70/762  last xgboost Momentum_vs_Value 112s
+19:12:10  wrote gam Value_vs_Quality
+19:12:42  80/762  last xgboost Momentum_vs_Value 95s
+19:15:05  90/762  last xgboost Momentum_vs_Value 128s
+19:16:49  100/762  last xgboost Momentum_vs_Value 107s
+19:20:55  110/762  last xgboost Momentum_vs_Value 167s
+19:24:43  120/762  last xgboost Momentum_vs_Value 216s
+19:26:45  130/762  last xgboost Momentum_vs_Value 122s
+19:27:56  140/762  last xgboost Momentum_vs_Value 71s
+19:29:35  150/762  last xgboost Momentum_vs_Value 53s
+19:31:49  160/762  last xgboost Momentum_vs_Value 122s
+19:33:36  170/762  last xgboost Momentum_vs_Value 95s
+19:35:04  180/762  last xgboost Momentum_vs_Value 82s
+19:39:39  190/762  last xgboost Momentum_vs_Value 133s
+19:41:19  200/762  last xgboost Momentum_vs_Value 83s
+19:42:38  210/762  last xgboost Momentum_vs_Value 67s
+19:43:44  220/762  last xgboost Momentum_vs_Value 61s
+19:45:44  230/762  last xgboost Momentum_vs_Value 97s
+19:47:40  240/762  last xgboost Momentum_vs_Value 91s
+19:49:45  250/762  last xgboost Momentum_vs_Value 111s
+19:54:19  260/762  last xgboost Momentum_vs_Value 246s
+19:56:10  270/762  last xgboost Momentum_vs_Value 119s
+19:57:27  wrote xgboost Momentum_vs_Value
+19:57:58  280/762  last xgboost Momentum_vs_Quality 75s
+19:59:28  290/762  last xgboost Momentum_vs_Quality 58s
+20:00:55  300/762  last xgboost Momentum_vs_Quality 79s
+20:05:17  310/762  last xgboost Momentum_vs_Quality 149s
+20:07:52  320/762  last xgboost Momentum_vs_Quality 93s
+20:11:46  330/762  last xgboost Momentum_vs_Quality 233s
+20:17:13  340/762  last xgboost Momentum_vs_Quality 327s
+20:20:04  350/762  last xgboost Momentum_vs_Quality 171s
+20:22:31  360/762  last xgboost Momentum_vs_Quality 94s
+20:23:47  370/762  last xgboost Momentum_vs_Quality 59s
+20:26:04  380/762  last xgboost Momentum_vs_Quality 125s
+20:28:00  390/762  last xgboost Momentum_vs_Quality 75s
+20:32:02  400/762  last xgboost Momentum_vs_Quality 188s
+20:34:39  410/762  last xgboost Momentum_vs_Quality 144s
+20:36:27  420/762  last xgboost Momentum_vs_Quality 76s
+20:37:47  430/762  last xgboost Momentum_vs_Quality 66s
+20:39:33  440/762  last xgboost Momentum_vs_Quality 60s
+20:42:11  450/762  last xgboost Momentum_vs_Quality 140s
+20:43:54  460/762  last xgboost Momentum_vs_Quality 75s
+20:46:44  470/762  last xgboost Momentum_vs_Quality 150s
+20:50:07  480/762  last xgboost Momentum_vs_Quality 136s
+20:52:14  490/762  last xgboost Momentum_vs_Quality 97s
+20:53:05  wrote xgboost Momentum_vs_Quality
+20:54:37  500/762  last xgboost Value_vs_Quality 124s
+20:56:27  510/762  last xgboost Value_vs_Quality 111s
+21:00:15  520/762  last xgboost Value_vs_Quality 197s
+21:03:50  530/762  last xgboost Value_vs_Quality 163s
+21:06:13  540/762  last xgboost Value_vs_Quality 136s
+21:12:58  550/762  last xgboost Value_vs_Quality 224s
+21:15:14  560/762  last xgboost Value_vs_Quality 88s
+21:16:50  570/762  last xgboost Value_vs_Quality 85s
+21:18:20  580/762  last xgboost Value_vs_Quality 90s
+21:20:21  590/762  last xgboost Value_vs_Quality 112s
+21:22:39  600/762  last xgboost Value_vs_Quality 97s
+21:24:03  610/762  last xgboost Value_vs_Quality 74s
+21:27:26  620/762  last xgboost Value_vs_Quality 194s
+21:30:08  630/762  last xgboost Value_vs_Quality 87s
+21:32:09  640/762  last xgboost Value_vs_Quality 78s
+21:33:40  650/762  last xgboost Value_vs_Quality 70s
+21:34:49  660/762  last xgboost Value_vs_Quality 61s
+21:37:05  670/762  last xgboost Value_vs_Quality 92s
+21:39:10  680/762  last xgboost Value_vs_Quality 74s
+21:41:58  690/762  last xgboost Value_vs_Quality 101s
+21:44:18  700/762  last xgboost Value_vs_Quality 90s
+21:45:46  710/762  last xgboost Value_vs_Quality 90s
+21:46:08  wrote xgboost Value_vs_Quality
+21:46:12  720/762  last logistic Momentum_vs_Value 10s
+21:47:18  730/762  last logistic Momentum_vs_Quality 3s
+21:48:36  740/762  last logistic Momentum_vs_Quality 99s
+21:50:15  750/762  last logistic Value_vs_Quality 128s
+21:52:28  wrote logistic Momentum_vs_Value
+21:54:50  760/762  last logistic Value_vs_Quality 289s
+21:58:01  wrote logistic Momentum_vs_Quality
+21:58:34  wrote logistic Value_vs_Quality
+finished in 852.1 min

@@ -1,12 +1,12 @@
 [
   {
     "from_step": 0,
-    "n_train": 758,
+    "n_train": 746,
     "learning_rate": 0.01,
-    "max_depth": 3,
-    "min_child_weight": 10,
-    "reg_lambda": 10,
-    "subsample": 0.6
+    "max_depth": 4,
+    "min_child_weight": 5,
+    "reg_lambda": 1000,
+    "subsample": 0.8
   },
   {
     "from_step": 52,
@@ -15,7 +15,7 @@
     "max_depth": 3,
     "min_child_weight": 5,
     "reg_lambda": 1000,
-    "subsample": 0.8
+    "subsample": 0.6
   },
   {
     "from_step": 104,
@@ -24,6 +24,6 @@
     "max_depth": 2,
     "min_child_weight": 5,
     "reg_lambda": 1,
-    "subsample": 0.6
+    "subsample": 0.8
   }
 ]

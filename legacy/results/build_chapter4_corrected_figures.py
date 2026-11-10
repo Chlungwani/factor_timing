@@ -34,22 +34,18 @@ TAGS = {"Logistic": "logistic", "GAM": "gam", "XGBoost": "xgboost"}
 FEATURE_GROUPS = {
     "Price-based features": {
         "VolTermStructPC1",
-        "VolTermStructPC2",
         "GLD_FracDiff",
         "GLD_RollSD",
         "USDZARV1M.Curncy_QS",
         "USDZARV1Y.Curncy_QS",
-        "GlobalBondVol6",
-        "GlobalPropertyVol12",
         "EURUSDV6M.Curncy_QS",
     },
     "Fundamental": {
         "MXWD_Fundamental_PC1",
-        "JALSH_Fundamental_PC1",
+        "MXWD_PEvFwdPE",
         "TOP40.Index.Price.to.Book.Ratio_Diff",
-        "MXWD.Index.PE.Ratio_QS",
+        "MXWD.Index.Price.to.Sales.Ratio_Diff",
         "TOP40.Index.Price.to.Ebitda_Diff",
-        "JALSH.Index.Price.to.Sales.Ratio_Diff",
     },
     "Sentiment indicators": {
         "MichgnConcIndx",
@@ -59,15 +55,16 @@ FEATURE_GROUPS = {
         "GLD_RollSkew",
         "GLD_RollKurt",
         "GlobalEquityTS",
-        "GlobalEquity_EntDyn",
+        "GlobalBondTS",
+        "GlobalEquityGret3",
+        "GlobalEquity_Ent",
     },
     "Macroeconomic": {
         "SA_RB_Curvature",
         "US_RB_Curvature",
         "SA_NB_Slope",
-        "SA_CDS_Slope",
+        "SA_CDS_Curvature",
         "RandPPP_Factor_Inst_TS_ST",
-        "PPP.ZA.Index_QS",
         "BCMPEBLS.Index",
         "ZAR18M.Curncy_QS",
         "USDZAR_EntDyn",
@@ -98,6 +95,8 @@ FEATURE_GROUPS = {
 FEATURE_TO_GROUP = {
     feature: group for group, features in FEATURE_GROUPS.items() for feature in features
 }
+# 0/1 flags of the weeks before a series starts (Section 3.4), one per late-starting feature
+FEATURE_TO_GROUP.update({f"{feature}_missing": "Missing-value indicator" for feature in list(FEATURE_TO_GROUP)})
 
 
 def load_probabilities(model, pair):

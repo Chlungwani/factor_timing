@@ -1,0 +1,257 @@
+[
+  {
+    "model": "Logistic",
+    "pair": "Momentum_vs_Value",
+    "n_obs": 746,
+    "first": "2007-07-23",
+    "last": "2021-11-01",
+    "best_params": {
+      "alpha": 1.0,
+      "lambda_reg": 0.01
+    },
+    "old_best_params": {
+      "alpha": 1.0,
+      "lambda_reg": 0.01
+    },
+    "unchanged": true,
+    "mean_auc": 0.5344334269991531,
+    "mean_path_auc": 0.507392414136095,
+    "path_aucs": [
+      0.5357863787958574,
+      0.5084254870984729,
+      0.4904774442689135,
+      0.49488034638113626
+    ],
+    "minutes": 5.912079083919525
+  },
+  {
+    "model": "Logistic",
+    "pair": "Momentum_vs_Quality",
+    "n_obs": 746,
+    "first": "2007-07-23",
+    "last": "2021-11-01",
+    "best_params": {
+      "alpha": 0.5,
+      "lambda_reg": 10.0
+    },
+    "old_best_params": {
+      "alpha": 1.0,
+      "lambda_reg": 10.0
+    },
+    "unchanged": false,
+    "mean_auc": 0.5473346045387348,
+    "mean_path_auc": 0.5140903279844824,
+    "path_aucs": [
+      0.4825648033856463,
+      0.5283827073414448,
+      0.49432786692529246,
+      0.5510859342855463
+    ],
+    "minutes": 6.438965284824372
+  },
+  {
+    "model": "Logistic",
+    "pair": "Value_vs_Quality",
+    "n_obs": 746,
+    "first": "2007-07-23",
+    "last": "2021-11-01",
+    "best_params": {
+      "alpha": 1.0,
+      "lambda_reg": 10.0
+    },
+    "old_best_params": {
+      "alpha": 1.0,
+      "lambda_reg": 10.0
+    },
+    "unchanged": true,
+    "mean_auc": 0.5364461832035924,
+    "mean_path_auc": 0.4884764598763433,
+    "path_aucs": [
+      0.49917586174630935,
+      0.4865150828096997,
+      0.5331058855707427,
+      0.4351090093786214
+    ],
+    "minutes": 7.740978117783865
+  },
+  {
+    "model": "XGBoost",
+    "pair": "Momentum_vs_Quality",
+    "n_obs": 746,
+    "first": "2007-07-23",
+    "last": "2021-11-01",
+    "best_params": {
+      "learning_rate": 0.1,
+      "max_depth": 3,
+      "min_child_weight": 10,
+      "reg_lambda": 1,
+      "subsample": 0.8
+    },
+    "old_best_params": {
+      "learning_rate": 0.01,
+      "max_depth": 3,
+      "min_child_weight": 10,
+      "reg_lambda": 1000,
+      "subsample": 0.8
+    },
+    "unchanged": false,
+    "mean_auc": 0.504774612505734,
+    "mean_path_auc": 0.48052041086228175,
+    "path_aucs": [
+      0.43585787339093635,
+      0.5006686063598424,
+      0.5198377711162052,
+      0.465717392582143
+    ],
+    "minutes": 33.44200290441513
+  },
+  {
+    "model": "XGBoost",
+    "pair": "Momentum_vs_Value",
+    "n_obs": 746,
+    "first": "2007-07-23",
+    "last": "2021-11-01",
+    "best_params": {
+      "learning_rate": 0.01,
+      "max_depth": 2,
+      "min_child_weight": 20,
+      "reg_lambda": 1000,
+      "subsample": 0.6
+    },
+    "old_best_params": {
+      "learning_rate": 0.01,
+      "max_depth": 3,
+      "min_child_weight": 10,
+      "reg_lambda": 10,
+      "subsample": 0.6
+    },
+    "unchanged": false,
+    "mean_auc": 0.5191866104961632,
+    "mean_path_auc": 0.4526203484289977,
+    "path_aucs": [
+      0.4360079866596454,
+      0.4187949798139372,
+      0.5227641741267334,
+      0.43291425311567494
+    ],
+    "minutes": 33.99172759453456
+  },
+  {
+    "model": "XGBoost",
+    "pair": "Value_vs_Quality",
+    "n_obs": 746,
+    "first": "2007-07-23",
+    "last": "2021-11-01",
+    "best_params": {
+      "learning_rate": 0.01,
+      "max_depth": 2,
+      "min_child_weight": 20,
+      "reg_lambda": 1,
+      "subsample": 0.6
+    },
+    "old_best_params": {
+      "learning_rate": 0.01,
+      "max_depth": 2,
+      "min_child_weight": 20,
+      "reg_lambda": 1,
+      "subsample": 0.8
+    },
+    "unchanged": false,
+    "mean_auc": 0.5676115267529276,
+    "mean_path_auc": 0.509028632506316,
+    "path_aucs": [
+      0.4960304607256735,
+      0.49882317376001384,
+      0.570865093246385,
+      0.47039580229319167
+    ],
+    "minutes": 34.00889775355657
+  },
+  {
+    "model": "GAM",
+    "pair": "Momentum_vs_Value",
+    "n_obs": 746,
+    "first": "2007-07-23",
+    "last": "2021-11-01",
+    "best_params": {
+      "fit_intercept": true,
+      "lam": 1000,
+      "max_iter": 1000,
+      "n_splines": 4
+    },
+    "old_best_params": {
+      "fit_intercept": true,
+      "lam": 1,
+      "max_iter": 1000,
+      "n_splines": 10
+    },
+    "unchanged": false,
+    "mean_auc": 0.5344195103365786,
+    "mean_path_auc": 0.5076776519805746,
+    "path_aucs": [
+      0.5362983441577438,
+      0.5086302732432274,
+      0.4903677374056521,
+      0.4954142531156749
+    ],
+    "minutes": 81.32325491507848
+  },
+  {
+    "model": "GAM",
+    "pair": "Value_vs_Quality",
+    "n_obs": 746,
+    "first": "2007-07-23",
+    "last": "2021-11-01",
+    "best_params": {
+      "fit_intercept": true,
+      "lam": 1,
+      "max_iter": 1000,
+      "n_splines": 10
+    },
+    "old_best_params": {
+      "fit_intercept": true,
+      "lam": 1,
+      "max_iter": 1000,
+      "n_splines": 10
+    },
+    "unchanged": true,
+    "mean_auc": 0.5203680998006346,
+    "mean_path_auc": 0.5069062065887874,
+    "path_aucs": [
+      0.4987871851899836,
+      0.5012560010940524,
+      0.5488904723859702,
+      0.47869116768514314
+    ],
+    "minutes": 108.97814011573792
+  },
+  {
+    "model": "GAM",
+    "pair": "Momentum_vs_Quality",
+    "n_obs": 746,
+    "first": "2007-07-23",
+    "last": "2021-11-01",
+    "best_params": {
+      "fit_intercept": true,
+      "lam": 10,
+      "max_iter": 1000,
+      "n_splines": 10
+    },
+    "old_best_params": {
+      "fit_intercept": true,
+      "lam": 1000,
+      "max_iter": 1000,
+      "n_splines": 5
+    },
+    "unchanged": false,
+    "mean_auc": 0.5274488128632797,
+    "mean_path_auc": 0.49157813142890733,
+    "path_aucs": [
+      0.4237715276553224,
+      0.4879430435549286,
+      0.49770028801504734,
+      0.5568976664903309
+    ],
+    "minutes": 110.42330067157745
+  }
+]

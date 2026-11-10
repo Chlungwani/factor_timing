@@ -1,0 +1,26 @@
+22:55:37  10/234  last xgboost Momentum_vs_Quality 86s
+23:00:19  20/234  last xgboost Momentum_vs_Quality 87s
+23:08:00  30/234  last xgboost Momentum_vs_Quality 189s
+23:17:13  40/234  last xgboost Momentum_vs_Quality 105s
+23:26:02  50/234  last xgboost Momentum_vs_Quality 266s
+23:39:50  60/234  last xgboost Momentum_vs_Quality 238s
+23:48:16  70/234  last xgboost Momentum_vs_Quality 125s
+23:53:07  80/234  last xgboost Momentum_vs_Quality 96s
+23:57:09  90/234  last xgboost Momentum_vs_Quality 67s
+00:03:03  100/234  last xgboost Momentum_vs_Quality 145s
+00:09:58  110/234  last xgboost Momentum_vs_Quality 114s
+00:14:40  120/234  last xgboost Momentum_vs_Quality 98s
+00:27:40  130/234  last xgboost Momentum_vs_Quality 151s
+00:34:29  140/234  last xgboost Momentum_vs_Quality 88s
+00:38:59  150/234  last xgboost Momentum_vs_Quality 77s
+00:42:43  160/234  last xgboost Momentum_vs_Quality 78s
+00:46:37  170/234  last xgboost Momentum_vs_Quality 105s
+00:52:42  180/234  last xgboost Momentum_vs_Quality 98s
+00:58:02  190/234  last xgboost Momentum_vs_Quality 88s
+01:06:25  200/234  last xgboost Momentum_vs_Quality 99s
+01:13:15  210/234  last xgboost Momentum_vs_Quality 165s
+01:16:14  wrote xgboost Momentum_vs_Quality
+01:16:31  220/234  last logistic Momentum_vs_Quality 3s
+01:21:19  230/234  last logistic Momentum_vs_Quality 8s
+01:32:37  wrote logistic Momentum_vs_Quality
+finished in 163.6 min

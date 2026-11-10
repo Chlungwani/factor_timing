@@ -1,10 +1,10 @@
-00:01:26  done Logistic Momentum_vs_Quality  in   5.9 min
-00:03:20  done Logistic Momentum_vs_Value    in   7.8 min
-00:03:25  done Logistic Value_vs_Quality     in   7.8 min
-00:44:41  done XGBoost  Momentum_vs_Value    in  49.1 min
-00:44:42  done XGBoost  Value_vs_Quality     in  49.1 min
-00:46:08  done XGBoost  Momentum_vs_Quality  in  50.6 min
-02:45:50  done GAM      Momentum_vs_Quality  in 170.3 min
-03:29:11  done GAM      Momentum_vs_Value    in 213.6 min
-03:29:43  done GAM      Value_vs_Quality     in 214.2 min
+21:52:53  done Logistic Momentum_vs_Quality  in  12.7 min
+21:58:57  done Logistic Momentum_vs_Value    in  18.8 min
+21:59:09  done Logistic Value_vs_Quality     in  18.9 min
+22:48:07  done XGBoost  Value_vs_Quality     in  67.9 min
+22:48:20  done XGBoost  Momentum_vs_Value    in  68.1 min
+22:48:48  done XGBoost  Momentum_vs_Quality  in  68.6 min
+23:40:05  done GAM      Momentum_vs_Quality  in 119.9 min
+23:42:31  done GAM      Value_vs_Quality     in 122.3 min
+23:51:28  done GAM      Momentum_vs_Value    in 131.3 min
 metrics_summary.csv updated: 9 rows

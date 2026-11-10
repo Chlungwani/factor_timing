@@ -1,0 +1,11 @@
+Testing 18 parameter combinations...
+New best params: {'alpha': 0.0, 'lambda_reg': 0.01} (AUC: 0.534)
+New best params: {'alpha': 0.5, 'lambda_reg': 0.01} (AUC: 0.534)
+New best params: {'alpha': 1.0, 'lambda_reg': 0.01} (AUC: 0.534)
+
+=== Top 5 Parameter Combinations ===
+Score: 0.534 | Params: {'alpha': 1.0, 'lambda_reg': 0.01}
+Score: 0.534 | Params: {'alpha': 1.0, 'lambda_reg': 0.01}
+Score: 0.534 | Params: {'alpha': 1.0, 'lambda_reg': 0.01}
+Score: 0.533 | Params: {'alpha': 1.0, 'lambda_reg': 0.01}
+Score: 0.533 | Params: {'alpha': 1.0, 'lambda_reg': 0.01}

@@ -1,0 +1,9 @@
+refitting predictions 1-52 for [('GAM', 'Momentum_vs_Quality')]
+{'model': 'GAM', 'pair': 'Momentum_vs_Quality', 'old_params': {'fit_intercept': True, 'lam': 1000, 'max_iter': 1000, 'n_splines': 5}, 'new_params': {'fit_intercept': True, 'lam': 10, 'max_iter': 1000, 'n_splines': 10}, 'old_accuracy': 0.5641025641025641, 'old_roc_auc': 0.523612261806131, 'old_log_loss': 0.9593471036288446, 'old_auc_first52': 0.3973214285714286, 'new_accuracy': 0.5833333333333334, 'new_roc_auc': 0.5612261806130903, 'new_log_loss': 0.937945944381963, 'new_auc_first52': 0.5744047619047619}
+   model                pair  old_roc_auc  new_roc_auc  old_accuracy  new_accuracy  old_log_loss  new_log_loss
+Logistic Momentum_vs_Quality        0.570        0.573         0.577         0.577         0.738         0.746
+ XGBoost Momentum_vs_Quality        0.589        0.636         0.615         0.667         0.678         0.716
+ XGBoost   Momentum_vs_Value        0.625        0.585         0.628         0.571         0.715         0.730
+ XGBoost    Value_vs_Quality        0.664        0.660         0.603         0.603         0.670         0.670
+     GAM   Momentum_vs_Value        0.528        0.490         0.506         0.538         1.545         1.492
+     GAM Momentum_vs_Quality        0.524        0.561         0.564         0.583         0.959         0.938

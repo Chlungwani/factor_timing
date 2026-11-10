@@ -1,0 +1,85 @@
+
+============================================================
+FACTOR PAIR: Momentum_vs_Quality
+============================================================
+=== PHASE 1: INITIAL HYPERPARAMETER TUNING ===
+Testing 216 parameter combinations...
+New best params: {'learning_rate': 0.01, 'max_depth': 2, 'min_child_weight': 5, 'reg_lambda': 1, 'subsample': 0.6} (AUC: 0.493)
+New best params: {'learning_rate': 0.01, 'max_depth': 2, 'min_child_weight': 5, 'reg_lambda': 1, 'subsample': 0.8} (AUC: 0.493)
+New best params: {'learning_rate': 0.01, 'max_depth': 2, 'min_child_weight': 10, 'reg_lambda': 1, 'subsample': 0.8} (AUC: 0.493)
+New best params: {'learning_rate': 0.01, 'max_depth': 3, 'min_child_weight': 5, 'reg_lambda': 1, 'subsample': 0.6} (AUC: 0.497)
+New best params: {'learning_rate': 0.1, 'max_depth': 2, 'min_child_weight': 10, 'reg_lambda': 1, 'subsample': 0.6} (AUC: 0.503)
+New best params: {'learning_rate': 0.1, 'max_depth': 3, 'min_child_weight': 10, 'reg_lambda': 1, 'subsample': 0.8} (AUC: 0.505)
+
+=== Top 5 Parameter Combinations ===
+Score: 0.505 | Params: {'learning_rate': 0.1, 'max_depth': 3, 'min_child_weight': 10, 'reg_lambda': 1, 'subsample': 0.8}
+Score: 0.504 | Params: {'learning_rate': 0.1, 'max_depth': 4, 'min_child_weight': 10, 'reg_lambda': 1, 'subsample': 0.6}
+Score: 0.503 | Params: {'learning_rate': 0.1, 'max_depth': 2, 'min_child_weight': 10, 'reg_lambda': 1, 'subsample': 0.6}
+Score: 0.503 | Params: {'learning_rate': 0.1, 'max_depth': 3, 'min_child_weight': 10, 'reg_lambda': 1, 'subsample': 0.6}
+Score: 0.500 | Params: {'learning_rate': 0.1, 'max_depth': 4, 'min_child_weight': 5, 'reg_lambda': 1, 'subsample': 0.6}
+
+=== PHASE 2: ADAPTIVE ROLLING WALK-FORWARD ===
+
+Running Rolling-Window Walk-Forward Validation...
+Training window = expanding (all history)
+  0%|          | 0/156 [00:00<?, ?it/s]  1%|          | 1/156 [00:00<01:19,  1.96it/s]  1%|▏         | 2/156 [00:01<01:20,  1.92it/s]  2%|▏         | 3/156 [00:01<01:23,  1.82it/s]  3%|▎         | 4/156 [00:02<01:21,  1.86it/s]  3%|▎         | 5/156 [00:02<01:22,  1.83it/s]  4%|▍         | 6/156 [00:03<01:21,  1.85it/s]  4%|▍         | 7/156 [00:03<01:19,  1.87it/s]  5%|▌         | 8/156 [00:04<01:16,  1.94it/s]  6%|▌         | 9/156 [00:04<01:16,  1.92it/s]  6%|▋         | 10/156 [00:05<01:18,  1.85it/s]  7%|▋         | 11/156 [00:05<01:16,  1.90it/s]  8%|▊         | 12/156 [00:06<01:12,  2.00it/s]  8%|▊         | 13/156 [00:06<01:11,  2.01it/s]  9%|▉         | 14/156 [00:07<01:10,  2.03it/s] 10%|▉         | 15/156 [00:07<01:10,  2.00it/s] 10%|█         | 16/156 [00:08<01:10,  1.98it/s] 11%|█         | 17/156 [00:08<01:07,  2.06it/s] 12%|█▏        | 18/156 [00:09<01:06,  2.06it/s] 12%|█▏        | 19/156 [00:09<01:09,  1.97it/s] 13%|█▎        | 20/156 [00:10<01:06,  2.03it/s] 13%|█▎        | 21/156 [00:10<01:07,  2.01it/s] 14%|█▍        | 22/156 [00:11<01:05,  2.04it/s] 15%|█▍        | 23/156 [00:11<01:02,  2.13it/s] 15%|█▌        | 24/156 [00:12<01:00,  2.19it/s] 16%|█▌        | 25/156 [00:12<01:05,  1.99it/s] 17%|█▋        | 26/156 [00:13<01:06,  1.96it/s] 17%|█▋        | 27/156 [00:13<01:02,  2.07it/s] 18%|█▊        | 28/156 [00:14<01:02,  2.06it/s] 19%|█▊        | 29/156 [00:14<00:57,  2.21it/s] 19%|█▉        | 30/156 [00:14<00:55,  2.25it/s] 20%|█▉        | 31/156 [00:15<00:52,  2.40it/s] 21%|██        | 32/156 [00:15<00:57,  2.15it/s] 21%|██        | 33/156 [00:16<01:00,  2.03it/s] 22%|██▏       | 34/156 [00:16<00:57,  2.12it/s] 22%|██▏       | 35/156 [00:17<00:59,  2.03it/s] 23%|██▎       | 36/156 [00:17<00:56,  2.12it/s] 24%|██▎       | 37/156 [00:18<00:54,  2.16it/s] 24%|██▍       | 38/156 [00:18<00:51,  2.27it/s] 25%|██▌       | 39/156 [00:19<00:56,  2.08it/s] 26%|██▌       | 40/156 [00:19<00:55,  2.09it/s] 26%|██▋       | 41/156 [00:20<00:52,  2.17it/s] 27%|██▋       | 42/156 [00:20<00:55,  2.04it/s] 28%|██▊       | 43/156 [00:21<00:54,  2.08it/s] 28%|██▊       | 44/156 [00:21<00:56,  1.97it/s] 29%|██▉       | 45/156 [00:22<00:54,  2.04it/s] 29%|██▉       | 46/156 [00:22<00:55,  1.99it/s] 30%|███       | 47/156 [00:23<00:55,  1.95it/s] 31%|███       | 48/156 [00:23<00:56,  1.91it/s] 31%|███▏      | 49/156 [00:24<00:53,  1.99it/s] 32%|███▏      | 50/156 [00:24<00:50,  2.09it/s] 33%|███▎      | 51/156 [00:25<00:52,  2.02it/s] 33%|███▎      | 52/156 [00:25<00:54,  1.91it/s]
+--- Retuning at step 52, train_size=810 ---
+Testing 216 parameter combinations...
+New best params: {'learning_rate': 0.01, 'max_depth': 2, 'min_child_weight': 5, 'reg_lambda': 1, 'subsample': 0.6} (AUC: 0.521)
+New best params: {'learning_rate': 0.01, 'max_depth': 2, 'min_child_weight': 5, 'reg_lambda': 1000, 'subsample': 0.8} (AUC: 0.522)
+New best params: {'learning_rate': 0.01, 'max_depth': 2, 'min_child_weight': 10, 'reg_lambda': 1, 'subsample': 0.6} (AUC: 0.528)
+New best params: {'learning_rate': 0.01, 'max_depth': 2, 'min_child_weight': 10, 'reg_lambda': 1000, 'subsample': 0.6} (AUC: 0.529)
+New best params: {'learning_rate': 0.01, 'max_depth': 2, 'min_child_weight': 10, 'reg_lambda': 1000, 'subsample': 0.8} (AUC: 0.533)
+New best params: {'learning_rate': 0.01, 'max_depth': 3, 'min_child_weight': 10, 'reg_lambda': 1000, 'subsample': 0.8} (AUC: 0.538)
+New best params: {'learning_rate': 0.01, 'max_depth': 4, 'min_child_weight': 10, 'reg_lambda': 1000, 'subsample': 0.8} (AUC: 0.538)
+
+=== Top 5 Parameter Combinations ===
+Score: 0.538 | Params: {'learning_rate': 0.01, 'max_depth': 4, 'min_child_weight': 10, 'reg_lambda': 1000, 'subsample': 0.8}
+Score: 0.538 | Params: {'learning_rate': 0.01, 'max_depth': 3, 'min_child_weight': 10, 'reg_lambda': 1000, 'subsample': 0.8}
+Score: 0.534 | Params: {'learning_rate': 0.03, 'max_depth': 4, 'min_child_weight': 10, 'reg_lambda': 1000, 'subsample': 0.8}
+Score: 0.533 | Params: {'learning_rate': 0.03, 'max_depth': 3, 'min_child_weight': 10, 'reg_lambda': 1000, 'subsample': 0.8}
+Score: 0.533 | Params: {'learning_rate': 0.01, 'max_depth': 2, 'min_child_weight': 10, 'reg_lambda': 1000, 'subsample': 0.8}
+ 34%|███▍      | 53/156 [14:20<7:10:29, 250.78s/it] 35%|███▍      | 54/156 [14:21<4:58:43, 175.72s/it] 35%|███▌      | 55/156 [14:21<3:27:29, 123.26s/it] 36%|███▌      | 56/156 [14:22<2:24:12, 86.53s/it]  37%|███▋      | 57/156 [14:23<1:40:18, 60.79s/it] 37%|███▋      | 58/156 [14:24<1:09:56, 42.82s/it] 38%|███▊      | 59/156 [14:25<48:51, 30.23s/it]   38%|███▊      | 60/156 [14:25<34:14, 21.40s/it] 39%|███▉      | 61/156 [14:26<24:09, 15.25s/it] 40%|███▉      | 62/156 [14:27<17:01, 10.87s/it] 40%|████      | 63/156 [14:28<12:16,  7.92s/it] 41%|████      | 64/156 [14:29<08:56,  5.83s/it] 42%|████▏     | 65/156 [14:30<06:35,  4.34s/it] 42%|████▏     | 66/156 [14:31<04:55,  3.29s/it] 43%|████▎     | 67/156 [14:32<03:47,  2.56s/it] 44%|████▎     | 68/156 [14:32<02:52,  1.96s/it] 44%|████▍     | 69/156 [14:33<02:14,  1.55s/it] 45%|████▍     | 70/156 [14:34<01:58,  1.38s/it] 46%|████▌     | 71/156 [14:35<01:46,  1.25s/it] 46%|████▌     | 72/156 [14:35<01:30,  1.07s/it] 47%|████▋     | 73/156 [14:36<01:19,  1.05it/s] 47%|████▋     | 74/156 [14:37<01:16,  1.07it/s] 48%|████▊     | 75/156 [14:38<01:18,  1.03it/s] 49%|████▊     | 76/156 [14:39<01:18,  1.02it/s] 49%|████▉     | 77/156 [14:40<01:18,  1.01it/s] 50%|█████     | 78/156 [14:41<01:13,  1.06it/s] 51%|█████     | 79/156 [14:42<01:10,  1.09it/s] 51%|█████▏    | 80/156 [14:43<01:08,  1.11it/s] 52%|█████▏    | 81/156 [14:44<01:11,  1.05it/s] 53%|█████▎    | 82/156 [14:44<01:08,  1.08it/s] 53%|█████▎    | 83/156 [14:45<01:08,  1.07it/s] 54%|█████▍    | 84/156 [14:46<01:09,  1.03it/s] 54%|█████▍    | 85/156 [14:47<01:09,  1.02it/s] 55%|█████▌    | 86/156 [14:48<01:08,  1.02it/s] 56%|█████▌    | 87/156 [14:49<01:06,  1.04it/s] 56%|█████▋    | 88/156 [14:50<01:02,  1.08it/s] 57%|█████▋    | 89/156 [14:51<01:02,  1.07it/s] 58%|█████▊    | 90/156 [14:52<00:58,  1.14it/s] 58%|█████▊    | 91/156 [14:53<00:53,  1.21it/s] 59%|█████▉    | 92/156 [14:53<00:51,  1.23it/s] 60%|█████▉    | 93/156 [14:54<00:53,  1.17it/s] 60%|██████    | 94/156 [14:55<00:55,  1.12it/s] 61%|██████    | 95/156 [14:56<00:55,  1.10it/s] 62%|██████▏   | 96/156 [14:57<00:54,  1.11it/s] 62%|██████▏   | 97/156 [14:58<00:50,  1.17it/s] 63%|██████▎   | 98/156 [14:59<00:46,  1.24it/s] 63%|██████▎   | 99/156 [14:59<00:47,  1.19it/s] 64%|██████▍   | 100/156 [15:01<00:50,  1.10it/s] 65%|██████▍   | 101/156 [15:02<00:51,  1.07it/s] 65%|██████▌   | 102/156 [15:03<00:51,  1.04it/s] 66%|██████▌   | 103/156 [15:04<00:51,  1.02it/s] 67%|██████▋   | 104/156 [15:04<00:49,  1.05it/s]
+--- Retuning at step 104, train_size=862 ---
+Testing 216 parameter combinations...
+New best params: {'learning_rate': 0.01, 'max_depth': 2, 'min_child_weight': 5, 'reg_lambda': 1, 'subsample': 0.6} (AUC: 0.479)
+New best params: {'learning_rate': 0.01, 'max_depth': 2, 'min_child_weight': 10, 'reg_lambda': 1, 'subsample': 0.6} (AUC: 0.497)
+New best params: {'learning_rate': 0.01, 'max_depth': 2, 'min_child_weight': 20, 'reg_lambda': 1, 'subsample': 0.8} (AUC: 0.503)
+New best params: {'learning_rate': 0.01, 'max_depth': 3, 'min_child_weight': 10, 'reg_lambda': 1, 'subsample': 0.6} (AUC: 0.504)
+New best params: {'learning_rate': 0.03, 'max_depth': 2, 'min_child_weight': 20, 'reg_lambda': 1, 'subsample': 0.8} (AUC: 0.505)
+New best params: {'learning_rate': 0.03, 'max_depth': 4, 'min_child_weight': 10, 'reg_lambda': 1, 'subsample': 0.6} (AUC: 0.506)
+New best params: {'learning_rate': 0.1, 'max_depth': 2, 'min_child_weight': 20, 'reg_lambda': 1, 'subsample': 0.8} (AUC: 0.507)
+New best params: {'learning_rate': 0.1, 'max_depth': 2, 'min_child_weight': 20, 'reg_lambda': 10, 'subsample': 0.8} (AUC: 0.508)
+New best params: {'learning_rate': 0.1, 'max_depth': 3, 'min_child_weight': 20, 'reg_lambda': 10, 'subsample': 0.8} (AUC: 0.509)
+New best params: {'learning_rate': 0.1, 'max_depth': 4, 'min_child_weight': 10, 'reg_lambda': 1, 'subsample': 0.6} (AUC: 0.511)
+
+=== Top 5 Parameter Combinations ===
+Score: 0.511 | Params: {'learning_rate': 0.1, 'max_depth': 4, 'min_child_weight': 10, 'reg_lambda': 1, 'subsample': 0.6}
+Score: 0.509 | Params: {'learning_rate': 0.1, 'max_depth': 4, 'min_child_weight': 20, 'reg_lambda': 10, 'subsample': 0.8}
+Score: 0.509 | Params: {'learning_rate': 0.1, 'max_depth': 3, 'min_child_weight': 20, 'reg_lambda': 10, 'subsample': 0.8}
+Score: 0.508 | Params: {'learning_rate': 0.1, 'max_depth': 4, 'min_child_weight': 10, 'reg_lambda': 1, 'subsample': 0.8}
+Score: 0.508 | Params: {'learning_rate': 0.1, 'max_depth': 2, 'min_child_weight': 20, 'reg_lambda': 10, 'subsample': 0.8}
+ 67%|██████▋   | 105/156 [29:26<3:40:16, 259.15s/it] 68%|██████▊   | 106/156 [29:27<2:31:16, 181.54s/it] 69%|██████▊   | 107/156 [29:27<1:43:52, 127.20s/it] 69%|██████▉   | 108/156 [29:27<1:11:19, 89.16s/it]  70%|██████▉   | 109/156 [29:28<48:58, 62.52s/it]   71%|███████   | 110/156 [29:28<33:38, 43.89s/it] 71%|███████   | 111/156 [29:29<23:08, 30.85s/it] 72%|███████▏  | 112/156 [29:29<15:54, 21.70s/it] 72%|███████▏  | 113/156 [29:29<10:58, 15.31s/it] 73%|███████▎  | 114/156 [29:30<07:34, 10.83s/it] 74%|███████▎  | 115/156 [29:30<05:15,  7.70s/it] 74%|███████▍  | 116/156 [29:31<03:40,  5.52s/it] 75%|███████▌  | 117/156 [29:31<02:35,  3.98s/it] 76%|███████▌  | 118/156 [29:31<01:49,  2.89s/it] 76%|███████▋  | 119/156 [29:32<01:20,  2.17s/it] 77%|███████▋  | 120/156 [29:32<00:59,  1.64s/it] 78%|███████▊  | 121/156 [29:32<00:43,  1.25s/it] 78%|███████▊  | 122/156 [29:33<00:33,  1.03it/s] 79%|███████▉  | 123/156 [29:33<00:27,  1.21it/s] 79%|███████▉  | 124/156 [29:34<00:22,  1.42it/s] 80%|████████  | 125/156 [29:34<00:18,  1.64it/s] 81%|████████  | 126/156 [29:34<00:16,  1.85it/s] 81%|████████▏ | 127/156 [29:35<00:14,  2.03it/s] 82%|████████▏ | 128/156 [29:35<00:13,  2.03it/s] 83%|████████▎ | 129/156 [29:36<00:12,  2.11it/s] 83%|████████▎ | 130/156 [29:36<00:12,  2.09it/s] 84%|████████▍ | 131/156 [29:37<00:11,  2.22it/s] 85%|████████▍ | 132/156 [29:37<00:11,  2.18it/s] 85%|████████▌ | 133/156 [29:37<00:09,  2.34it/s] 86%|████████▌ | 134/156 [29:38<00:09,  2.31it/s] 87%|████████▋ | 135/156 [29:38<00:09,  2.27it/s] 87%|████████▋ | 136/156 [29:39<00:08,  2.25it/s] 88%|████████▊ | 137/156 [29:39<00:08,  2.25it/s] 88%|████████▊ | 138/156 [29:40<00:07,  2.27it/s] 89%|████████▉ | 139/156 [29:40<00:07,  2.25it/s] 90%|████████▉ | 140/156 [29:41<00:07,  2.28it/s] 90%|█████████ | 141/156 [29:41<00:06,  2.35it/s] 91%|█████████ | 142/156 [29:41<00:06,  2.30it/s] 92%|█████████▏| 143/156 [29:42<00:05,  2.26it/s] 92%|█████████▏| 144/156 [29:42<00:05,  2.39it/s] 93%|█████████▎| 145/156 [29:43<00:04,  2.41it/s] 94%|█████████▎| 146/156 [29:43<00:04,  2.39it/s] 94%|█████████▍| 147/156 [29:44<00:03,  2.36it/s] 95%|█████████▍| 148/156 [29:44<00:03,  2.18it/s] 96%|█████████▌| 149/156 [29:45<00:03,  2.04it/s] 96%|█████████▌| 150/156 [29:45<00:02,  2.13it/s] 97%|█████████▋| 151/156 [29:45<00:02,  2.27it/s] 97%|█████████▋| 152/156 [29:46<00:01,  2.21it/s] 98%|█████████▊| 153/156 [29:46<00:01,  2.17it/s] 99%|█████████▊| 154/156 [29:47<00:00,  2.38it/s] 99%|█████████▉| 155/156 [29:47<00:00,  2.44it/s]100%|██████████| 156/156 [29:47<00:00,  2.60it/s]100%|██████████| 156/156 [29:47<00:00, 11.46s/it]
+
+=== Final Evaluation Results ===
+              precision    recall  f1-score   support
+
+           0       0.66      0.55      0.60        71
+           1       0.67      0.76      0.71        85
+
+    accuracy                           0.67       156
+   macro avg       0.67      0.66      0.66       156
+weighted avg       0.67      0.67      0.66       156
+
+
+=== ADAPTIVE PARAMS RESULTS ===
+Walk-forward Performance [Momentum_vs_Quality]:
+Accuracy : 0.667
+F1 Score : 0.714
+Recall   : 0.765
+Precision: 0.670
+ROC AUC :   0.6361
+PR  AUC :   0.6647
+Log Loss:   0.7165
+xgboost_cpcv_wf.ipynb:34: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+xgboost_cpcv_wf.ipynb:45: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown

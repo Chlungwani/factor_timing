@@ -1,0 +1,12 @@
+21:55:45  10/60  last gam Momentum_vs_Value 429s
+22:08:36  20/60  last gam Momentum_vs_Quality 123s
+22:11:34  wrote gam Momentum_vs_Value
+22:13:42  25/60  last gam Momentum_vs_Quality 181s  FAILED {'lam': 1.0, 'n_splines': 10}: OptimizationError: PIRLS optimization has diverged.
+Try increasing regularization, or specifying an initial value for self.coef_
+22:18:54  30/60  last gam Momentum_vs_Quality 158s
+22:28:04  40/60  last gam Value_vs_Quality 90s
+22:29:42  wrote gam Momentum_vs_Quality
+22:37:32  50/60  last gam Value_vs_Quality 294s
+22:48:01  60/60  last gam Value_vs_Quality 255s
+22:48:01  wrote gam Value_vs_Quality
+finished in 67.8 min

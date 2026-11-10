@@ -1,0 +1,25 @@
+{
+  "model": "Logistic",
+  "pair": "Value_vs_Quality",
+  "n_obs": 746,
+  "first": "2007-07-23",
+  "last": "2021-11-01",
+  "best_params": {
+    "alpha": 1.0,
+    "lambda_reg": 10.0
+  },
+  "old_best_params": {
+    "alpha": 1.0,
+    "lambda_reg": 10.0
+  },
+  "unchanged": true,
+  "mean_auc": 0.5364461832035924,
+  "mean_path_auc": 0.4884764598763433,
+  "path_aucs": [
+    0.49917586174630935,
+    0.4865150828096997,
+    0.5331058855707427,
+    0.4351090093786214
+  ],
+  "minutes": 7.740978117783865
+}

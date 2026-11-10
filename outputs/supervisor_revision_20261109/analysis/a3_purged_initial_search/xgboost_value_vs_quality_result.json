@@ -1,0 +1,31 @@
+{
+  "model": "XGBoost",
+  "pair": "Value_vs_Quality",
+  "n_obs": 746,
+  "first": "2007-07-23",
+  "last": "2021-11-01",
+  "best_params": {
+    "learning_rate": 0.01,
+    "max_depth": 2,
+    "min_child_weight": 20,
+    "reg_lambda": 1,
+    "subsample": 0.6
+  },
+  "old_best_params": {
+    "learning_rate": 0.01,
+    "max_depth": 2,
+    "min_child_weight": 20,
+    "reg_lambda": 1,
+    "subsample": 0.8
+  },
+  "unchanged": false,
+  "mean_auc": 0.5676115267529276,
+  "mean_path_auc": 0.509028632506316,
+  "path_aucs": [
+    0.4960304607256735,
+    0.49882317376001384,
+    0.570865093246385,
+    0.47039580229319167
+  ],
+  "minutes": 34.00889775355657
+}
