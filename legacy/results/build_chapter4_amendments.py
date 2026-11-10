@@ -12,7 +12,10 @@ script stops if a sentence's premise (which model leads, in which weeks a model 
 hyperparameters it selected) does not hold.
 
 Output
-  Chapter4_Results_Amendments_Highlighted.docx   amendments in yellow plus an amendment log
+  Chapter4_Results_Revised_Highlighted_v2.docx   amendments in yellow plus an amendment log
+
+This is the one Chapter 4 review copy (author, 4 November 2026: keep one copy and update it, never a new one). A
+run rebuilds it from the thesis, so first check that the author has copied in the highlighted edits it holds.
 
 Usage: python build_chapter4_amendments.py [out_dir] [thesis_snapshot.docx]
 """
@@ -47,7 +50,7 @@ OUT_DIR = Path(sys.argv[1]) if len(sys.argv) > 1 else RESULTS
 # A copy of the thesis: Word keeps the original open and Python is refused read access to it,
 # so take a snapshot first (e.g. with cp) and pass its path.
 SOURCE = Path(sys.argv[2]) if len(sys.argv) > 2 else ROOT / "legacy" / "27717801_ResearchAssignment_vf - EG Mar 2026.docx"
-OUTPUT = OUT_DIR / "Chapter4_Results_Amendments_Highlighted.docx"
+OUTPUT = OUT_DIR / "Chapter4_Results_Revised_Highlighted_v2.docx"
 
 MODELS = {"Logistic": "logistic", "GAM": "gam", "XGBoost": "xgboost"}
 PAIRS = {"Momentum_vs_Value": "Momentum vs value", "Momentum_vs_Quality": "Momentum vs quality",

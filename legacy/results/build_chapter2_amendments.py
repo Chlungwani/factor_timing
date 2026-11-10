@@ -7,18 +7,21 @@ script puts the rewritten challenges text there: an opening that names five chal
 (identifying genuine premia, their uncertain drivers, the length of factor cycles, the fragility of reported timing
 gains, and the complexity of the relationship between predictors and factor returns), built from the material of
 the former Sections 2.1 and 2.3.1, with references back to Sections 1.1 and 2.1. It adds a chapter opening that
-outlines Sections 2.1-2.3, answers Prof Gilbert's comments on Sections 2.2.1, 2.2.3 and 2.3 (C47, C49, C50, C53),
-removes repetition, and corrects grammar and citations in the rest of the chapter. Citations are Word citation
-fields; narrative citations are the authors' names followed by a field that shows the year only (switches \\n \\t),
-so that they still reach the reference list.
+outlines Sections 2.1-2.3, answers Prof Gilbert's comments on Sections 2.2.1, 2.2.3 and 2.3, removes repetition,
+and corrects grammar and citations in the rest of the chapter. Citations are Word citation fields in brackets at
+the end of the claim they support, as in the rest of the thesis; works without a source are added to the
+document's Source Manager (NEW_SOURCES).
 
 Starts from the current thesis (a snapshot), keeps only Chapter 2 and applies the amendments in place,
-highlighted, with an amendment log at the end.
+highlighted, with an amendment log at the end. The author copies the amendments into the thesis herself, so the
+script builds from her latest version and applies only what is still to do (by 3 November, 15:49, the challenges
+text and most of Sections 2.2 and 2.3 were in).
 
 Usage: python build_chapter2_amendments.py [out_dir] [thesis_snapshot.docx]
 """
 import re
 import sys
+import uuid
 import zipfile
 from pathlib import Path
 
@@ -27,7 +30,7 @@ from docx.oxml.ns import qn
 from lxml import etree
 
 from build_chapter1_amendments import B_NS, norm
-from build_chapter4_amendments import compose, find_para, fresh_copy, heading, style, text
+from build_chapter4_amendments import compose, find_para, find_para_any, fresh_copy, heading, style, text
 from build_minimal_chapter3 import Editor, accept_revisions, add_log, remove, set_heading_start, strip_comments
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -37,14 +40,94 @@ SOURCE = Path(sys.argv[2]) if len(sys.argv) > 2 else ROOT / "legacy" / "27717801
 OUTPUT = OUT_DIR / "Chapter2_Literature_Review_Minimal_Amendments_Highlighted.docx"
 
 
+# Works cited in Sections 2.2 and 2.3 that had no source in the thesis's Source Manager. Details from the literature-review
+# reference file ('Literature Review References Timing South African Equity Factors.docx'), except Rapach and Zhou
+# (2013) and Chen, Hanauer and Kalsbach (2024), checked separately. Authors are (last name, first, middle).
+NEW_SOURCES = [
+    dict(Tag="McL16", SourceType="JournalArticle", authors=[("McLean", "R.", "D."), ("Pontiff", "J.", None)],
+         Title="Does academic research destroy stock return predictability?", JournalName="The Journal of Finance",
+         Year="2016", Volume="71", Issue="1", Pages="5-32"),
+    dict(Tag="Wel08", SourceType="JournalArticle", authors=[("Welch", "I.", None), ("Goyal", "A.", None)],
+         Title="A comprehensive look at the empirical performance of equity premium prediction",
+         JournalName="The Review of Financial Studies", Year="2008", Volume="21", Issue="4", Pages="1455-1508"),
+    dict(Tag="Whi00", SourceType="JournalArticle", authors=[("White", "H.", None)],
+         Title="A reality check for data snooping", JournalName="Econometrica", Year="2000", Volume="68", Issue="5",
+         Pages="1097-1126"),
+    dict(Tag="Ced20", SourceType="JournalArticle",
+         authors=[("Cederburg", "S.", None), ("O'Doherty", "M.", "S."), ("Wang", "F.", None), ("Yan", "X.", "S.")],
+         Title="On the performance of volatility-managed portfolios", JournalName="Journal of Financial Economics",
+         Year="2020", Volume="138", Issue="1", Pages="95-117"),
+    dict(Tag="Rap13", SourceType="BookSection", authors=[("Rapach", "D.", "E."), ("Zhou", "G.", None)],
+         editors=[("Elliott", "G.", None), ("Timmermann", "A.", None)], Title="Forecasting stock returns",
+         BookTitle="Handbook of Economic Forecasting", Year="2013", Volume="2A", Pages="328-383",
+         Publisher="Elsevier", City="Amsterdam"),
+    dict(Tag="Kap19", SourceType="Report", authors=[("Kapche Fotso", "H.", "M.")],
+         Title="Cyclicality of size, value and momentum on the Johannesburg Stock Exchange", Year="2019",
+         ThesisType="Master's thesis", Publisher="University of the Western Cape", City="Cape Town"),
+    dict(Tag="Pag22", SourceType="JournalArticle",
+         authors=[("Page", "D.", None), ("McClelland", "D.", None), ("Auret", "C.", None)],
+         Title="Style rotation on the JSE", JournalName="Finance Research Letters", Year="2022", Volume="46",
+         Issue="Part B", Pages="102504"),
+    dict(Tag="Che24", SourceType="Report", authors=[("Chen", "M.", None), ("Hanauer", "M.", "X."), ("Kalsbach", "T.", None)],
+         Title="Design choices, machine learning, and the cross-section of stock returns", Year="2024",
+         ThesisType="Working paper 5031755", Publisher="SSRN"),
+]
+
+
+def source_element(entry):
+    """A Source Manager entry (b:Source) in the form Word writes."""
+    b = lambda tag, value=None: etree.Element(B_NS + tag) if value is None else _text(B_NS + tag, value)
+    s = b("Source")
+    for key in ("Tag", "SourceType"):
+        s.append(b(key, entry[key]))
+    s.append(b("Guid", "{" + str(uuid.uuid5(uuid.NAMESPACE_URL, "factor-timing/" + entry["Tag"])).upper() + "}"))
+    roles = b("Author")
+    for role, people in (("Author", entry["authors"]), ("Editor", entry.get("editors", []))):
+        if not people:
+            continue
+        names = b("NameList")
+        for last, first, middle in people:
+            person = b("Person")
+            person.append(b("Last", last))
+            person.append(b("First", first))
+            if middle:
+                person.append(b("Middle", middle))
+            names.append(person)
+        holder = b(role)
+        holder.append(names)
+        roles.append(holder)
+    s.append(roles)
+    for key in ("Title", "BookTitle", "JournalName", "Year", "Volume", "Issue", "Pages", "ThesisType", "Publisher",
+                "City"):
+        if key in entry:
+            s.append(b(key, entry[key]))
+    return s
+
+
+def _text(tag, value):
+    el = etree.Element(tag)
+    el.text = value
+    return el
+
+
+def add_sources(document, entries):
+    """Add Source Manager entries to the document's bibliography part (customXml); returns the new elements."""
+    part = next(p for p in document.part.package.iter_parts()
+                if str(p.partname).startswith("/customXml/item") and b"<b:Sources" in p.blob[:400])
+    root = etree.fromstring(part.blob)
+    existing = {s.findtext(B_NS + "Tag") for s in root.findall(B_NS + "Source")}
+    added = []
+    for entry in entries:
+        assert entry["Tag"] not in existing, entry["Tag"]
+        added.append(source_element(entry))
+        root.append(added[-1])
+    part._blob = etree.tostring(root, xml_declaration=True, encoding="UTF-8", standalone=True)
+    return added
+
+
 def cite(*pairs):
     """A parenthetical citation field: Source Manager tags and the APA text Word shows for them."""
     return [tag for tag, _ in pairs], "(" + "; ".join(shown for _, shown in pairs) + ")"
-
-
-def narrative(authors, tag, year):
-    """'Cochrane (2011)': the names typed, the year a citation field (author and title suppressed)."""
-    return [f"{authors} ", ([f"{tag} \\n  \\t"], f"({year})")]
 
 
 def extend(e, p, parts):
@@ -119,6 +202,9 @@ def build():
         bib = next(etree.fromstring(z.read(n)) for n in z.namelist()
                    if n.startswith("customXml/item") and "Props" not in n and b"Sources" in z.read(n)[:400])
     sources = {s.findtext(B_NS + "Tag"): s for s in bib.findall(B_NS + "Source")}
+    added = add_sources(document, [x for x in NEW_SOURCES if x["Tag"] not in sources])   # not yet in the thesis
+    for s in added:
+        sources[s.findtext(B_NS + "Tag")] = s
 
     # keep only Chapter 2: from its "Chapter" label to the element before the next chapter label
     children = list(body)
@@ -135,20 +221,21 @@ def build():
     log = []
     note = lambda section, change, reason: log.append((section, change, reason))
 
-    # Author, 3 November 2026 (02:00): the heading 'Challenges with factor timing' is removed, so the challenges of
-    # factor timing open Section 2.2 directly (before 2.2.1 Model complexity trade-offs). The rewritten challenges
-    # text replaces the three paragraphs the thesis still has there (the former 2.3.1).
+    # Author, 3 November 2026 (15:49): the rewritten challenges text is in the thesis as the unheaded opening of
+    # Section 2.2 (with her own opening sentences and small cuts in the first challenge), its sources McL16-Kap19 are
+    # in her Source Manager, and so is most of the rest of Sections 2.2 and 2.3. Only what is still to do is applied;
+    # each step checks the thesis text first.
     head = heading(body, "Application of machine learning to factor timing in the global literature")
-    old = [find_para(body, startswith="Literature establishes that momentum, value and quality are economically"),
-           find_para(body, startswith="Predictive relationships shift over time."),
-           find_para(body, startswith="Timing results depend on which predictors are tested")]
+    challenges = [find_para(body, startswith=f"The {n} challenge") for n in ("first", "second", "third", "fourth",
+                                                                           "fifth")]
     following = [el for el in list(body)[list(body).index(head) + 1:] if el.tag == qn("w:p") and text(el).strip()]
-    assert following[:3] == old and text(following[3]).strip() == "Model complexity trade-offs", \
+    opening = following[0]
+    assert following[1:6] == challenges and text(following[6]).strip() == "Model complexity trade-offs", \
         "the opening of Section 2.2 has changed"
 
     # ------------------------------------------------------------------ chapter opening --
     # What the review is for, and an outline of Sections 2.1-2.3 in the new order
-    chapter_opening = new_paragraph(e, old[0], [
+    chapter_opening = new_paragraph(e, challenges[0], [
         "This chapter reviews the literature that motivates the study's design. Its purpose is to establish what "
         "machine learning can contribute to factor timing, why the problem is difficult and where these methods tend "
         "to fail, and what has not yet been tested in the South African market. Section 2.1 reviews the machine "
@@ -168,39 +255,52 @@ def build():
          "does; author's restructuring of 2–3 November.")
 
     # ------------------------------------------------------------------ 2.1 machine learning in finance --
+    # Author, 3 November 2026 (14:52): most of the Section 2.1 amendments are in the thesis (the grammar of the first
+    # paragraph, 'the literature distinguishes', sentence-case headings, Has09 for The Elements of Statistical
+    # Learning in the supervised-learning and regularisation paragraphs, Has09 corrected to three authors, her own
+    # wording of the ridge sentence). Only what is still to do is applied; each step checks the thesis text.
+    applied = []
     p = find_para(body, startswith="ML is a branch of artificial intelligence")
-    e.replace(p, "approaches that rely on", "approaches rely on")
+    if "approaches that rely on" in text(p):
+        e.replace(p, "approaches that rely on", "approaches rely on")
+    else:
+        applied.append("the grammar of the first paragraph ('While traditional econometric approaches rely on …')")
     retag(e, p, "Hastie2", " CITATION Bis06 \\l 1033 \\m Has09 \\t \\m Sut18 ",
           "(Bishop, 2006; Hastie, Tibshirani, & Friedman, 2009; Sutton & Barto, 2018)")
+    note("2.1", "The paradigms paragraph cites The Elements of Statistical Learning from source Has09, like the "
+         "rest of the chapter, instead of the duplicate source Hastie2.", "One source per work.")
     p = find_para(body, startswith="Supervised learning refers to a family")
-    retag(e, p, "Has09", " CITATION Has09 \\t \\l 1033 \\m Vap99 ",
-          " (Hastie, Tibshirani, & Friedman, 2009; Vapnik, 1999)")
-    p = find_para(body, startswith="Within supervised learning, literature distinguishes")
-    e.replace(p, "Within supervised learning, literature", "Within supervised learning, the literature")
-    note("2.1", "Grammar: 'While traditional econometric approaches that rely on pre-specified functional forms, ML "
-         "methods emphasise …' becomes 'While traditional econometric approaches rely on …'; 'literature "
-         "distinguishes' becomes 'the literature distinguishes'.", "Grammar.")
-    note("2.1", "Citations of The Elements of Statistical Learning now all use source Has09 with the title "
-         "suppressed (\\t): the supervised-learning paragraph printed the title ('Hastie & Friedman, The Elements "
-         "of Statisitcal Learning, 2009') and the paradigms paragraph used the duplicate source Hastie2. They print "
-         "'Hastie, Tibshirani, & Friedman, 2009' once Has09 is corrected (see References).", "Consistent citation "
-         "of one source; remove the printed title.")
-
-    p = heading(body, "Regularised & Semi-Parametric models")
-    e.replace(p, "Regularised & Semi-Parametric models", "Regularised and semi-parametric models")
-    p = heading(body, "Tree-Based Models")
-    e.replace(p, "Tree-Based Models", "Tree-based models")
-    note("2.1.1, 2.1.2", "Headings in sentence case, as the author changed 'Machine learning in finance': "
-         "'Regularised and semi-parametric models', 'Tree-based models'.", "Consistent headings.")
-
+    if "Has09 \\t" not in "".join(it.text or "" for it in p.iter(qn("w:instrText"))):
+        retag(e, p, "Has09", " CITATION Has09 \\t \\l 1033 \\m Vap99 ",
+              " (Hastie, Tibshirani, & Friedman, 2009; Vapnik, 1999)")
+    else:
+        applied.append("Has09 with the title suppressed in the supervised-learning paragraph")
+    hits = [q for q in body.iter(qn("w:p")) if text(q).startswith("Within supervised learning, literature")]
+    if hits:
+        e.replace(hits[0], "Within supervised learning, literature", "Within supervised learning, the literature")
+    else:
+        applied.append("'the literature distinguishes'")
+    for old_heading, new_heading in (("Regularised & Semi-Parametric models", "Regularised and semi-parametric models"),
+                                     ("Tree-Based Models", "Tree-based models")):
+        if any(text(q).strip() == old_heading for q in body.iter(qn("w:p"))):
+            e.replace(heading(body, old_heading), old_heading, new_heading)
+        else:
+            applied.append(f"the heading '{new_heading}'")
     p = find_para(body, startswith="A central concern in empirical return prediction")
-    retag(e, p, "Placeholder3", " CITATION Has09 \\t \\l 1033 ", "(Hastie, Tibshirani, & Friedman, 2009)")
-    p = find_para(body, startswith="Early contributions such as ridge regression")
-    e.replace(p, "Early contributions such as ridge regression", "Ridge regression")
-    e.replace(p, "penalty stabilise", "penalty that stabilises")
-    note("2.1.1", "'Early contributions such as ridge regression introduced an ℓ₂ penalty stabilise linear models' "
-         "becomes 'Ridge regression introduced an ℓ₂ penalty that stabilises linear models'. The first paragraph "
-         "cites Has09 instead of the duplicate source Placeholder3.", "Grammar; one source per work.")
+    if "Placeholder3" in "".join(it.text or "" for it in p.iter(qn("w:instrText"))):
+        retag(e, p, "Placeholder3", " CITATION Has09 \\t \\l 1033 ", "(Hastie, Tibshirani, & Friedman, 2009)")
+    else:
+        applied.append("Has09 instead of Placeholder3 in the regularisation paragraph")
+    p = find_para_any(body, "Early contributions such as ridge regression", "Ridge regression introduced")
+    if text(p).startswith("Early contributions"):
+        e.replace(p, "Early contributions such as ridge regression", "Ridge regression")
+    e.replace(p, "penalty that stabilise linear" if "penalty that stabilise linear" in text(p) else "penalty stabilise",
+              "penalty that stabilises linear" if "penalty that stabilise linear" in text(p) else "penalty that stabilises")
+    note("2.1.1", "Ridge sentence: 'an L2 penalty that stabilise linear models' becomes 'an L2 penalty that "
+         "stabilises linear models' (subject–verb agreement).", "Grammar.")
+    if applied:
+        note("2.1", "Already in the thesis (author, 3 November), so not repeated here: " + "; ".join(applied) + ".",
+             "–")
 
     closing = find_para(body, startswith="The diversity of modelling approaches discussed above")
     remove(closing)
@@ -213,161 +313,39 @@ def build():
          "before the fifth challenge's statement of the same point.")
 
     # ------------------------------------------------------------------ 2.2 opening: the challenges --
-    paragraphs = list(old)
-    for _ in range(3):
-        extra = fresh_copy(old[0])
-        paragraphs[-1].addnext(extra)
-        paragraphs.append(extra)
-
-    ilm21 = ("Ilm21", "Ilmanen, Israel, Lee, Moskowitz, & Thapar, 2021")
-    opening, genuine, drivers, cycles, fragile, complexity = paragraphs
-    # Author: "rephrase this sentence to set the scene"
-    compose(e, opening, [
-        "Although the time variation in factor premia provides a clear rationale for factor timing (Section 1.1), "
-        "exploiting it in practice has proved difficult, whichever forecasting method is used. The literature "
-        "identifies five recurring challenges: distinguishing genuine premia from statistical artefacts, establishing "
-        "the economic drivers of those premia, accommodating the length of factor cycles, obtaining timing gains that "
-        "persist out of sample, and capturing the complex relationship between predictors and factor returns."])
-    compose(e, genuine, [
-        "The first challenge is identifying which premia are genuine. Asset pricing research has uncovered a rapidly "
-        "expanding set of cross-sectional return predictors, which ", *narrative("Cochrane", "Coc11", 2011),
-        " described as a “zoo” of factors, and subsequent work attributes much of this proliferation to "
-        "insufficiently stringent statistical standards: many proposed factors lack economic justification and fail "
-        "to replicate out of sample ", cite(("Har16", "Harvey, Liu, & Zhu, 2016"), ("Fen20", "Feng, Giglio, & Xiu, 2020")),
-        ". Even genuine premia shrink once they are published, as investors trade on them (McLean & Pontiff, 2016). "
-        "Timing a factor whose premium is spurious cannot add value, and a premium that has decayed leaves less to "
-        "time. A small core set of factors nevertheless remains widely used in research and practice ",
-        cite(("Asn13", "Asness, Moskowitz, & Pedersen, 2013"), ("Fam15", "Fama & French, 2015")),
-        ", and the three factors in this study, value, momentum and quality, belong to it."])
-    compose(e, drivers, [
-        "The second challenge is that the economic drivers of the premia are uncertain. Section 1.1 noted that "
-        "risk-based and behavioural explanations both have empirical support, and the two point to different "
-        "predictors. If the premia compensate for risk, they should vary with business conditions, as expected "
-        "returns on stocks and bonds do ", cite(("Fam89", "Fama & French, 1989")),
-        "; on the JSE, size and momentum premia have been found to vary with the business cycle (Kapche Fotso, "
-        "2019). If they reflect investor biases, they should be largest when mispricing is hardest to arbitrage away, "
-        "since real-world constraints limit arbitrage ", cite(("Shl97", "Shleifer & Vishny, 1997")),
-        ". Without a settled theory, a timing model cannot draw its predictors from a single explanation, and factor "
-        "returns appear to be influenced by a multifaceted set of variables that extends beyond economic "
-        "fundamentals."])
-    compose(e, cycles, [
-        "The third challenge is the length of factor cycles. An equal allocation across factors is a demanding "
-        "benchmark: ", *narrative("DeMiguel, Garlappi and Uppal", "DeM09", 2009),
-        " show that equal weighting is difficult to beat out of sample when allocating across assets. Yet value "
-        "crashes and growth rallies recur, and even a diversified factor portfolio can endure multi-year "
-        "underperformance ",
-        cite(("Asn00", "Asness, Friedman, Krail, & Liew, 2000"), ("Arn16", "Arnott, Beck, Kalesnik, & West, 2016")),
-        ". Because factor cycles are asynchronous, dynamic reallocation could improve on static diversification ",
-        cite(("Ilm12", "Ilmanen & Kizer, 2012")),
-        ", but cycles that last several years also mean that a sample of a few decades contains few independent "
-        "episodes from which a timing model can learn, a limitation that ", *narrative("Ilmanen et al.", "Ilm21", 2021),
-        " address by examining a century of data."])
-    compose(e, fragile, [
-        "The fourth challenge is that reported timing gains are fragile. Section 1.1 noted that the evidence on "
-        "factor timing is mixed, and several features of the problem explain why. The predictable component of factor "
-        "returns is small relative to their noise ", cite(("Isr20", "Israel, Kelly, & Moskowitz, 2020")),
-        ", and return predictors that perform well over a full sample often fail out of sample and in later "
-        "subperiods, as Welch and Goyal (2008) show for the equity premium. Because many predictors and "
-        "specifications are tested on the same data, the best reported result is biased upwards unless the search "
-        "itself is taken into account (White, 2000). Results are also sensitive to the predictor, evaluation period, "
-        "benchmark and treatment of implementation costs ",
-        cite(("Asn17", "Asness, Chandra, Ilmanen, & Israel, 2017"), ilm21), ": ",
-        *narrative("Arnott et al.", "Arn16", 2016), " find relative valuations useful for timing factors, whereas ",
-        *narrative("Asness et al.", "Asn17", 2017), " find that value timing adds little beyond a static allocation, "
-        "and Cederburg et al. (2020) find that volatility-managed portfolios do not systematically outperform their "
-        "unmanaged counterparts out of sample."])
-    # The machine learning methods are reviewed before this section (Section 2.1), so the last paragraph refers
-    # back to them instead of introducing them
-    compose(e, complexity, [
-        "The fifth challenge is the complexity of the relationship between predictors and factor returns. ",
-        *narrative("Cotturo, Liu and Proner", "Cot24", 2024),
-        " note that the drivers of factor premia may operate over different horizons, that the relationship between "
-        "predictors and factor performance may be nonlinear and interactive ",
-        cite(("Leu21", "Leung, Lohre, Mischlich, Shea, & Stroh, 2021"), ("Bry23", "Bryzgalova, Pelger, & Zhu, 2023")),
-        ", and that these relationships can change across market states ", cite(ilm21),
-        ". The set of candidate predictors is also large relative to the available sample (Rapach & Zhou, 2013; "
-        "Feng et al., 2018). These difficulties have led recent research to the machine learning methods reviewed in "
-        "Section 2.1 ", cite(("Shi20", "Gu, Kelly, & Xiu, 2020")),
-        ". Their ability to approximate nonlinear relationships does not, however, imply that the most flexible "
-        "model will forecast best, which motivates the comparison of models with different levels of functional "
-        "flexibility."])
-
-    note("2.2 (opening)", "The author removed the heading 'Challenges with factor timing' (3 November), so the "
-         "challenges text opens Section 2.2. The three paragraphs there (the former Section 2.3.1 'Challenges with "
-         "time-series data') are replaced by the rewritten challenges text of the former Section 2.1, which the "
-         "author moved here: an opening that names five challenges, then one paragraph on each (identifying genuine "
-         "premia; their uncertain economic drivers; the length of factor cycles; the fragility of reported timing "
-         "gains; the complexity of the relationship between predictors and factor returns).",
-         "Author: remove Section 2.1 and insert it as the opening of Section 2.2.")
-    note("2.2 (opening)", "Opening sentence rephrased to set the scene: 'Although the time variation in factor "
-         "premia provides a clear rationale for factor timing (Section 1.1), exploiting it in practice has proved "
-         "difficult, whichever forecasting method is used.' The list of challenges names what each difficulty is "
-         "(genuine premia against statistical artefacts; gains that persist out of sample). 'whichever forecasting "
-         "method is used' places the challenges within the review of machine learning applications.",
-         "Author: rephrase this sentence to set the scene.")
-    note("2.2 (opening)", "Last paragraph: the machine learning methods are now reviewed before this section, so it "
-         "refers back to them ('the machine learning methods reviewed in Section 2.1') instead of introducing them, "
-         "and 'which do not require a pre-specified functional form …' is deleted (stated in Section 2.1). The "
-         "paragraph now leads into Section 2.2.1 (model complexity trade-offs).", "Author's restructuring; no "
-         "repetition.")
-    note("2.2 (opening)", "Content: kept from the former Section 2.1, which the author deleted from the thesis: the "
-         "factor zoo (Cochrane, 2011; Harvey, Liu, & Zhu, 2016; Feng, Giglio, & Xiu, 2020) and the core set of "
-         "factors; limits to arbitrage (Shleifer & Vishny, 1997) and the multifaceted drivers of factor returns; "
-         "naïve diversification (DeMiguel, Garlappi, & Uppal, 2009), value crashes and asynchronous cycles; the "
-         "sensitivity of timing gains; Cotturo et al.'s difficulties in forecasting factor premia. Kept from the "
-         "three paragraphs replaced here: the decay of premia after publication (McLean & Pontiff, 2016); the JSE "
-         "premia's variation with the business cycle (Kapche Fotso, 2019); the low signal-to-noise ratio of factor "
-         "returns (now cited to Israel, Kelly, & Moskowitz, 2020); the failure of full-sample predictors in later "
-         "subperiods (Welch & Goyal, 2008); data snooping (White, 2000); valuation timing as an example of predictor "
-         "sensitivity (Arnott et al., 2016, against Asness et al., 2017). Added: that risk-based premia should vary "
-         "with business conditions (Fama & French, 1989) and behavioural premia with the limits to arbitrage; that "
-         "long cycles leave few independent episodes to learn from (Ilmanen et al., 2021); what Cederburg et al. "
-         "(2020) find.", "Author: focus on the challenges, no repetition of Chapter 1.")
-    note("2.2 (opening)", "Not kept from the replaced paragraphs: the factors and their variation over time and the "
-         "motivation for timing (Section 1.1); the momentum-crash example (cited in Section 1.1); the duplicated "
-         "citation group '(Harvey, Liu, & Zhu, 2016) (White, 2000; Harvey et al., 2016)'; and 'JSE style-rotation "
-         "alphas largely disappear once momentum is added to the benchmark (Page, McClelland, & Auret, 2024)', "
-         "which could not be confirmed: Page et al. (2024) report that their tree models beat a style-momentum "
-         "benchmark. Restore it with the correct source if the paper (or Page et al., 2022) supports it.",
-         "No repetition; accuracy of citations.")
-    note("2.2 (opening)", "Narrative citations written as 'Cochrane (2011)', not '(Cochrane, 2011) described …': the "
-         "names are typed and the year is a citation field that suppresses the author, so the work still reaches the "
-         "reference list. The factor zoo is attributed to Cochrane (2011), the presidential address Prof Gilbert "
-         "refers to (source Coc11). Fama and French (2015) is cited from source Fam15, not the duplicate "
-         "Placeholder1 that printed the title. (Comments C42–C44 were on the deleted Section 2.1; these changes "
-         "answer them for the text that moved.)", "Prof Gilbert's comments C42 (narrative citations), C43 (remove "
-         "title) and C44 (reference the factor zoo properly).")
+    applied = []
+    theirs = "We outline some of the common challenges encountered in when attempting to generate factor timing signals"
+    if theirs in text(opening):
+        e.replace(opening, theirs, "The challenges commonly encountered when generating factor timing signals are "
+                                   "outlined below")
+        note("2.2 (opening)", "Second sentence: 'We outline some of the common challenges encountered in when "
+             "attempting to generate factor timing signals' becomes 'The challenges commonly encountered when "
+             "generating factor timing signals are outlined below': 'in when' corrected, and impersonal, as in the "
+             "rest of the thesis.", "Grammar; academic register.")
+    note("2.2 (opening)", "Already in the thesis (author, 3 November): the five challenges, with every citation a "
+         "bracketed Word field at the end of the claim it supports, as in the rest of the thesis, and their new "
+         "sources (McL16, Wel08, Whi00, Ced20, Rap13, Kap19). This text answers Prof Gilbert's comments on the "
+         "deleted Section 2.1 (C42–C44): no author as the subject of a sentence, Fama and French (2015) from source "
+         "Fam15 rather than the duplicate Placeholder1 that printed the title, and the factor zoo cited to Cochrane "
+         "(2011). 'Feng et al., 2018' is cited as Feng, He, Polson and Xu (2023, Fen23), the published version of "
+         "Feng, Polson and Xu's 2018 working paper 'Deep learning in characteristics-sorted factor models'; replace "
+         "it if another paper was meant.", "–")
 
     # ------------------------------------------------------------------ 2.2.1 model complexity trade-offs --
-    # Prof Gilbert (C47): set the scene for model choice with the challenges of financial data, and say how deep
-    # learning overfits there; consider whether performance is measured by prediction or by portfolio returns.
-    trade_off = find_para(body, startswith="The selection of an ML model for factor timing")
-    trade_off.addprevious(new_paragraph(e, trade_off, [
-        "The challenges set out above bear directly on the choice of model, because short samples, relationships "
-        "that change over time and a low signal-to-noise ratio are the conditions in which a flexible model most "
-        "readily fits noise rather than persistent structure ", cite(("Isr20", "Israel, Kelly, & Moskowitz, 2020")),
-        ". Deep learning is the most exposed: ", *narrative("Gu, Kelly and Xiu", "Shi20", 2020),
-        " find that the performance of neural networks in predicting US stock returns peaks at three hidden layers "
-        "and declines as more layers are added, which they attribute to the small amount of data and low "
-        "signal-to-noise ratio of return prediction compared with fields such as computer vision, where deep "
-        "learning has excelled. On medium-sized tabular data, tree-based models still outperform deep learning ", cite(("Gri22", "Grinsztajn, Oyallon, & Varoquaux, 2022")), "."]))
-    e.replace(trade_off, "sample variation, when converted", "sample variation, and when converted")
-    e.replace(trade_off, "market microstructures, such as", "market characteristics such as")
-    tree_trade_off = find_para(body, startswith="Tree-based models such as random forests and XGBoost provide")
-    e.replace(tree_trade_off, "evaluation design(", "evaluation design (")
-    note("2.2.1", "New first paragraph: the challenges that open Section 2.2 (short samples, changing relationships, "
-         "a low signal-to-noise ratio) are the conditions in which flexible models fit noise (Israel, Kelly, & "
-         "Moskowitz, 2020); Gu, Kelly and Xiu (2020) find that neural-network performance peaks at three hidden "
-         "layers and declines with depth, which they attribute to small data and a low signal-to-noise ratio; tree "
-         "models still outperform deep learning on tabular data (Grinsztajn, Oyallon, & Varoquaux, 2022). Each "
-         "claim checked against the source (Gu et al., 2020, introduction: 'Shallow learning outperforms "
-         "deeper learning').","Prof Gilbert's comment C47 (set the scene for model choice with the "
-         "challenges of financial markets and how deep learning overfits in this context).")
-    note("2.2.1", "Second paragraph: comma splice corrected ('… sample variation, and when converted into trading "
-         "signals, …'); 'market microstructures, such as data quality, liquidity, and idiosyncratic risk' becomes "
-         "'market characteristics such as …', since data quality and idiosyncratic risk are not microstructure. "
-         "Third paragraph: space added before the citation ('evaluation design (Panda …').",
-         "Grammar; accuracy.")
+    merged = find_para(body, startswith="The challenges set out above bear directly on the choice of model")
+    if "market microstructures, such as" in text(merged):
+        e.replace(merged, "market microstructures, such as", "market characteristics such as")
+        note("2.2.1", "First paragraph: 'market microstructures, such as data quality, liquidity, and idiosyncratic "
+             "risk' becomes 'market characteristics such as …', since data quality and idiosyncratic risk are not "
+             "microstructure.", "Accuracy.")
+    assert "Gu, Kelly, & Xiu" not in text(merged)
+    note("2.2.1", "Not restored: the two sentences on deep learning that followed the first sentence in the previous "
+         "amendments (in predicting US stock returns, neural-network performance peaks at three hidden layers and "
+         "declines with depth, which Gu, Kelly and Xiu (2020) attribute to small data and a low signal-to-noise "
+         "ratio; tree-based models still outperform deep learning on tabular data, Grinsztajn, Oyallon and "
+         "Varoquaux, 2022). The author's merged paragraph leaves them out. Prof Gilbert's comment on this subsection "
+         "asked how deep-learning models tend to overfit in this context, so add them back if that point should "
+         "stay.", "Author's revision respected.")
 
     combination = find_para(body, startswith="More broadly, combination methods represent")
     compose(e, combination, [
@@ -381,75 +359,82 @@ def build():
          "robustness' is no longer stated twice. Citations unchanged.", "No repetition.")
 
     conclusion = find_para(body, startswith="Consequently, the marginal benefits of increasingly complex models")
+    assert not any(text(q).startswith("Comparisons of model complexity also depend") for q in body.iter(qn("w:p")))
     conclusion.addnext(new_paragraph(e, conclusion, [
         "Comparisons of model complexity also depend on how performance is measured. When models are compared by the "
         "returns of portfolios built from their forecasts, the result reflects not only the forecasts but also how "
         "they are converted into positions, through the choice of threshold, position size, rebalancing frequency "
         "and cost assumptions, and these choices add variation unrelated to the models' predictive ability. Such "
-        "research design choices "
-        "can matter more than sampling error: Chen, Hanauer and Kalsbach (2024) find that the variation in machine "
-        "learning portfolio returns across alternative design choices exceeds their standard error."]))
+        "research design choices can matter more than sampling error: the variation in machine learning portfolio "
+        "returns across alternative design choices exceeds their standard error ",
+        cite(("Che24", "Chen, Hanauer, & Kalsbach, 2024")), "."]))
     note("2.2.1", "New last paragraph: comparisons by portfolio returns also reflect how forecasts are converted into "
          "positions (threshold, position size, rebalancing, costs), which adds variation unrelated to predictive "
-         "ability; Chen, Hanauer and Kalsbach (2024) find that the non-standard error from design choices in machine "
-         "learning portfolio returns exceeds the standard error (by 59%). Section 2.3 states the study's response "
-         "(models compared on predictive measures).", "Prof Gilbert's comment C47 (is performance measured by "
-         "predictive accuracy or portfolio performance; signal implementation adds noise to model comparisons).")
+         "ability; the non-standard error from researchers' design choices in machine learning portfolio returns "
+         "exceeds the standard error, by 59% (Chen, Hanauer, & Kalsbach, 2024; new source Che24). Section 2.3 states "
+         "the study's response (models compared on predictive measures).", "Prof Gilbert's comment on this "
+         "subsection: is performance measured by predictive accuracy or portfolio performance; signal "
+         "implementation adds noise to model comparisons.")
 
     # ------------------------------------------------------------------ 2.2.2 market-specific patterns --
     p = find_para(body, startswith="Empirical evidence shows that the performance of ML models in factor timing")
-    retag(e, p, "MaT23", " CITATION Kra17 \\l 7177 \\m Shi20 ", "(Krauss, Do, & Huck, 2017; Gu, Kelly, & Xiu, 2020)")
-    note("2.2.2", "'Within this literature, tree-based ensemble methods are often competitive' is now cited to "
-         "Krauss, Do and Huck (2017), who find that random forests outperform gradient-boosted trees and deep "
-         "networks on the S&P 500, and Gu, Kelly and Xiu (2020), who find trees and neural networks the best "
-         "performing methods. It cited Ma, Liao and Jiang (2023), a deep-learning study of China (not a developed "
-         "market), and Ke et al. (2017) and Chen and Guestrin (2016), which introduce LightGBM and XGBoost (cited "
-         "for that in Section 2.1.2) but do not compare them in finance.", "Accuracy of citations.")
+    if "MaT23" in "".join(it.text or "" for it in p.iter(qn("w:instrText"))):
+        retag(e, p, "MaT23", " CITATION Kra17 \\l 7177 \\m Shi20 ", "(Krauss, Do, & Huck, 2017; Gu, Kelly, & Xiu, 2020)")
+        note("2.2.2", "'Within this literature, tree-based ensemble methods are often competitive' is now cited to "
+             "Krauss, Do and Huck (2017) and Gu, Kelly and Xiu (2020) instead of Ma, Liao and Jiang (2023), Ke et al. "
+             "(2017) and Chen and Guestrin (2016).", "Accuracy of citations.")
+    else:
+        applied.append("2.2.2: the tree-ensemble sentence cited to Krauss et al. (2017) and Gu et al. (2020)")
 
     # ------------------------------------------------------------------ 2.2.3 predictive accuracy and value --
-    note("2.2.3", "No change to the sentence Prof Gilbert queried ('the literature also raises several substantive "
-         "critiques …'): it now carries three references (Harvey, Liu, & Zhu, 2016; Leung et al., 2021; Israel, "
-         "Kelly, & Moskowitz, 2020), added by the author.", "Prof Gilbert's comment C49 (References?).")
     p = find_para(body, startswith="A central criticism concerns overfitting and model instability")
-    cut(e, p, "Empirical evidence suggests that highly parameterised models frequently exhibit strong in-sample "
-              "performance but suffer from degradation out-of-sample, especially when applied across different "
-              "market regimes or geographies. ")
-    e.replace(p, "This instability is further exacerbated in emerging markets",
-              "Overfitting is more likely in emerging markets")
-    note("2.2.3", "Overfitting paragraph: deleted 'Empirical evidence suggests that highly parameterised models "
-         "frequently exhibit strong in-sample performance but suffer from degradation out-of-sample, especially when "
-         "applied across different market regimes or geographies.' (uncited; stated in the fourth challenge and in "
-         "Section 2.2.1). 'This instability is further exacerbated in emerging markets' becomes 'Overfitting is more "
-         "likely in emerging markets'.", "No repetition.")
+    if "Empirical evidence suggests that highly parameterised" in text(p):
+        cut(e, p, "Empirical evidence suggests that highly parameterised models frequently exhibit strong in-sample "
+                  "performance but suffer from degradation out-of-sample, especially when applied across different "
+                  "market regimes or geographies. ")
+        e.replace(p, "This instability is further exacerbated in emerging markets",
+                  "Overfitting is more likely in emerging markets")
+        note("2.2.3", "Overfitting paragraph: deleted the uncited sentence on in-sample strength and out-of-sample "
+             "degradation (stated in the fourth challenge); 'This instability is further exacerbated' becomes "
+             "'Overfitting is more likely'.", "No repetition.")
+    else:
+        applied.append("2.2.3: the overfitting paragraph shortened")
     p = find_para(body, startswith="A second line of criticism relates to economic interpretability")
-    extend(e, p, [
-        " Interpretability also affects adoption in practice: investment managers must be able to explain a "
-        "strategy to their clients, and a model whose forecasts cannot be explained is difficult to defend when it "
-        "underperforms. Explanation methods such as Shapley additive explanations ",
-        cite(("Lun17", "Lundberg & Lee, 2017")),
-        " partly address this by attributing each forecast to the predictors that produced it."])
-    note("2.2.3", "Interpretability paragraph: two sentences added. Investment managers must be able to explain a "
-         "strategy to clients, and an unexplained model is hard to defend when it underperforms; explanation methods "
-         "such as Shapley additive explanations (Lundberg & Lee, 2017) partly address this. The second sentence "
-         "introduces the explanation method the study uses, without referring forward.", "Prof Gilbert's comment C50 "
-         "(practitioners avoid black-box models; 'trust the black box' does not resonate with clients when it is not "
-         "working).")
-    p = find_para(body, startswith="A related critique highlights data-snooping")
-    e.replace(p, "A related critique highlights data-snooping and research design biases. The flexibility of ML "
-                 "models allows for extensive feature exploration, hyperparameter tuning, and model selection, "
-                 "increasing the risk of inadvertently fitting to sample-specific artefacts",
-              "A related critique concerns data snooping. The flexibility of ML models adds feature selection, "
-              "hyperparameter tuning and model selection to the specification search described above, increasing "
-              "the risk of fitting sample-specific artefacts")
+    if "Interpretability also affects adoption" not in text(p):
+        extend(e, p, [
+            " Interpretability also affects adoption in practice: investment managers must be able to explain a "
+            "strategy to their clients, and a model whose forecasts cannot be explained is difficult to defend when "
+            "it underperforms. Explanation methods such as Shapley additive explanations ",
+            cite(("Lun17", "Lundberg & Lee, 2017")),
+            " partly address this by attributing each forecast to the predictors that produced it."])
+        note("2.2.3", "Interpretability paragraph: two sentences added on client adoption and Shapley additive "
+             "explanations (Lundberg & Lee, 2017).", "Prof Gilbert's comment C49 (practitioners avoid black-box "
+             "models).")
+    else:
+        applied.append("2.2.3: the sentences on client adoption and Shapley explanations (Prof Gilbert's C49)")
+    p = find_para_any(body, "A related critique highlights data-snooping", "A related critique concerns data snooping")
+    if text(p).startswith("A related critique highlights"):
+        e.replace(p, "A related critique highlights data-snooping and research design biases. The flexibility of ML "
+                     "models allows for extensive feature exploration, hyperparameter tuning, and model selection, "
+                     "increasing the risk of inadvertently fitting to sample-specific artefacts",
+                  "A related critique concerns data snooping. The flexibility of ML models adds feature selection, "
+                  "hyperparameter tuning and model selection to the specification search described above, "
+                  "increasing the risk of fitting sample-specific artefacts")
+    else:
+        applied.append("2.2.3: the data-snooping paragraph refers back to the specification search")
     cut(e, p, " This concern is particularly salient in factor timing, where signals are inherently weak and "
               "regime-dependent.")
-    note("2.2.3", "Data-snooping paragraph: refers back to the specification search of the fourth challenge (White, "
-         "2000) and states what machine learning adds to it (feature selection, hyperparameter tuning, model "
-         "selection). Deleted 'This concern is particularly salient in factor timing, where signals are inherently "
-         "weak and regime-dependent.' (stated in the opening of Section 2.2).", "No repetition.")
+    note("2.2.3", "Data-snooping paragraph: deleted its last sentence, 'This concern is particularly salient in factor "
+         "timing, where signals are inherently weak and regime-dependent.' (stated in the opening of Section 2.2).",
+         "No repetition.")
+    note("2.2.3", "No change to the sentence Prof Gilbert queried ('the literature also raises several substantive "
+         "critiques …'): it carries three references (Harvey, Liu, & Zhu, 2016; Leung et al., 2021; Israel, Kelly, & "
+         "Moskowitz, 2020), added by the author.", "Prof Gilbert's comment C48 (References?).")
     p = find_para(body, startswith="Finally, the literature questions the generalizability")
-    e.replace(p, "As a result, , the", "As a result, the")
-    note("2.2.3", "Last paragraph: double comma removed ('As a result, , the evidence').", "Typing error.")
+    if "As a result, , the" in text(p):
+        e.replace(p, "As a result, , the", "As a result, the")
+    else:
+        applied.append("2.2.3: the double comma in the last paragraph")
 
     # ------------------------------------------------------------------ 2.3 South Africa --
     p = heading(body, "Application of machine learning factor timing strategies in South African equity markets")
@@ -457,70 +442,76 @@ def build():
     note("2.3", "Heading: 'Application of machine learning to factor timing in South African equity markets', "
          "parallel to the heading of Section 2.2.", "Grammar; consistent headings.")
     p = find_para(body, startswith="International evidence indicates that")
-    extend(e, p, ["."])
-    p = find_para(body, startswith="This global evidence highlights a critical trade-off")
-    compose(e, p, [
-        "The trade-off between the potential performance of complex models and the robustness of simpler ones is "
-        "likely to be more pronounced in an emerging market such as South Africa, given the dependence of machine "
-        "learning gains on market structure, sample depth and liquidity noted in Section 2.2.2. The criticisms "
-        "reviewed in Section 2.2.3 do not undermine the relevance of machine learning for factor timing, but they "
-        "require predictive gains to be assessed with validation that preserves temporal ordering, prevents "
-        "information leakage and guards against overfitting."])
-    note("2.3", "First paragraph: full stop added. Second paragraph shortened from five sentences to two: it refers "
-         "back to Sections 2.2.2 and 2.2.3 instead of restating them, the sentence fragment 'A trade-off that is "
-         "likely to be even more pronounced …' is joined to its sentence, and 'These considerations motivate the "
-         "methodological choices adopted in this study, which prioritise …' is deleted, because the last paragraph "
-         "states those choices. 'class imbalance, and transaction cost sensitivity' is not kept: the study does not "
-         "evaluate transaction costs, and its classes are close to balanced.", "No repetition; describe only what "
-         "the study does.")
+    if not text(p).rstrip().endswith("."):
+        extend(e, p, ["."])
+        note("2.3", "First paragraph: full stop added after the citation.", "Typing error.")
+    p = find_para_any(body, "This global evidence highlights a critical trade-off",
+                      "The trade-off between the potential performance of complex models")
+    if text(p).startswith("This global evidence"):
+        compose(e, p, [
+            "The trade-off between the potential performance of complex models and the robustness of simpler ones is "
+            "likely to be more pronounced in an emerging market such as South Africa, given the dependence of machine "
+            "learning gains on market structure, sample depth and liquidity noted in Section 2.2.2. The criticisms "
+            "reviewed in Section 2.2.3 do not undermine the relevance of machine learning for factor timing, but they "
+            "require predictive gains to be assessed with validation that preserves temporal ordering, prevents "
+            "information leakage and guards against overfitting."])
+        note("2.3", "Second paragraph shortened from five sentences to two (refers back to Sections 2.2.2 and "
+             "2.2.3).", "No repetition.")
+    else:
+        applied.append("2.3: the second paragraph shortened")
     p = find_para(body, startswith="South African factor-timing evidence predates recent ML studies")
     compose(e, p, [
-        "South African factor-timing evidence predates recent ML studies. ",
-        *narrative("Mutooni and Muller", "Mut07", 2007), " examine equity style timing, and Page, McClelland and "
-        "Auret (2022) document short-term style rotation on the JSE. ", *narrative("Makamo", "Mak23", 2023),
-        " demonstrates the feasibility of LSTM networks in predicting factor and sector returns in the local equity "
-        "market, reporting low in-sample prediction errors. ",
-        *narrative("Page, McClelland and Auret", "Pag241", 2024),
-        " compare random forests, XGBoost and LightGBM for JSE style rotation and report that the tree-based models "
-        "improve on a style-momentum benchmark after costs. The local literature therefore establishes that JSE "
-        "style returns vary through time and that ML models can be applied to style rotation. "
-        "Evidence remains limited on how a transparent linear benchmark, an additive nonlinear model and a "
-        "boosted-tree model compare when they use the same factor pairs, predictor set, labels and time-series "
-        "evaluation framework. This controlled comparison defines the research gap addressed by the present study."])
-    note("2.3", "South African studies: narrative citations ('Mutooni and Muller (2007) examine …', 'Makamo (2023) "
-         "demonstrates …', 'Page, McClelland and Auret (2024) compare …') instead of parenthetical ones as sentence "
-         "subjects. '(Page, McClelland, & Auret, 2024) 2022.document short-term style rotation' becomes 'Page, "
-         "McClelland and Auret (2022) document short-term style rotation' (the 2022 paper, typed because it has no "
-         "source). 'trans-parent' (a line-break hyphen) becomes 'transparent'.", "Prof Gilbert's comment C42 "
-         "(narrative citations); typing errors.")
-    p = find_para(body, startswith="Relative to the studies reviewed above, we present several methodological")
-    compose(e, p, [
-        "The study also improves on the design of the studies reviewed above in five ways. First, rather than "
-        "forecasting return levels over a fixed horizon, it labels relative factor performance using trend scanning, "
-        "which selects the forward horizon with the most statistically significant trend ",
-        cite(("Lop20", "Lopez de Prado, 2020")),
-        ". Second, hyperparameters are selected with combinatorial purged cross-validation, which removes training "
-        "observations whose label horizons overlap the validation data ", cite(("Lop18", "Lopez de Prado, 2018")),
-        ". Third, out-of-sample performance is assessed with an expanding walk-forward procedure that also purges "
-        "the 12 weeks before each prediction, so that no training label draws on information from the test period. "
-        "Fourth, the three model classes are estimated on identical data, predictors and test dates, so that "
-        "differences in performance can be attributed to the models rather than to the research design. The models "
-        "are also compared on predictive measures rather than portfolio returns, so that the comparison does not "
-        "depend on how forecasts are converted into positions. Fifth, differences between models are assessed with "
-        "block-bootstrap confidence intervals rather than inferred from point estimates. Together, these features "
-        "address the weaknesses identified in this chapter: in-sample evaluation, information leakage from "
-        "overlapping labels, single-model designs, portfolio-based comparisons that depend on implementation choices "
-        "and the absence of formal model comparisons."])
-    note("2.3", "Last paragraph (the author's answer to C53) restructured so that the improvements stand out: "
-         "'First' to 'Fifth' (trend-scanning labels; combinatorial purged cross-validation; purged expanding "
-         "walk-forward; identical data for the three model classes, compared on predictive measures rather than "
-         "portfolio returns; block-bootstrap intervals). 'we present' becomes an impersonal construction. Added "
-         "from C47: the models are compared on predictive measures, so the comparison does not depend on how "
-         "forecasts become positions. 'tested statistically with a block bootstrap' becomes 'assessed with "
-         "block-bootstrap confidence intervals', as Chapter 3 states (the bootstrap gives intervals, not "
-         "null-calibrated tests). 'look-ahead bias' becomes 'information leakage', the term used above.",
-         "Prof Gilbert's comments C53 (highlight the methodological improvements, trend scanning, CPCV, more "
-         "clearly) and C47; consistency with Chapter 3.")
+        "South African factor-timing evidence predates recent ML studies. Early work examines equity style timing ",
+        cite(("Mut07", "Mutooni & Muller, 2007")), ", and later work documents short-term style rotation on the JSE ",
+        cite(("Pag22", "Page, McClelland, & Auret, 2022")), ". More recently, LSTM networks have been applied to "
+        "predict factor and sector returns in the local equity market, with low in-sample prediction errors ",
+        cite(("Mak23", "Makamo, 2023")), ", and random forests, XGBoost and LightGBM have been compared for JSE style "
+        "rotation, with the tree-based models improving on a style-momentum benchmark after costs ",
+        cite(("Pag241", "Page, McClelland, & Auret, 2024")), ". The local literature therefore establishes that JSE "
+        "style returns vary through time and that ML models can be applied to style rotation. Evidence remains "
+        "limited on how a transparent linear benchmark, an additive nonlinear model and a boosted-tree model compare "
+        "when they use the same factor pairs, predictor set, labels and time-series evaluation framework. This "
+        "controlled comparison defines the research gap addressed by the present study."])
+    note("2.3", "South African studies: citations as bracketed fields at the end of each claim, as in the rest of "
+         "the thesis, instead of '(Mutooni & Muller, 2007) examine …' with the citation as the subject. 'short-term "
+         "style rotation on the JSE' is cited to Page, McClelland and Auret (2022), 'Style rotation on the JSE' "
+         "(new source Pag22), not to their 2024 machine-learning paper, which the next sentence cites.",
+         "Referencing as in the rest of the thesis; accuracy of citations.")
+    p = find_para_any(body, "Relative to the studies reviewed above, we present several methodological",
+                      "The study also improves on the design of the studies reviewed above")
+    if text(p).startswith("Relative to"):
+        compose(e, p, [
+            "The study also improves on the design of the studies reviewed above in four ways. First, rather than "
+            "forecasting return levels over a fixed horizon, it labels relative factor performance using trend "
+            "scanning, which selects the forward horizon with the most statistically significant trend ",
+            cite(("Lop20", "Lopez de Prado, 2020")),
+            ". Second, hyperparameters are selected with combinatorial purged cross-validation, which removes "
+            "training observations whose label horizons overlap the validation data ",
+            cite(("Lop18", "Lopez de Prado, 2018")),
+            ". Third, out-of-sample performance is assessed with an expanding walk-forward procedure that also purges "
+            "the 12 weeks before each prediction, so that no training label draws on information from the test "
+            "period. Fourth, the three model classes are estimated on identical data, predictors and test dates, so "
+            "that differences in performance can be attributed to the models rather than to the research design. The "
+            "models are also compared on predictive measures rather than portfolio returns, so that the comparison "
+            "does not depend on how forecasts are converted into positions. Together, these features address the "
+            "weaknesses identified in this chapter: in-sample evaluation, information leakage from overlapping "
+            "labels, single-model designs and portfolio-based comparisons that depend on implementation choices."])
+    else:
+        assert "bootstrap" not in text(p).lower()
+        e.replace(p, "in five ways", "in four ways")
+        e.replace(p, "information leakage from overlapping labels and single-model designs, portfolio-based "
+                     "comparisons that depend on implementation choices and the absence of formal model comparisons",
+                  "information leakage from overlapping labels, single-model designs and portfolio-based comparisons "
+                  "that depend on implementation choices")
+    note("2.3", "Last paragraph: the author removed the fifth improvement (block-bootstrap intervals for the "
+         "differences between models), so 'in five ways' becomes 'in four ways' and 'the absence of formal model "
+         "comparisons' is deleted from the weaknesses the four features address; the list now reads 'in-sample "
+         "evaluation, information leakage from overlapping labels, single-model designs and portfolio-based "
+         "comparisons that depend on implementation choices'.", "Author: the bootstrap comparison of the models is "
+         "an extension the study does not explore.")
+    if applied:
+        note("2.2, 2.3", "Already in the thesis (author, 3 November), so not repeated here: " + "; ".join(applied)
+             + ".", "–")
 
     # ------------------------------------------------------------------ other chapters and references --
     note("Other chapters", "Cross-references to update in the thesis after the restructuring: Section 3.6 says "
@@ -530,6 +521,11 @@ def build():
          "foundational theory of factor premia and the evolution of factor timing strategies, followed by a "
          "structured examination of machine learning applications', which no longer matches the order.",
          "Author's restructuring of 2–3 November.")
+    note("Other chapters", "The block bootstrap is still part of Chapters 3 and 4: the Chapter 3 amendments (Section "
+         "3.9) assess uncertainty in ROC-AUC and the paired differences between models with a circular moving-block "
+         "bootstrap, and the Chapter 4 outline says Section 4.5 'uses block-bootstrap intervals to assess whether "
+         "their differences in mean ROC-AUC are distinguishable from zero'. If the comparison of models by bootstrap "
+         "is outside the scope of the study, these need to change too.", "Consistency with the scope of the study.")
     # cited works in the chapter that are missing from the thesis reference list
     tags = []
     for it in body.iter(qn("w:instrText")):
@@ -544,22 +540,36 @@ def build():
             off.append(f"{last_name} ({year}, {tag})")
     note("References", "Cited with a source but missing from the thesis reference list (they appear when the "
          "bibliography is updated, References > Update Citations and Bibliography): " + ("; ".join(off) or "none")
-         + ". Typed because the thesis has no source for them: Cederburg, O'Doherty, Wang and Yan (2020), Rapach and "
-         "Zhou (2013), 'Feng et al. (2018)', McLean and Pontiff (2016), Kapche Fotso (2019), Welch and Goyal (2008), "
-         "White (2000), Page, McClelland and Auret (2022) and Chen, Hanauer and Kalsbach (2024, 'Design choices, "
-         "machine learning, and the cross-section of stock returns', SSRN working paper 5031755; check whether it "
-         "has since been published). Add them in the Source Manager and replace the typed citations with fields; the "
-         "details of Kapche Fotso (2019) are also marked as outstanding in the literature-review reference file. "
-         "'Feng et al. (2018)' may be the 2018 working-paper version of Feng, He, Polson and Xu (2023), which is in "
-         "the Source Manager (Fen23); if so, cite Fen23.", "Reference list.")
-    note("References", "Source Manager corrections that change how Chapter 2 prints: Has09 (The Elements of "
-         "Statistical Learning) holds Tibshirani as Hastie's middle name, so it prints 'Hastie & Friedman'; enter "
-         "Hastie, T., Tibshirani, R. and Friedman, J. as three authors, correct 'Statisitcal' and delete the "
-         "duplicates Hastie2 and Placeholder3, which no field uses after these amendments. Tib96: 'Tibshirina' "
-         "should be 'Tibshirani'. Lop18 and Lop20 give López de Prado's first name as 'M' and 'Marcus', so Word "
-         "prints 'Lopez de Prado M.' to tell them apart; enter 'Marcos' in both. Unused duplicates that can be "
-         "deleted: Goo94 (Goodfellow et al., dated 1994; Goo16 is cited), Placeholder6 ('Shihao, Kelly, Xiu'; Shi20 "
-         "is cited) and Alo22 (Nog22 is cited).", "Reference list.")
+         + ".", "Reference list.")
+    new_tags = [s.findtext(B_NS + "Tag") for s in added]
+    described = {"Che24": "Chen, Hanauer and Kalsbach (2024, Che24; 'Design choices, machine learning, and the "
+                          "cross-section of stock returns', SSRN working paper 5031755; check whether it has since "
+                          "been published)",
+                 "Pag22": "Page, McClelland and Auret (2022, Pag22; 'Style rotation on the JSE', Finance Research "
+                          "Letters 46(B), Article 102504, as in the literature-review reference file)"}
+    assert set(new_tags) <= set(described), new_tags
+    note("References", "Added to the Source Manager of this document because the thesis does not have them yet: "
+         + "; ".join(described[t] for t in new_tags) + ". Copy them into the thesis before pasting the paragraphs "
+         "that cite them: with this document open, References > Manage Sources, select them in the Current List and "
+         "Copy them to the Master List; then, in the thesis, open Manage Sources and copy them from the Master List "
+         "to its Current List. (Tested: a citation copied into a document that lacks its source shows 'Invalid "
+         "source specified'.)", "Citations as fields, as in the rest of the thesis.")
+    has09 = [p.findtext(B_NS + "Last") for p in sources["Has09"].iter(B_NS + "Person")]
+    lop = {sources[t].findtext(f"{B_NS}Author/{B_NS}Author/{B_NS}NameList/{B_NS}Person/{B_NS}First")
+           for t in ("Lop18", "Lop20")}
+    fixes = [] if has09 == ["Hastie", "Tibshirani", "Friedman"] else [
+        "Has09 (The Elements of Statistical Learning): enter Hastie, Tibshirani and Friedman as three authors"]
+    fixes.append("delete the duplicates Hastie2 and Placeholder3 of Has09, which no field uses after these amendments")
+    if next(sources["Tib96"].iter(B_NS + "Last")).text == "Tibshirina":
+        fixes.append("Tib96: 'Tibshirina' should be 'Tibshirani'")
+    if len(lop) > 1:
+        fixes.append("Lop18 and Lop20 give López de Prado's first name as " + " and ".join(f"'{x}'" for x in sorted(lop))
+                     + ", so Word prints 'Lopez de Prado M.' to tell them apart; enter 'Marcos' in both")
+    if "Statisitcal" in (sources["Has09"].findtext(B_NS + "Title") or ""):
+        fixes.append("Has09 title: 'Statisitcal' should be 'Statistical'")
+    fixes.append("unused duplicates that can be deleted: Goo94 (Goodfellow et al., dated 1994; Goo16 is cited), "
+                 "Placeholder6 ('Shihao, Kelly, Xiu'; Shi20 is cited) and Alo22 (Nog22 is cited)")
+    note("References", "Source Manager corrections still to make: " + "; ".join(fixes) + ".", "Reference list.")
 
     add_log(document, log)
     document.save(OUTPUT)
